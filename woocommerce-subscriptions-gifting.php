@@ -22,14 +22,61 @@ add_filter( 'woocommerce_get_cart_item_from_session', 'get_cart_items_from_sessi
 //Cart Page
 add_filter( 'woocommerce_update_cart_action_cart_updated', 'cart_update' );
 
-
 add_filter( 'woocommerce_subscriptions_recurring_cart_key', 'add_recipient_email_recurring_cart_key', 1, 2 );
 
 add_action( 'woocommerce_checkout_subscription_created', 'subscription_created', 1 , 3);
 
+add_filter( 'woocommerce_get_users_subscriptions', 'add_recipient_subscriptions', 1, 2 );
+
+add_action ( 'woocommerce_order_details_after_customer_details', 'gifting_information_after_customer_details', 1 );
+
+function gifting_information_after_customer_details( $subscription ){
+	//check if the subscription is gifted
+	if( !empty($subscription->recipient_user) ) {
+		$customer_user = new WP_User( $subscription->customer_user );
+		$recipient_user = new WP_User( $subscription->recipient_user );
+		$current_user = wp_get_current_user();
+
+		if( $current_user->ID == $customer_user->ID ){
+			//display the recipient information
+			echo add_gifting_information_html( $recipient_user->first_name . ' ' . $recipient_user->last_name, 'Recipient' );
+		}else{
+			//display the purchaser information
+			echo add_gifting_information_html( $customer_user->first_name . ' ' . $customer_user->last_name, 'Purchaser' );
+		}
+	}
+}
+
+function add_gifting_information_html( $name, $user_title ) {
+	return '<tr><th>' . $user_title . ':</th><td data-title="' . $user_title . '">' . $name . '</td></tr>';
+
+}
+
+function add_recipient_subscriptions( $subscriptions, $user_id ) {
+	//get the posts that have been gifted to this user
+	$post_ids = get_posts( array(
+		'posts_per_page' => -1,
+		'post_status'    => 'any',
+		'post_type'      => 'shop_subscription',
+		'orderby'        => 'date',
+		'order'          => 'desc',
+		'meta_key'       => '_recipient_user',
+		'meta_value'     => $user_id,
+		'meta_compare'   => '=',
+		'fields'         => 'ids',
+	) );
+	//add all this user's gifted subscriptions
+	foreach ( $post_ids as $post_id ) {
+		$subscriptions[ $post_id ] = wcs_get_subscription( $post_id );
+		//allow the recipient to view their order
+		$user = new WP_User( $user_id );
+		$user->add_cap( 'view_order', $post_id);
+	}
+
+	return $subscriptions;
+}
+
 function subscription_created( $subscription, $order, $recurring_cart ) {
-	error_log('subscription created');
-	error_log('cart: '. print_r( reset( $recurring_cart->cart_contents), true ));
 	if ( isset( reset( $recurring_cart->cart_contents )['wcsg_gift_recipients_email'] ) ){
 		$recipient_email = reset( $recurring_cart->cart_contents )['wcsg_gift_recipients_email'];
 
@@ -50,8 +97,6 @@ function subscription_created( $subscription, $order, $recurring_cart ) {
 
     		$recipient_user_id = wc_create_new_customer( $recipient_email, $username, $password );
 		}
-		error_log( 'recipient_user_id = ' . print_r( $recipient_user_id, true ) );
-
 		update_post_meta( $subscription->id, '_recipient_user', $recipient_user_id );
 
 	}
@@ -156,7 +201,6 @@ function is_subscription( $product ) {
 
 //triggered when the cart is pulled from the session??
 function get_cart_items_from_session( $item, $values, $key ) {
-
 	if ( array_key_exists( 'wcsg_gift_recipients_email', $values ) ) { //previously added at the product page via $cart_item_data
 		$item[ 'wcsg_gift_recipients_email' ] = $values['wcsg_gift_recipients_email'];
 		unset( $values['wcsg_gift_recipients_email'] );
