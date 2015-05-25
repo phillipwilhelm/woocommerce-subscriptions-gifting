@@ -12,7 +12,6 @@
 		}
 
 		public static function add_gifting_option_checkout( $quantity, $cart_item ) {
-			echo $quantity;
 			if( is_checkout() ){
 				error_log("Is the checkout page");
 
@@ -21,11 +20,12 @@
 			}
 			if( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 				if( !isset( $cart_item['wcsg_gift_recipients_email'] ) ) {
-					echo WCS_Gifting::generate_gifting_html( $cart_item['product_id'], '');
+					$quantity .= WCS_Gifting::generate_gifting_html( $cart_item['product_id'], '');
 				}else{
-					echo WCS_Gifting::generate_gifting_html( 0, $cart_item['wcsg_gift_recipients_email'] );
+					$quantity .= WCS_Gifting::generate_gifting_html( 0, $cart_item['wcsg_gift_recipients_email'] );
 				}
 			}
+			return $quantity;
 		}
 
 		public static function subscription_created( $subscription, $order, $recurring_cart ) {

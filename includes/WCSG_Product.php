@@ -14,9 +14,9 @@
 		//adds repcipient data to the cart item data. Triggered when item is added to cart.
 		public static function add_recipient_data( $cart_item_data ) {
 			if( isset( $_POST['recipient_email'] ) && !empty( $_POST['recipient_email'][0]) ) {
-				$cart_item_data['wcsg_gift_recipients_email'] = $_POST['recipient_email'][0];
-				return $cart_item_data;
+				$cart_item_data['wcsg_gift_recipients_email'] = $_POST['recipient_email'][0];	
 			}
+			return $cart_item_data;
 		}
 
 		//triggered when the cart is pulled from the session??
