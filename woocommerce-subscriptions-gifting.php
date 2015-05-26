@@ -1,219 +1,83 @@
 <?php
 /**
-* Plugin Name: woocommerce gifting subscriptions
+* Plugin Name: WooCommerce Gifting Subscriptions
 */
-add_action( 'wp_enqueue_scripts', 'gifting_scripts' );
 
-/*Adds gifting input*/
-//Product Page
-add_action( 'woocommerce_before_add_to_cart_button','add_gifting_option_product' );
+require_once( 'includes/WCSG_Product.php' );
 
-//Cart Page.
-add_filter( 'woocommerce_cart_item_name', 'add_gifting_option_cart', 1, 3 );
+require_once( 'includes/WCSG_Cart.php' );
 
-//Checkout Page
-add_filter( 'woocommerce_checkout_cart_item_quantity', 'add_gifting_option_checkout', 1, 2 );
+require_once( 'includes/WCSG_Checkout.php' );
 
-/*Hooks to add recipient data to the Cart Item Data*/
-//Product Page
-add_filter( 'woocommerce_add_cart_item_data', 'add_recipient_data', 1, 1 );
-add_filter( 'woocommerce_get_cart_item_from_session', 'get_cart_items_from_session', 1, 3 );
 
-//Cart Page
-add_filter( 'woocommerce_update_cart_action_cart_updated', 'cart_update' );
+class WCS_Gifting {
 
-add_filter( 'woocommerce_subscriptions_recurring_cart_key', 'add_recipient_email_recurring_cart_key', 1, 2 );
+	public static function init(){
+		add_action( 'wp_enqueue_scripts', __CLASS__ . '::gifting_scripts' );
 
-add_action( 'woocommerce_checkout_subscription_created', 'subscription_created', 1 , 3);
+		add_filter( 'woocommerce_get_users_subscriptions', __CLASS__ . '::add_recipient_subscriptions', 1, 2 );
 
-add_filter( 'woocommerce_get_users_subscriptions', 'add_recipient_subscriptions', 1, 2 );
-
-add_action ( 'woocommerce_order_details_after_customer_details', 'gifting_information_after_customer_details', 1 );
-
-function gifting_information_after_customer_details( $subscription ){
-	//check if the subscription is gifted
-	if( !empty($subscription->recipient_user) ) {
-		$customer_user = new WP_User( $subscription->customer_user );
-		$recipient_user = new WP_User( $subscription->recipient_user );
-		$current_user = wp_get_current_user();
-
-		if( $current_user->ID == $customer_user->ID ){
-			//display the recipient information
-			echo add_gifting_information_html( $recipient_user->first_name . ' ' . $recipient_user->last_name, 'Recipient' );
-		}else{
-			//display the purchaser information
-			echo add_gifting_information_html( $customer_user->first_name . ' ' . $customer_user->last_name, 'Purchaser' );
-		}
-	}
-}
-
-function add_gifting_information_html( $name, $user_title ) {
-	return '<tr><th>' . $user_title . ':</th><td data-title="' . $user_title . '">' . $name . '</td></tr>';
-
-}
-
-function add_recipient_subscriptions( $subscriptions, $user_id ) {
-	//get the posts that have been gifted to this user
-	$post_ids = get_posts( array(
-		'posts_per_page' => -1,
-		'post_status'    => 'any',
-		'post_type'      => 'shop_subscription',
-		'orderby'        => 'date',
-		'order'          => 'desc',
-		'meta_key'       => '_recipient_user',
-		'meta_value'     => $user_id,
-		'meta_compare'   => '=',
-		'fields'         => 'ids',
-	) );
-	//add all this user's gifted subscriptions
-	foreach ( $post_ids as $post_id ) {
-		$subscriptions[ $post_id ] = wcs_get_subscription( $post_id );
-		//allow the recipient to view their order
-		$user = new WP_User( $user_id );
-		$user->add_cap( 'view_order', $post_id);
+		add_action ( 'woocommerce_order_details_after_customer_details', __CLASS__ . '::gifting_information_after_customer_details', 1 );
 	}
 
-	return $subscriptions;
-}
 
-function subscription_created( $subscription, $order, $recurring_cart ) {
-	if ( isset( reset( $recurring_cart->cart_contents )['wcsg_gift_recipients_email'] ) ){
-		$recipient_email = reset( $recurring_cart->cart_contents )['wcsg_gift_recipients_email'];
+	public static function gifting_information_after_customer_details( $subscription ){
+		//check if the subscription is gifted
+		if( !empty($subscription->recipient_user) ) {
+			$customer_user = new WP_User( $subscription->customer_user );
+			$recipient_user = new WP_User( $subscription->recipient_user );
+			$current_user = wp_get_current_user();
 
-		$recipient_user_id = email_exists( $recipient_email );
-
-		if ( empty( $recipient_user_id ) ) {
-			//create a username for the new customer
-			$username = explode( '@', $recipient_email );
-			$username = sanitize_user( $username[0] );
-			$counter = 1;
-			$_username = $username;
-			while ( username_exists( $username ) ) {
-				$username = $_username . $counter;
-				$counter++;
-			}
-			//create a password
-			$password = wp_generate_password();
-
-    		$recipient_user_id = wc_create_new_customer( $recipient_email, $username, $password );
-		}
-		update_post_meta( $subscription->id, '_recipient_user', $recipient_user_id );
-
-	}
-}
-
-function add_recipient_email_recurring_cart_key( $cart_key, $cart_item ) {
-	if ( isset( $cart_item['wcsg_gift_recipients_email'] ) ) {
-		$cart_key .= '_' . $cart_item['wcsg_gift_recipients_email'];
-	}
-	return $cart_key;
-
-}
-
-function cart_update() {
-	//post data from cart page.
-	foreach( WC()->cart->cart_contents as $key => $item ) {
-		if ( isset( $_POST['recipient_email'][ $key ] ) ) {
-			if ( !isset( $item['wcsg_gift_recipients_email'] ) || $item['wcsg_gift_recipients_email'] != $_POST['recipient_email'][ $key ] ) {
-				$cart_item_data = WC()->cart->get_item_data( $item );
-				$cart_item_data['wcsg_gift_recipients_email'] = $_POST['recipient_email'][ $key ];
-				$new_key = WC()->cart->generate_cart_id( $item['product_id'], $item['variation_id'], $item['variation'], $cart_item_data );
-				//
-				if( !empty( WC()->cart->get_cart_item( $new_key ) ) ){
-					error_log( 'An item in the cart already has that id' );
-					error_log( 'cart_item_data = ' . print_r( $item, true ) );
-					$combined_quantity = $item['quantity'] + WC()->cart->get_cart_item( $new_key )['quantity'];
-					error_log( 'combined Quantity:' . $combined_quantity );
-					error_log( 'Old Quantity:' . $item['quantity'] );
-					error_log( 'New Quantity:' . WC()->cart->get_cart_item( $new_key )['quantity'] );
-					//WC()->cart->set_quantity( $new_key, $combined_quantity, false );
-					WC()->cart->cart_contents[ $new_key ]['quantity'] = $combined_quantity;
-					unset( WC()->cart->cart_contents[ $key ] );
-
-				} else {// there is no item in the cart with the same new key
-					error_log( 'No Item with that id - So everything is good' );
-					WC()->cart->cart_contents[ $new_key ] = WC()->cart->cart_contents[$key];
-					WC()->cart->cart_contents[ $new_key ]['wcsg_gift_recipients_email'] = $_POST['recipient_email'][ $key ];
-					unset( WC()->cart->cart_contents[ $key ] );
-
-				}
-				error_log( 'data added via post data' );
+			if( $current_user->ID == $customer_user->ID ){
+				//display the recipient information
+				echo add_gifting_information_html( $recipient_user->first_name . ' ' . $recipient_user->last_name, 'Recipient' );
+			}else{
+				//display the purchaser information
+				echo add_gifting_information_html( $customer_user->first_name . ' ' . $customer_user->last_name, 'Purchaser' );
 			}
 		}
 	}
-}
 
-function gifting_scripts() {
-	wp_register_script( 'woocommerce_subscriptions_gifting', plugins_url( '/js/wcs-gifting.js', __FILE__ ), array( 'jquery' ) );
-	wp_enqueue_script( 'woocommerce_subscriptions_gifting' );
-}
+	public static function add_gifting_information_html( $name, $user_title ) {
+		return '<tr><th>' . $user_title . ':</th><td data-title="' . $user_title . '">' . $name . '</td></tr>';
 
-function add_gifting_option_product( $data ) {
-	global $product;
-	if(is_subscription( $product )) {
-		echo generate_gifting_html( 0, '' );
 	}
-}
 
-function add_gifting_option_checkout( $quantity, $cart_item ) {
-	echo $quantity;
-	if( is_checkout() ){
-		error_log("Is the checkout page");
-
-	}else {
-		error_log("this is not the checkout page");
-	}
-	if( is_subscription( $cart_item['data'] ) ) {
-		if( !isset( $cart_item['wcsg_gift_recipients_email'] ) ) {
-			echo generate_gifting_html( $cart_item['product_id'], '');
-		}else{
-			echo generate_gifting_html( 0, $cart_item['wcsg_gift_recipients_email'] );
+	public static function add_recipient_subscriptions( $subscriptions, $user_id ) {
+		//get the posts that have been gifted to this user
+		$post_ids = get_posts( array(
+			'posts_per_page' => -1,
+			'post_status'    => 'any',
+			'post_type'      => 'shop_subscription',
+			'orderby'        => 'date',
+			'order'          => 'desc',
+			'meta_key'       => '_recipient_user',
+			'meta_value'     => $user_id,
+			'meta_compare'   => '=',
+			'fields'         => 'ids',
+		) );
+		//add all this user's gifted subscriptions
+		foreach ( $post_ids as $post_id ) {
+			$subscriptions[ $post_id ] = wcs_get_subscription( $post_id );
+			//allow the recipient to view their order
+			$user = new WP_User( $user_id );
+			$user->add_cap( 'view_order', $post_id);
 		}
+
+		return $subscriptions;
+	}
+
+	public static function gifting_scripts() {
+		wp_register_script( 'woocommerce_subscriptions_gifting', plugins_url( '/js/wcs-gifting.js', __FILE__ ), array( 'jquery' ) );
+		wp_enqueue_script( 'woocommerce_subscriptions_gifting' );
+	}
+
+	public static function generate_gifting_html( $id, $email ) {
+		return  '<fieldset>
+				<input type="checkbox" id="gifting_' . esc_attr( $id ) . '_option" class="woocommerce_subscription_gifting_checkbox" value="gift" ' . ((empty($email)) ? '' : 'checked') . ' > This is a gift<br>
+				<label class="woocommerce_subscriptions_gifting_recipient_email" ' . ((empty($email)) ? 'style="display: none;"' : '') . 'for="recipients_email">'. "Recipient's Email Address: " . '</label>
+				<input name="recipient_email[' . esc_attr( $id ) . ']" class="woocommerce_subscriptions_gifting_recipient_email" type = "email" placeholder="recipient@example.com" value = "' . esc_attr( $email ) . '" ' . ((empty($email)) ? 'style="display: none;"' : '') . '>
+				</fieldset>';
 	}
 }
-
-function add_gifting_option_cart( $title, $cart_item, $cart_item_key ) {
-	echo $title;
-	error_log( 'adding gifting for: '. $cart_item_key );
-
-	if ( is_cart() && is_subscription( $cart_item['data'] ) ) {
-		if ( !isset( $cart_item['wcsg_gift_recipients_email'] ) ) {
-			echo generate_gifting_html( $cart_item_key, '' );
-		} else {
-			echo generate_gifting_html( $cart_item_key, $cart_item['wcsg_gift_recipients_email'] );
-		}
-	}
-}
-
-function generate_gifting_html( $id, $email ) {
-	//return '<br><label  style="display = block">Recipient: </label>' . $email;
-	return  '<fieldset>
-			<input type="checkbox" id="gifting_'. $id .'_option" class="woocommerce_subscription_gifting_checkbox" value="gift" ' . ((empty($email)) ? '' : 'checked') . ' > This is a gift<br>
-			<label class="woocommerce_subscriptions_gifting_recipient_email" ' . ((empty($email)) ? 'style="display: none;"' : '') . 'for="recipients_email">'. "Recipient's Email Address: " . '</label>
-			<input name="recipient_email[' . $id . ']" class="woocommerce_subscriptions_gifting_recipient_email" type = "email" placeholder="recipient@example.com" value = "' . $email .'" ' . ((empty($email)) ? 'style="display: none;"' : '') . '>
-			</fieldset>';
-}
-
-function is_subscription( $product ) {
-	return $product->product_type == 'subscription' || $product->product_type == 'variable-subscription';
-}
-
-
-//triggered when the cart is pulled from the session??
-function get_cart_items_from_session( $item, $values, $key ) {
-	if ( array_key_exists( 'wcsg_gift_recipients_email', $values ) ) { //previously added at the product page via $cart_item_data
-		$item[ 'wcsg_gift_recipients_email' ] = $values['wcsg_gift_recipients_email'];
-		unset( $values['wcsg_gift_recipients_email'] );
-	}
-		return $item;
-}
-
-//adds repcipient data to the cart item data. Triggered when item is added to cart.
-function add_recipient_data( $cart_item_data ) {
-	if( isset( $_POST['recipient_email'] ) && !empty( $_POST['recipient_email'][0]) ) {
-		//error_log('assigning email: ' . $_POST['recipient_email'][0]);
-		$cart_item_data['wcsg_gift_recipients_email'] = $_POST['recipient_email'][0];
-		error_log( 'cart_item_data = ' . print_r( $cart_item_data, true ) );
-		return $cart_item_data;
-	}
-}
+WCS_Gifting::init();
