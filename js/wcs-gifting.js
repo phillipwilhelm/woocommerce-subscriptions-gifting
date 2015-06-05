@@ -1,5 +1,5 @@
 jQuery(document).ready(function($){
-	$('.woocommerce_subscription_gifting_checkbox').on('change',function() {
+	$(document).on('click', '.woocommerce_subscription_gifting_checkbox',function() {
 		console.log("Checkbox Changed");
 		if ($(this).is(':checked')) {
 			$(this).parents().children('.woocommerce_subscriptions_gifting_recipient_email').slideDown( 250 );
