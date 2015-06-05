@@ -17,7 +17,7 @@ class WCSG_Recipient_Management{
 
 	public static function add_recipient_actions( $actions, $subscription ) {
 		//check if the current user is the recipient of the subscription
-		if( $subscription->recipient_user == wp_get_current_user()->ID ) {
+		if ( $subscription->recipient_user == wp_get_current_user()->ID ) {
 
 			if ( $subscription->can_be_updated_to( 'cancelled' ) ) {
 				$actions['cancel'] = array(
@@ -87,7 +87,7 @@ class WCSG_Recipient_Management{
 			$subscriptions[ $post_id ] = wcs_get_subscription( $post_id );
 			//allow the recipient to view their order
 			$user = new WP_User( $user_id );
-			$user->add_cap( 'view_order', $post_id);
+			$user->add_cap( 'view_order', $post_id );
 		}
 		return $subscriptions;
 	}
@@ -99,7 +99,7 @@ class WCSG_Recipient_Management{
 			$recipient_user = new WP_User( $subscription->recipient_user );
 			$current_user = wp_get_current_user();
 
-			if( $current_user->ID == $customer_user->ID ){
+			if ( $current_user->ID == $customer_user->ID ){
 				echo self::add_gifting_information_html( $recipient_user->first_name . ' ' . $recipient_user->last_name, 'Recipient' );
 			}else{
 				echo self::add_gifting_information_html( $customer_user->first_name . ' ' . $customer_user->last_name, 'Purchaser' );
