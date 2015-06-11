@@ -11,13 +11,7 @@ class WCSG_Checkout {
 	}
 
 	public static function add_gifting_option_checkout( $quantity, $cart_item, $cart_item_key ) {
-		if( is_checkout() ){
-			error_log("Is the checkout page");
 
-		}else {
-			error_log("this is not the checkout page");
-		}
-		error_log('at checkout cart key: ' . $cart_item_key);
 		if( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 			if( !isset( $cart_item['wcsg_gift_recipients_email'] ) ) {
 				$quantity .= WCS_Gifting::generate_gifting_html( $cart_item_key, '');
