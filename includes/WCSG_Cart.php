@@ -29,7 +29,7 @@ class WCSG_Cart {
 					$cart_item_data = WC()->cart->get_item_data( $item );
 					$cart_item_data['wcsg_gift_recipients_email'] = $_POST['recipient_email'][ $key ];
 					$new_key = WC()->cart->generate_cart_id( $item['product_id'], $item['variation_id'], $item['variation'], $cart_item_data );
-					//
+
 					if( !empty( WC()->cart->get_cart_item( $new_key ) ) ){
 						$combined_quantity = $item['quantity'] + WC()->cart->get_cart_item( $new_key )['quantity'];
 						//WC()->cart->set_quantity( $new_key, $combined_quantity, false );
