@@ -1,12 +1,9 @@
 jQuery(document).ready(function($){
 	$(document).on('click', '.woocommerce_subscription_gifting_checkbox',function() {
-		console.log("Checkbox Changed");
 		if ($(this).is(':checked')) {
 			$(this).parents().children('.woocommerce_subscriptions_gifting_recipient_email').slideDown( 250 );
-			console.log("Showing Email");
 		} else {
 			$(this).parents().children('.woocommerce_subscriptions_gifting_recipient_email').slideUp( 250 );
-			console.log("Hiding Email");
 		}
 	});
 });

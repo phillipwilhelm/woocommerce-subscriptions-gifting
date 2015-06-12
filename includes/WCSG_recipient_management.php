@@ -1,6 +1,9 @@
 <?php
 class WCSG_Recipient_Management{
 
+	/**
+	* Setup hooks & filters, when the class is initialised.
+	*/
 	public static function init() {
 		add_filter( 'wcs_get_users_subscriptions', __CLASS__ . '::add_recipient_subscriptions', 1, 2 );
 
@@ -8,21 +11,35 @@ class WCSG_Recipient_Management{
 
 		add_filter ( 'wcs_view_subscription_actions', __CLASS__ . '::add_recipient_actions', 1, 2 );
 
-		//we want to handle changing subs status before subscriptions core
+		//we want to handle the changing of subscription status before Subscriptions core
 		add_action( 'init', __CLASS__ . '::change_user_recipient_subscription', 99 );
 
 		add_filter( 'wcs_can_user_put_subscription_on_hold' , __CLASS__ . '::recipient_can_suspend', 1, 2 );
 	}
 
+	/**
+	 * Adds available user actions to the subscription recipient
+	 *
+	 * @param array|actions An array of actions the user can peform
+	 * @param object|subscription
+	 * @return array|actions An updated array of actions the user can perform on a gifted subscription
+	 */
 	public static function add_recipient_actions( $actions, $subscription ) {
 
 		if ( $subscription->recipient_user == wp_get_current_user()->ID ) {
+
 			if ( $subscription->can_be_updated_to( 'on-hold' ) ) {
 				$actions['suspend'] = array(
 					'url'  => self::get_recipient_change_status_link( $subscription->id, 'on-hold', $subscription->recipient_user ),
 					'name' => __( 'Suspend', 'woocommerce-subscriptions' )
 				);
+			} elseif ( $subscription->can_be_updated_to( 'active' ) && ! $subscription->needs_payment() ) {
+				$actions['reactivate'] = array(
+					'url'  => self::get_recipient_change_status_link( $subscription->id, 'active', $subscription->recipient_user ),
+					'name' => __( 'Reactivate', 'woocommerce-subscriptions' )
+				);
 			}
+
 			if ( $subscription->can_be_updated_to( 'cancelled' ) ) {
 				$actions['cancel'] = array(
 					'url'  => self::get_recipient_change_status_link( $subscription->id, 'cancelled', $subscription->recipient_user ),
@@ -33,6 +50,13 @@ class WCSG_Recipient_Management{
 		return $actions;
 	}
 
+	/**
+	 * Generates a link for the user to change the status of a subscription
+	 *
+	 * @param int|subscription_id
+	 * @param string|status The status the recipient has requested to change the subscription to
+	 * @param int|recipient_id
+	 */
 	private static function get_recipient_change_status_link( $subscription_id, $status, $recipient_id ) {
 
 		$action_link = add_query_arg( array( 'subscription_id' => $subscription_id, 'change_subscription_to' => $status, 'wcsg_requesting_recipient_id' => $recipient_id ) );
@@ -41,15 +65,19 @@ class WCSG_Recipient_Management{
 		return $action_link;
 	}
 
+	/**
+	 * Checks if a status change request is by the recipient, and if it is,
+	 * validate the request and proceed to change to the subscription.
+	 */
 	public static function change_user_recipient_subscription() {
 		//check if the request is being made from the recipient (wcsg_requesting_recipient_id is set)
 		if ( isset( $_GET['wcsg_requesting_recipient_id'] ) && isset( $_GET['change_subscription_to'] ) && isset( $_GET['subscription_id'] ) && isset( $_GET['_wpnonce'] ) ) {
 
 			remove_action( 'init', 'WCS_User_Change_Status_Handler::maybe_change_users_subscription', 100 );
 
-			$subscription 	= wcs_get_subscription( $_GET['subscription_id'] );
-			$user_id 		= $subscription->get_user_id();
-			$new_status 	= $_GET['change_subscription_to'];
+			$subscription = wcs_get_subscription( $_GET['subscription_id'] );
+			$user_id      = $subscription->get_user_id();
+			$new_status   = $_GET['change_subscription_to'];
 
 			if ( WCS_User_Change_Status_Handler::validate_request( $user_id, $subscription, $new_status, $_GET['_wpnonce'] ) ) {
 				WCS_User_Change_Status_Handler::change_users_subscription( $subscription, $new_status );
@@ -60,7 +88,12 @@ class WCSG_Recipient_Management{
 
 	}
 
-	public static function recipient_can_suspend(  $user_can_suspend, $subscription ){
+	/**
+	* Allows the recipient to suspend a subscription, provided the suspension count hasnt been reached
+	*
+	* @param bool|user_can_suspend Whether the user can suspend a subscription
+	*/
+	public static function recipient_can_suspend( $user_can_suspend, $subscription ){
 
 		if ( $subscription->recipient_user == wp_get_current_user()->ID ){
 
@@ -77,6 +110,12 @@ class WCSG_Recipient_Management{
 
 	}
 
+	/**
+	 * Adds all the subscriptions that have been gifted to a user to their subscriptions
+	 *
+	 * @param array|subscriptions An array of subscriptions assigned to the user
+	 * @return array|subscriptions An updated array of subscriptions with any subscriptions gifted to the user added.
+	 */
 	public static function add_recipient_subscriptions( $subscriptions, $user_id ) {
 		//get the subscription posts that have been gifted to this user
 		$post_ids = get_posts( array(
@@ -100,12 +139,15 @@ class WCSG_Recipient_Management{
 		return $subscriptions;
 	}
 
+	/**
+	 * Adds recipient/purchaser information to the view subscription page
+	 */
 	public static function gifting_information_after_customer_details( $subscription ){
 		//check if the subscription is gifted
 		if ( ! empty( $subscription->recipient_user ) ) {
-			$customer_user = new WP_User( $subscription->customer_user );
+			$customer_user  = new WP_User( $subscription->customer_user );
 			$recipient_user = new WP_User( $subscription->recipient_user );
-			$current_user = wp_get_current_user();
+			$current_user   = wp_get_current_user();
 
 			if ( $current_user->ID == $customer_user->ID ){
 				echo self::add_gifting_information_html( $recipient_user->first_name . ' ' . $recipient_user->last_name, 'Recipient' );
@@ -115,7 +157,12 @@ class WCSG_Recipient_Management{
 		}
 	}
 
-
+	/**
+	 * Generates and returns the html for additional gifting information specified by the $user_title and $name
+	 *
+	 * @param string|name The name of the purchaser or recipient
+	 * @param string|user_title The title - recipient or purchaser
+	*/
 	public static function add_gifting_information_html( $name, $user_title ) {
 		return '<tr><th>' . $user_title . ':</th><td data-title="' . $user_title . '">' . $name . '</td></tr>';
 
