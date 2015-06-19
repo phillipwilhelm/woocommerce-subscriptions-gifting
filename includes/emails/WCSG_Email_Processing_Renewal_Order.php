@@ -48,7 +48,6 @@ class WCSG_Email_Processing_Renewal_Order extends WCS_Email_Processing_Renewal_O
 		if ( ! $this->is_enabled() || ! $this->get_recipient() ) {
 			return;
 		}
-		error_log('sending renewal Order');
 		$this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
 	}
 }

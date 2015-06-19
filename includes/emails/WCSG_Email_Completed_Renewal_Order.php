@@ -50,7 +50,6 @@ class WCSG_Email_Completed_Renewal_Order extends WCS_Email_Completed_Renewal_Ord
 		if ( ! $this->is_enabled() || ! $this->get_recipient() ) {
 			return;
 		}
-		error_log('sending renewal order completed');
 		$this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
 	}
 }
