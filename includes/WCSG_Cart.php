@@ -31,25 +31,7 @@ class WCSG_Cart {
 	public static function cart_update( $cart_updated ) {
 
 		foreach( WC()->cart->cart_contents as $key => $item ) {
-
-			if ( ! empty( $_POST['recipient_email'][ $key ] ) ) {
-				if ( !isset( $item['wcsg_gift_recipients_email'] ) || $item['wcsg_gift_recipients_email'] != $_POST['recipient_email'][ $key ] ) {
-					$cart_item_data = WC()->cart->get_item_data( $item );
-					$cart_item_data['wcsg_gift_recipients_email'] = $_POST['recipient_email'][ $key ];
-					$new_key = WC()->cart->generate_cart_id( $item['product_id'], $item['variation_id'], $item['variation'], $cart_item_data );
-
-					if( !empty( WC()->cart->get_cart_item( $new_key ) ) ){
-						$combined_quantity = $item['quantity'] + WC()->cart->get_cart_item( $new_key )['quantity'];
-						WC()->cart->cart_contents[ $new_key ]['quantity'] = $combined_quantity;
-						unset( WC()->cart->cart_contents[ $key ] );
-
-					} else {// there is no item in the cart with the same new key
-						WC()->cart->cart_contents[ $new_key ] = WC()->cart->cart_contents[ $key ];
-						WC()->cart->cart_contents[ $new_key ]['wcsg_gift_recipients_email'] = $_POST['recipient_email'][ $key ];
-						unset( WC()->cart->cart_contents[ $key ] );
-					}
-				}
-			}
+			WCS_Gifting::update_cart_item_key( $item, $key, $_POST['recipient_email'][ $key ] );
 		}
 		return $cart_updated;
 	}
