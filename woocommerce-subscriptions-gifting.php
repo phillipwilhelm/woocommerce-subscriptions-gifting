@@ -41,6 +41,7 @@ class WCS_Gifting {
 				<label class="woocommerce_subscriptions_gifting_recipient_email" ' . ( ( empty( $email ) ) ? 'style="display: none;"' : '' ) . 'for="recipients_email">'. "Recipient's Email Address: " . '</label>
 				<input name="recipient_email[' . esc_attr( $id ) . ']" class="woocommerce_subscriptions_gifting_recipient_email" type = "email" placeholder="recipient@example.com" value = "' . esc_attr( $email ) . '" ' . ( ( empty( $email ) ) ? 'style="display: none;"' : '' ) . '>
 				</fieldset>';
+	}
 
 	/**
 	 * Attaches recipient information to a subscription cart item key when the recipient information is updated. If necessary
