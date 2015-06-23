@@ -42,7 +42,7 @@ class WCSG_Email {
 			'woocommerce_order_status_pending_to_on-hold_renewal_notification-hold',
 			'woocommerce_order_status_completed_renewal_notification',
 		);
-		foreach( $renewal_notification_actions as $action ){
+		foreach( $renewal_notification_actions as $action ) {
 			add_action( $action , __CLASS__ . '::maybe_send_recipient_renewal_notification', 10, 1 );
 		}
 	}
@@ -111,7 +111,7 @@ class WCSG_Email {
 	 * @param int $order_id The ID of the renewal order with a new status of processing/completed
 	*/
 	public static function maybe_send_recipient_renewal_notification( $order_id ) {
-		$subscription   = wcs_get_subscriptions_for_renewal_order( $order_id );
+		$subscription = wcs_get_subscriptions_for_renewal_order( $order_id );
 		if ( ! empty( get_post_meta( array_values( $subscription )[0]->id, '_recipient_user' )[0] ) ) {
 			WC()->mailer();
 			do_action( current_filter() . '_recipient', $order_id );
