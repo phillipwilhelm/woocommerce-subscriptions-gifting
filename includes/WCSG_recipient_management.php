@@ -93,9 +93,9 @@ class WCSG_Recipient_Management{
 	*
 	* @param bool|user_can_suspend Whether the user can suspend a subscription
 	*/
-	public static function recipient_can_suspend( $user_can_suspend, $subscription ){
+	public static function recipient_can_suspend( $user_can_suspend, $subscription ) {
 
-		if ( $subscription->recipient_user == wp_get_current_user()->ID ){
+		if ( $subscription->recipient_user == wp_get_current_user()->ID ) {
 
 			// Make sure subscription suspension count hasn't been reached
 			$suspension_count    = $subscription->suspension_count;
@@ -118,23 +118,12 @@ class WCSG_Recipient_Management{
 	 */
 	public static function add_recipient_subscriptions( $subscriptions, $user_id ) {
 		//get the subscription posts that have been gifted to this user
-		$post_ids = get_posts( array(
-			'posts_per_page' => -1,
-			'post_status'    => 'any',
-			'post_type'      => 'shop_subscription',
-			'orderby'        => 'date',
-			'order'          => 'desc',
-			'meta_key'       => '_recipient_user',
-			'meta_value'     => $user_id,
-			'meta_compare'   => '=',
-			'fields'         => 'ids',
-		) );
-		//add all this user's gifted subscriptions
-		foreach ( $post_ids as $post_id ) {
-			$subscriptions[ $post_id ] = wcs_get_subscription( $post_id );
-			//allow the recipient to view their order
+		$recipient_subs = self::get_recipient_subscriptions( $user_id );
+
+		foreach ( $recipient_subs as $subscription_id ) {
+			$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
 			$user = new WP_User( $user_id );
-			$user->add_cap( 'view_order', $post_id );
+			$user->add_cap( 'view_order', $subscription_id );
 		}
 		return $subscriptions;
 	}
@@ -142,17 +131,18 @@ class WCSG_Recipient_Management{
 	/**
 	 * Adds recipient/purchaser information to the view subscription page
 	 */
-	public static function gifting_information_after_customer_details( $subscription ){
+	public static function gifting_information_after_customer_details( $subscription ) {
 		//check if the subscription is gifted
 		if ( ! empty( $subscription->recipient_user ) ) {
 			$customer_user  = new WP_User( $subscription->customer_user );
 			$recipient_user = new WP_User( $subscription->recipient_user );
 			$current_user   = wp_get_current_user();
 
-			if ( $current_user->ID == $customer_user->ID ){
-				echo self::add_gifting_information_html( $recipient_user->first_name . ' ' . $recipient_user->last_name, 'Recipient' );
+			if ( $current_user->ID == $customer_user->ID ) {
+				echo self::add_gifting_information_html( $recipient_user->display_name, 'Recipient' );
 			}else{
-				echo self::add_gifting_information_html( $customer_user->first_name . ' ' . $customer_user->last_name, 'Purchaser' );
+				echo self::add_gifting_information_html( $customer_user->display_name, 'Purchaser' );
+
 			}
 		}
 	}
@@ -168,5 +158,18 @@ class WCSG_Recipient_Management{
 
 	}
 
+	public static function get_recipient_subscriptions( $user_id ){
+		return get_posts( array(
+			'posts_per_page' => -1,
+			'post_status'    => 'any',
+			'post_type'      => 'shop_subscription',
+			'orderby'        => 'date',
+			'order'          => 'desc',
+			'meta_key'       => '_recipient_user',
+			'meta_value'     => $user_id,
+			'meta_compare'   => '=',
+			'fields'         => 'ids',
+		) );
+	}
 }
 WCSG_Recipient_Management::init();

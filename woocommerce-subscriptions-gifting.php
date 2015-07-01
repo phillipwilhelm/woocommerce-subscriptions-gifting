@@ -11,18 +11,53 @@ require_once( 'includes/WCSG_Checkout.php' );
 
 require_once( 'includes/WCSG_Recipient_Management.php' );
 
+require_once( 'includes/wcsg-recipient-details.php' );
+
+
 class WCS_Gifting {
-
-
 	/**
 	 * Setup hooks & filters, when the class is initialised.
 	 */
 	public static function init() {
 
 		add_action( 'wp_enqueue_scripts', __CLASS__ . '::gifting_scripts' );
+		// Load dependant files
+		add_action( 'plugins_loaded', __CLASS__ . '::load_dependant_classes' );
+
+		add_filter( 'wc_get_template', __CLASS__ . '::add_new_customer_template', 10, 5 );
+
+		add_action( 'template_redirect',  __CLASS__ . '::my_account_template_redirect' );
 
 	}
 
+	public static function my_account_template_redirect() {
+		global $wp;
+		$current_user = wp_get_current_user();
+		if( is_account_page() ) {
+			if( get_user_meta( $current_user->ID, 'wcsg_generated_account', true )  && !isset( $wp->query_vars['new-recipient-account'] ) ) {
+				wp_redirect( wc_get_page_permalink( 'myaccount' ) . '/new-recipient-account/' );
+				exit();
+			}else if ( !get_user_meta( $current_user->ID, 'wcsg_generated_account', true ) && isset( $wp->query_vars['new-recipient-account'] ) ) {
+				wp_redirect( wc_get_page_permalink( 'myaccount') );
+				exit();
+			}
+		}
+	}
+
+	public static function add_new_customer_template( $located, $template_name, $args, $template_path, $default_path ) {
+		global $wp;
+		$current_user = wp_get_current_user();
+		if( get_user_meta( $current_user->ID, 'wcsg_generated_account',true) ) {
+			if ( 'myaccount/my-account.php' == $template_name && isset($wp->query_vars['new-recipient-account']) ) {
+				$located = wc_locate_template( 'new-recipient-account.php', $template_path, plugin_dir_path( __FILE__ ). 'templates/' );
+			}
+		}
+		return $located;
+	}
+
+	public static function load_dependant_classes() {
+		require_once( 'includes/WCSG_Query.php' );
+	}
 	/**
 	 * Register/queue frontend scripts.
 	 */
