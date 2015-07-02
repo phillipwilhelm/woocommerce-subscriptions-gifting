@@ -58,7 +58,6 @@ class WCSG_Recipient_Details {
 					$subscription = wc_get_order( $subscription_id );
 					$subscription->set_address( $address, 'Shipping' );
 				}
-				error_log(print_r($address,true));
 				delete_user_meta( $user->ID, 'wcsg_update_account', true );
 				wp_safe_redirect( wc_get_page_permalink( 'myaccount' ) );
 				exit;
