@@ -72,7 +72,7 @@ class WCSG_Cart {
 	public static function generate_minicart_gifting_html( $cart_item_key, $email ) {
 
 		return '<fieldset id="woocommerce_subscriptions_gifting_field">
-				<label class="woocommerce_subscriptions_gifting_recipient_email">' . "Recipient: " . '</label>' . $email .
+				<label class="woocommerce_subscriptions_gifting_recipient_email">' . "Recipient: " . '</label>' . esc_html( $email ) .
 				'</fieldset>';
 	}
 }
