@@ -158,6 +158,12 @@ class WCSG_Recipient_Management{
 
 	}
 
+	/**
+	 * Gets an array of subscription ids which have been gifted to a user
+	 *
+	 * @param user_id The user id of the recipient
+	 * @return array An array of subscriptions gifted to the user
+	*/
 	public static function get_recipient_subscriptions( $user_id ){
 		return get_posts( array(
 			'posts_per_page' => -1,

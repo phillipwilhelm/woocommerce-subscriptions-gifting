@@ -1,6 +1,9 @@
 <?php
 class WCSG_Query extends WC_Query {
 
+	/**
+	 * Setup hooks & filters, when the class is constructed.
+	 */
 	public function __construct() {
 
 		add_action( 'init', array( $this, 'add_endpoints' ) );
@@ -10,10 +13,17 @@ class WCSG_Query extends WC_Query {
 		$this->init_query_vars();
 	}
 
+	/**
+	 * Init query vars by loading options.
+	 */
 	public function init_query_vars() {
 		$this->query_vars['new-recipient-account'] = get_option( 'woocommerce_myaccount_new_recipient_account_endpoint', 'new-recipient-account' );
 	}
 
+	/**
+	 * Set the recipient account details page title.
+	 * @param $title
+	 */
 	public function get_endpoint_title( $title ) {
 		global $wp;
 		if ( is_main_query() && in_the_loop() && is_page() && isset( $wp->query_vars['new-recipient-account'] ) ) {

@@ -5,8 +5,8 @@
 	$form_fields = WCSG_Recipient_Details::get_new_recipient_account_form_fields();
 
 	foreach ( $form_fields as $key => $field ){
-		if ( 'shipping_country' == $key ){
-			echo '<h3>Shipping Address</h3>';
+		if ( 'shipping_country' == $key ){ ?>
+			<h3> <?php _e( 'Shipping Address' );?></h3> <?php
 		}
 		woocommerce_form_field( $key, $field, ! empty( $_POST[ $key ] ) ? wc_clean( $_POST[ $key ] ) : '' );
 	}

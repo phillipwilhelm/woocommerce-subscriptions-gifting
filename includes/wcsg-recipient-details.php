@@ -6,8 +6,30 @@ class WCSG_Recipient_Details {
 	 */
 	public static function init() {
 		add_filter( 'init', __CLASS__ . '::update_recipient_details', 1 );
+		add_action( 'template_redirect',  __CLASS__ . '::my_account_template_redirect' );
 	}
 
+	/**
+	 * redirects the user to the relevant page if they are trying to access my account or recipient account details page.
+	*/
+	public static function my_account_template_redirect() {
+		global $wp;
+		$current_user = wp_get_current_user();
+		if( is_account_page() ) {
+			if( get_user_meta( $current_user->ID, 'wcsg_update_account', true )  && !isset( $wp->query_vars['new-recipient-account'] ) ) {
+				wp_redirect( wc_get_page_permalink( 'myaccount' ) . '/new-recipient-account/' );
+				exit();
+			}else if ( !get_user_meta( $current_user->ID, 'wcsg_update_account', true ) && isset( $wp->query_vars['new-recipient-account'] ) ) {
+				wp_redirect( wc_get_page_permalink( 'myaccount' ) );
+				exit();
+			}
+		}
+	}
+
+	/**
+	 * Validates the new recipient account details page updating user data and removing the 'required account update' user flag
+	 * if there are no errors in validation.
+	*/
 	public static function update_recipient_details() {
 		if ( isset( $_POST['wcsg_new_recipient_customer'] ) ) {
 			$form_fields = self::get_new_recipient_account_form_fields();
@@ -43,7 +65,7 @@ class WCSG_Recipient_Details {
 				foreach ( $form_fields as $key => $field ) {
 					update_user_meta( $user->ID, $key, $_POST[ $key ] );
 					if ( false == strpos( $key ,'password' ) ) {
-						$address[ str_replace( 'shipping' . '_', '', $key ) ] = woocommerce_clean( $_POST[ $key ] );
+						$address[ str_replace( 'shipping' . '_', '', $key ) ] = wc_clean( $_POST[ $key ] );
 					}
 				}
 				$user->user_pass = $_POST['new_password'];
@@ -65,6 +87,10 @@ class WCSG_Recipient_Details {
 		}
 	}
 
+	/**
+	* Creates an array of form fields for the new recipient user details form
+	* @return array Form elements for recipient details page
+	*/
 	public static function get_new_recipient_account_form_fields() {
 		$form_fields = WC()->countries->get_address_fields( '', 'shipping_', true );
 
@@ -91,7 +117,6 @@ class WCSG_Recipient_Details {
 			'password' => true,
 			'class' => array( 'form-row-last' )
 		);
-
 		return array_merge( $personal_fields, $form_fields );
 	}
 }
