@@ -14,7 +14,7 @@ class WCSG_Cart {
 
 	/**
 	 * Adds gifting ui elements to subscription cart items.
-	*/
+	 */
 	public static function add_gifting_option_cart( $title, $cart_item, $cart_item_key ) {
 		if ( is_page( wc_get_page_id( 'cart' ) ) && WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
 			if ( empty( $cart_item['wcsg_gift_recipients_email'] ) ) {
@@ -27,8 +27,8 @@ class WCSG_Cart {
 	}
 
 	/**
-	* Adds gifting ui elements to subscription items in the mini cart.
-	*/
+	 * Adds gifting ui elements to subscription items in the mini cart.
+	 */
 	public static function add_gifting_option_minicart( $quantity, $cart_item, $cart_item_key ) {
 		$html = '';
 		if ( ! empty( $cart_item['wcsg_gift_recipients_email'] ) ) {
@@ -42,15 +42,15 @@ class WCSG_Cart {
 	 */
 	public static function cart_update( $cart_updated ) {
 
-		foreach( WC()->cart->cart_contents as $key => $item ) {
+		foreach ( WC()->cart->cart_contents as $key => $item ) {
 
 			if ( ! empty( $_POST['recipient_email'][ $key ] ) ) {
-				if ( !isset( $item['wcsg_gift_recipients_email'] ) || $item['wcsg_gift_recipients_email'] != $_POST['recipient_email'][ $key ] ) {
+				if ( ! isset( $item['wcsg_gift_recipients_email'] ) || $item['wcsg_gift_recipients_email'] != $_POST['recipient_email'][ $key ] ) {
 					$cart_item_data = WC()->cart->get_item_data( $item );
 					$cart_item_data['wcsg_gift_recipients_email'] = $_POST['recipient_email'][ $key ];
 					$new_key = WC()->cart->generate_cart_id( $item['product_id'], $item['variation_id'], $item['variation'], $cart_item_data );
 
-					if( !empty( WC()->cart->get_cart_item( $new_key ) ) ){
+					if ( ! empty( WC()->cart->get_cart_item( $new_key ) ) ){
 						$combined_quantity = $item['quantity'] + WC()->cart->get_cart_item( $new_key )['quantity'];
 						WC()->cart->cart_contents[ $new_key ]['quantity'] = $combined_quantity;
 						unset( WC()->cart->cart_contents[ $key ] );
@@ -67,12 +67,12 @@ class WCSG_Cart {
 	}
 
 	/**
-	* Returns gifting ui html elements displaying the email of the recipient
-	*/
+	 * Returns gifting ui html elements displaying the email of the recipient
+	 */
 	public static function generate_minicart_gifting_html( $cart_item_key, $email ) {
 
-		return  '<fieldset id="woocommerce_subscriptions_gifting_field">
-				<label class="woocommerce_subscriptions_gifting_recipient_email">'. "Recipient: " . '</label>' . $email .
+		return '<fieldset id="woocommerce_subscriptions_gifting_field">
+				<label class="woocommerce_subscriptions_gifting_recipient_email">' . "Recipient: " . '</label>' . $email .
 				'</fieldset>';
 	}
 }
