@@ -8,11 +8,11 @@ class WCSG_Email_Processing_Renewal_Order extends WCS_Email_Processing_Renewal_O
 	function __construct() {
 
 		$this->id             = 'gift_recipient_processing_renewal_order';
-		$this->title          = __( 'Processing Renewal order - Gift Recipient', 'woocommerce-subscriptions' );
-		$this->description    = __( 'This is an order notification sent to the gift recipient after payment for a subscription renewal order is completed. It contains the renewal order details.', 'woocommerce-subscriptions' );
+		$this->title          = __( 'Processing Renewal order - Recipient', 'woocommerce-subscriptions-gifting' );
+		$this->description    = __( 'This is an order notification sent to the recipient after payment for a subscription renewal order is completed. It contains the renewal order details.', 'woocommerce-subscriptions-gifting' );
 
-		$this->heading        = __( 'Thank you for your order', 'woocommerce-subscriptions' );
-		$this->subject        = __( 'Your {blogname} renewal order receipt from {order_date}', 'woocommerce-subscriptions' );
+		$this->heading        = __( 'Thank you for your order', 'woocommerce-subscriptions-gifting' );
+		$this->subject        = __( 'Your {blogname} renewal order receipt from {order_date}', 'woocommerce-subscriptions-gifting' );
 
 		$this->template_html  = 'emails/customer-processing-renewal-order.php';
 		$this->template_plain = 'emails/plain/customer-processing-renewal-order.php';
@@ -25,14 +25,14 @@ class WCSG_Email_Processing_Renewal_Order extends WCS_Email_Processing_Renewal_O
 	}
 
 	/**
-	* trigger function.
-	*/
+	 * trigger function.
+	 */
 	function trigger( $order_id ) {
 		if ( $order_id ) {
-			$this->object   = new WC_Order( $order_id );
-			$subscription   = wcs_get_subscriptions_for_renewal_order( $order_id );
-			$gift_recipient = new WP_User( get_post_meta( array_values( $subscription)[0]->id, '_recipient_user' )[0] );
-			$this->recipient = $gift_recipient->user_email;
+			$this->object    = wc_get_order( $order_id );
+			$subscription    = wcs_get_subscriptions_for_renewal_order( $order_id );
+			$recipient_id    = get_post_meta( array_values( $subscription )[0]->id, '_recipient_user' )[0];
+			$this->recipient = get_user_by( 'id', $recipient_id )->user_email;
 		}
 
 		$order_date_index = array_search( '{order_date}', $this->find );

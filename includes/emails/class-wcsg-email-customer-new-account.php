@@ -5,7 +5,7 @@ class WCSG_Email_Customer_New_Account extends WC_Email {
 	public $subscription_owner;
 	public $user_login;
 	public $user_email;
-	public $user_pass;
+	public $user_password;
 
 	/**
 	 * Create an instance of the class.
@@ -14,8 +14,8 @@ class WCSG_Email_Customer_New_Account extends WC_Email {
 
 		// Call override values
 		$this->id          = 'WCSG_Email_Customer_New_Account';
-		$this->title       = __( 'New Gift Recipient Account', 'woocommerce-subscriptions-gifting' );
-		$this->description = __( 'New account notification emails are sent to the gifted subscription recipient when an account for them is created.', 'woocommerce-subscriptions-gifting' );
+		$this->title       = __( 'New Recipient Account', 'woocommerce-subscriptions-gifting' );
+		$this->description = __( 'New account notification emails are sent to the subscription recipient when an account is created for them.', 'woocommerce-subscriptions-gifting' );
 
 		$this->subject     = __( 'Your account on {site_title}', 'woocommerce-subscriptions-gifting');
 		$this->heading     = __( 'Welcome to {site_title}', 'woocommerce-subscriptions-gifting');
@@ -31,16 +31,16 @@ class WCSG_Email_Customer_New_Account extends WC_Email {
 	}
 
 	/**
-	* trigger function.
-	*/
-	function trigger( $user_id, $user_pass, $sub_owner ) {
+	 * trigger function.
+	 */
+	function trigger( $user_id, $user_password, $subscription_purchaser ) {
 		if ( $user_id ) {
-			$this->object = new WP_User( $user_id );
-			$this->user_pass          = $user_pass;
+			$this->object             = get_user_by( 'id', $user_id );
+			$this->user_password      = $user_password;
 			$this->user_login         = stripslashes( $this->object->user_login );
 			$this->user_email         = stripslashes( $this->object->user_email );
 			$this->recipient          = $this->user_email;
-			$this->subscription_owner = $sub_owner;
+			$this->subscription_owner = $subscription_purchaser;
 		}
 
 		if ( ! $this->is_enabled() || ! $this->get_recipient() )
@@ -55,13 +55,13 @@ class WCSG_Email_Customer_New_Account extends WC_Email {
 	function get_content_html() {
 		ob_start();
 		wc_get_template( $this->template_html, array(
-			'email_heading'      => $this->get_heading(),
-			'user_login'         => $this->user_login,
-			'user_pass'          => $this->user_pass,
-			'blogname'           => $this->get_blogname(),
-			'sub_owner'          => $this->subscription_owner,
-			'sent_to_admin' => false,
-			'plain_text'    => false
+			'email_heading'          => $this->get_heading(),
+			'user_login'             => $this->user_login,
+			'user_password'          => $this->user_password,
+			'blogname'               => $this->get_blogname(),
+			'subscription_purchaser' => $this->subscription_owner,
+			'sent_to_admin'          => false,
+			'plain_text'             => false
 		),
 		'',
 		$this->template_base
@@ -75,13 +75,13 @@ class WCSG_Email_Customer_New_Account extends WC_Email {
 	function get_content_plain() {
 		ob_start();
 		wc_get_template( $this->template_plain, array(
-			'email_heading'      => $this->get_heading(),
-			'user_login'         => $this->user_login,
-			'user_pass'          => $this->user_pass,
-			'blogname'           => $this->get_blogname(),
-			'sub_owner'          => $this->subscription_owner,
-			'sent_to_admin' => false,
-			'plain_text'    => true
+			'email_heading'          => $this->get_heading(),
+			'user_login'             => $this->user_login,
+			'user_password'          => $this->user_password,
+			'blogname'               => $this->get_blogname(),
+			'subscription_purchaser' => $this->subscription_owner,
+			'sent_to_admin'          => false,
+			'plain_text'             => true
 		),
 		'',
 		$this->template_base

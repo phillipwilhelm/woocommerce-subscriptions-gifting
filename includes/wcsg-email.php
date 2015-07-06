@@ -4,12 +4,12 @@ class WCSG_Email {
 
 	/**
 	 * Setup hooks & filters, when the class is initialised.
-	*/
+	 */
 	public static function init() {
 
-			add_filter( 'woocommerce_email_classes', __CLASS__ . '::add_new_recipient_customer_email', 11, 1 );
+		add_filter( 'woocommerce_email_classes', __CLASS__ . '::add_new_recipient_customer_email', 11, 1 );
 
-			add_action( 'woocommerce_init', __CLASS__ . '::hook_email' );
+		add_action( 'woocommerce_init', __CLASS__ . '::hook_email' );
 	}
 	/**
 	 * Add WCS Gifting email classes.
@@ -23,7 +23,6 @@ class WCSG_Email {
 		$email_classes['WCSG_Email_Customer_New_Account'] = new WCSG_Email_Customer_New_Account();
 		$email_classes['WCSG_Email_Completed_Renewal_Order'] = new WCSG_Email_Completed_Renewal_Order();
 		$email_classes['WCSG_Email_Processing_Renewal_Order'] = new WCSG_Email_Processing_Renewal_Order();
-
 
 		return $email_classes;
 	}
@@ -42,7 +41,7 @@ class WCSG_Email {
 			'woocommerce_order_status_pending_to_on-hold_renewal_notification-hold',
 			'woocommerce_order_status_completed_renewal_notification',
 		);
-		foreach( $renewal_notification_actions as $action ) {
+		foreach ( $renewal_notification_actions as $action ) {
 			add_action( $action , __CLASS__ . '::maybe_send_recipient_renewal_notification', 10, 1 );
 		}
 	}
@@ -56,7 +55,7 @@ class WCSG_Email {
 	public static function maybe_remove_wc_new_customer_email( $customer_id, $new_customer_data ) {
 
 		foreach ( WC()->cart->cart_contents as $key => $item ) {
-			if( ! empty( $item['wcsg_gift_recipients_email'] ) ) {
+			if ( ! empty( $item['wcsg_gift_recipients_email'] ) ) {
 				if ( $item['wcsg_gift_recipients_email'] == $new_customer_data['user_email'] ) {
 					remove_action( current_filter(), array( 'WC_Emails', 'send_transactional_email' ) );
 					break;
@@ -66,15 +65,15 @@ class WCSG_Email {
 	}
 
 	/**
-	* If a cart item contains recipient data matching the new customer, reattach the core WooCommerce new customer email.
-	*
-	* @param int $customer_id The ID of the new customer being created
-	* @param array $new_customer_data
-	*/
+	 * If a cart item contains recipient data matching the new customer, reattach the core WooCommerce new customer email.
+	 *
+	 * @param int $customer_id The ID of the new customer being created
+	 * @param array $new_customer_data
+	 */
 	public static function maybe_reattach_wc_new_customer_email( $customer_id, $new_customer_data ) {
 
 		foreach ( WC()->cart->cart_contents as $key => $item ) {
-			if( ! empty( $item['wcsg_gift_recipients_email'] ) ) {
+			if ( ! empty( $item['wcsg_gift_recipients_email'] ) ) {
 				if ( $item['wcsg_gift_recipients_email'] == $new_customer_data['user_email'] ) {
 					add_action( current_filter(), array( 'WC_Emails', 'send_transactional_email' ) );
 					break;
@@ -89,16 +88,16 @@ class WCSG_Email {
 	 * @param int $customer_id The ID of the new customer being created
 	 * @param array $new_customer_data
 	 * @param bool $password_generated Whether the password has been generated for the customer
-	*/
+	 */
 	public static function send_new_recient_user_email( $customer_id, $new_customer_data, $password_generated ) {
 		foreach ( WC()->cart->cart_contents as $key => $item ) {
 			if ( isset( $item['wcsg_gift_recipients_email'] ) ) {
 				if ( $item['wcsg_gift_recipients_email'] == $new_customer_data['user_email'] ) {
 					WC()->mailer();
-					$user_pass = $new_customer_data['user_pass'];
+					$user_password = $new_customer_data['user_pass'];
 					$current_user = wp_get_current_user();
-					$sub_owner = $current_user->first_name . ' ' . $current_user->last_name;
-					do_action( 'wcsg_created_customer_notification', $customer_id, $user_pass, $sub_owner );
+					$subscription_purchaser = $current_user->first_name . ' ' . $current_user->last_name;
+					do_action( 'wcsg_created_customer_notification', $customer_id, $user_password, $subscription_purchaser );
 					break;
 				}
 			}
@@ -109,7 +108,7 @@ class WCSG_Email {
 	 * If the order contains a subscription that is being gifted, init the mailer and call the notification for recipient renewal notices.
 	 *
 	 * @param int $order_id The ID of the renewal order with a new status of processing/completed
-	*/
+	 */
 	public static function maybe_send_recipient_renewal_notification( $order_id ) {
 		$subscription = wcs_get_subscriptions_for_renewal_order( $order_id );
 		if ( ! empty( get_post_meta( array_values( $subscription )[0]->id, '_recipient_user' )[0] ) ) {
