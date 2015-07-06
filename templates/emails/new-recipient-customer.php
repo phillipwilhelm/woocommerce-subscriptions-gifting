@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 <p><?php printf( __( "Your username is: <strong>%s</strong>", 'woocommerce-subscriptions-gifting' ), esc_html( $user_login ) ); ?></p>
 <p><?php printf( __( "Your password has been automatically generated: <strong>%s</strong>", 'woocommerce-subscriptions-gifting' ), esc_html( $user_password ) ); ?></p>
 
-<p><?php printf( __( 'To complete your account creation you can update your shipping address and change your password here: %s.', 'woocommerce-subscriptions-gifting' ), wc_get_page_permalink( 'myaccount' ) ); ?></p>
-<p><?php printf( __( 'Once completed you may access your account area to view your orders here: %s.', 'woocommerce-subscriptions-gifting' ), wc_get_page_permalink( 'myaccount' ) ); ?></p>
+<p><?php printf( __( 'To complete your account we just need your shipping address and you to change your password here: %s.', 'woocommerce-subscriptions-gifting' ), wc_get_page_permalink( 'myaccount' ) . 'new-recipient-account/' ); ?></p>
+<p><?php printf( __( 'Once completed you may access your account area to view your subscription here: %s.', 'woocommerce-subscriptions-gifting' ), wc_get_page_permalink( 'myaccount' ) ); ?></p>
 
 <?php do_action( 'woocommerce_email_footer' ); ?>
