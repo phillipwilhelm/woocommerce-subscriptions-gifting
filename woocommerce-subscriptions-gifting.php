@@ -35,7 +35,7 @@ require_once( 'includes/WCSG_Checkout.php' );
 
 require_once( 'includes/WCSG_Recipient_Management.php' );
 
-require_once( 'includes/wcsg-recipient-details.php' );
+require_once( 'includes/wcsg-class-recipient-details.php' );
 
 
 class WCS_Gifting {
@@ -74,7 +74,7 @@ class WCS_Gifting {
 	 * loads classes after plugins for classes dependant on other plugin files
 	 */
 	public static function load_dependant_classes() {
-		require_once( 'includes/WCSG_Query.php' );
+		require_once( 'includes/class-wcsg-query.php' );
 	}
 	/**
 	 * Register/queue frontend scripts.
