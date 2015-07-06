@@ -16,9 +16,9 @@ class WCSG_Email {
 	 */
 	public static function add_new_recipient_customer_email( $email_classes ) {
 
-		require_once( 'emails/WCSG_Email_Customer_New_Account.php' );
-		require_once( 'emails/WCSG_Email_Completed_Renewal_Order.php' );
-		require_once( 'emails/WCSG_Email_Processing_Renewal_Order.php' );
+		require_once( 'emails/class-wcsg-email-customer-new-account.php' );
+		require_once( 'emails/class-wcsg-email-completed-renewal-order.php' );
+		require_once( 'emails/class-wcsg-email-processing-renewal-order.php' );
 
 		$email_classes['WCSG_Email_Customer_New_Account'] = new WCSG_Email_Customer_New_Account();
 		$email_classes['WCSG_Email_Completed_Renewal_Order'] = new WCSG_Email_Completed_Renewal_Order();
