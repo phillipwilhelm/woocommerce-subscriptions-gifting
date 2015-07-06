@@ -2,8 +2,8 @@
 class WCSG_Recipient_Management{
 
 	/**
-	* Setup hooks & filters, when the class is initialised.
-	*/
+	 * Setup hooks & filters, when the class is initialised.
+	 */
 	public static function init() {
 		add_filter( 'wcs_get_users_subscriptions', __CLASS__ . '::add_recipient_subscriptions', 1, 2 );
 
@@ -31,19 +31,19 @@ class WCSG_Recipient_Management{
 			if ( $subscription->can_be_updated_to( 'on-hold' ) ) {
 				$actions['suspend'] = array(
 					'url'  => self::get_recipient_change_status_link( $subscription->id, 'on-hold', $subscription->recipient_user ),
-					'name' => __( 'Suspend', 'woocommerce-subscriptions' )
+					'name' => __( 'Suspend', 'woocommerce-subscriptions-gifting' )
 				);
 			} elseif ( $subscription->can_be_updated_to( 'active' ) && ! $subscription->needs_payment() ) {
 				$actions['reactivate'] = array(
 					'url'  => self::get_recipient_change_status_link( $subscription->id, 'active', $subscription->recipient_user ),
-					'name' => __( 'Reactivate', 'woocommerce-subscriptions' )
+					'name' => __( 'Reactivate', 'woocommerce-subscriptions-gifting' )
 				);
 			}
 
 			if ( $subscription->can_be_updated_to( 'cancelled' ) ) {
 				$actions['cancel'] = array(
 					'url'  => self::get_recipient_change_status_link( $subscription->id, 'cancelled', $subscription->recipient_user ),
-					'name' => __( 'Cancel', 'woocommerce-subscriptions' )
+					'name' => __( 'Cancel', 'woocommerce-subscriptions-gifting' )
 				);
 			}
 		}
@@ -85,14 +85,13 @@ class WCSG_Recipient_Management{
 				exit;
 			}
 		}
-
 	}
 
 	/**
-	* Allows the recipient to suspend a subscription, provided the suspension count hasnt been reached
-	*
-	* @param bool|user_can_suspend Whether the user can suspend a subscription
-	*/
+	 * Allows the recipient to suspend a subscription, provided the suspension count hasnt been reached
+	 *
+	 * @param bool|user_can_suspend Whether the user can suspend a subscription
+	 */
 	public static function recipient_can_suspend( $user_can_suspend, $subscription ){
 
 		if ( $subscription->recipient_user == wp_get_current_user()->ID ){
@@ -133,7 +132,7 @@ class WCSG_Recipient_Management{
 		foreach ( $post_ids as $post_id ) {
 			$subscriptions[ $post_id ] = wcs_get_subscription( $post_id );
 			//allow the recipient to view their order
-			$user = new WP_User( $user_id );
+			$user = get_user_by( 'id', $user_id );
 			$user->add_cap( 'view_order', $post_id );
 		}
 		return $subscriptions;
@@ -145,8 +144,8 @@ class WCSG_Recipient_Management{
 	public static function gifting_information_after_customer_details( $subscription ){
 		//check if the subscription is gifted
 		if ( ! empty( $subscription->recipient_user ) ) {
-			$customer_user  = new WP_User( $subscription->customer_user );
-			$recipient_user = new WP_User( $subscription->recipient_user );
+			$customer_user  = get_user_by( 'id', $subscription->customer_user );
+			$recipient_user = get_user_by( 'id', $subscription->recipient_user );
 			$current_user   = wp_get_current_user();
 
 			if ( $current_user->ID == $customer_user->ID ){
@@ -162,10 +161,9 @@ class WCSG_Recipient_Management{
 	 *
 	 * @param string|name The name of the purchaser or recipient
 	 * @param string|user_title The title - recipient or purchaser
-	*/
+	 */
 	public static function add_gifting_information_html( $name, $user_title ) {
-		return '<tr><th>' . $user_title . ':</th><td data-title="' . $user_title . '">' . $name . '</td></tr>';
-
+		return '<tr><th>' . esc_attr__( $user_title ) . ':</th><td data-title="' . esc_attr( $user_title ) . '">' . esc_html__( $name ) . '</td></tr>';
 	}
 
 }

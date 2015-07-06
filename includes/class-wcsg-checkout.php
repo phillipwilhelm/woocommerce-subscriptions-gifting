@@ -23,8 +23,8 @@ class WCSG_Checkout {
 	 * @return int|quantity The quantity of the cart item with ui elements appended on
 	 */
 	public static function add_gifting_option_checkout( $quantity, $cart_item, $cart_item_key ) {
-		if( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
-			if( ! isset( $cart_item['wcsg_gift_recipients_email'] ) ) {
+		if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
+			if ( ! isset( $cart_item['wcsg_gift_recipients_email'] ) ) {
 				$quantity .= WCS_Gifting::generate_gifting_html( $cart_item_key, '' );
 			}else{
 				$quantity .= WCS_Gifting::generate_gifting_html( $cart_item_key, $cart_item['wcsg_gift_recipients_email'] );
@@ -41,7 +41,7 @@ class WCSG_Checkout {
 	 * @param object|recurring_cart An array of subscription products that make up the subscription
 	 */
 	public static function subscription_created( $subscription, $order, $recurring_cart ) {
-		foreach( $recurring_cart->cart_contents as $key => $item ) {
+		foreach ( $recurring_cart->cart_contents as $key => $item ) {
 			//check for last minute changes made on the checkout page
 			if ( isset( $_POST['recipient_email'][ $key ] ) ) {
 				$item['wcsg_gift_recipients_email'] = $_POST['recipient_email'][ $key ];
@@ -77,7 +77,7 @@ class WCSG_Checkout {
 	 * @param string|cart_key
 	 * @param object|cart_item
 	 * @return string|cart_key The cart_key with a recipient's email appended
-	*/
+	 */
 	public static function add_recipient_email_recurring_cart_key( $cart_key, $cart_item ) {
 		if ( isset( $cart_item['wcsg_gift_recipients_email'] ) ) {
 			$cart_key .= '_' . $cart_item['wcsg_gift_recipients_email'];

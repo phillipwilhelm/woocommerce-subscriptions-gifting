@@ -3,16 +3,15 @@
 * Plugin Name: WooCommerce Gifting Subscriptions
 */
 
-require_once( 'includes/WCSG_Product.php' );
+require_once( 'includes/class-wcsg-product.php' );
 
-require_once( 'includes/WCSG_Cart.php' );
+require_once( 'includes/class-wcsg-cart.php' );
 
-require_once( 'includes/WCSG_Checkout.php' );
+require_once( 'includes/class-wcsg-checkout.php' );
 
-require_once( 'includes/WCSG_Recipient_Management.php' );
+require_once( 'includes/class-wcsg-recipient-management.php' );
 
 class WCS_Gifting {
-
 
 	/**
 	 * Setup hooks & filters, when the class is initialised.
@@ -37,8 +36,8 @@ class WCS_Gifting {
 	 */
 	public static function generate_gifting_html( $id, $email ) {
 		return  '<fieldset>
-				<input type="checkbox" id="gifting_' . esc_attr( $id ) . '_option" class="woocommerce_subscription_gifting_checkbox" value="gift" ' . ( ( empty( $email ) ) ? '' : 'checked' ) . ' > This is a gift<br>
-				<label class="woocommerce_subscriptions_gifting_recipient_email" ' . ( ( empty( $email ) ) ? 'style="display: none;"' : '' ) . 'for="recipients_email">'. "Recipient's Email Address: " . '</label>
+				<input type="checkbox" id="gifting_' . esc_attr( $id ) . '_option" class="woocommerce_subscription_gifting_checkbox" value="gift" ' . ( ( empty( $email ) ) ? '' : 'checked' ) . ' >' . __( 'This is a gift', 'woocommerce_subscriptions_gifting' ) . '<br>
+				<label class="woocommerce_subscriptions_gifting_recipient_email" ' . ( ( empty( $email ) ) ? 'style="display: none;"' : '' ) . 'for="recipients_email">' . __( "Recipient's Email Address: ",'woocommerce_subscriptions_gifting' ) . '</label>
 				<input name="recipient_email[' . esc_attr( $id ) . ']" class="woocommerce_subscriptions_gifting_recipient_email" type = "email" placeholder="recipient@example.com" value = "' . esc_attr( $email ) . '" ' . ( ( empty( $email ) ) ? 'style="display: none;"' : '' ) . '>
 				</fieldset>';
 	}
