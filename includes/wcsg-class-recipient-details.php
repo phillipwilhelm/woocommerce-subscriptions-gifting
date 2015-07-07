@@ -110,14 +110,14 @@ class WCSG_Recipient_Details {
 
 		$personal_fields['new_password'] = array(
 			'type'     => 'password',
-			'label'    => __( 'New Password', 'woocommerce-subscriptions-gifting' ),
+			'label'    => esc_html__( 'New Password', 'woocommerce-subscriptions-gifting' ),
 			'required' => true,
 			'password' => true,
 			'class'    => array( 'form-row-first' )
 		);
 		$personal_fields['repeat_password'] = array(
 			'type'     => 'password',
-			'label'    => __( 'Confirm New Password', 'woocommerce-subscriptions-gifting' ),
+			'label'    => esc_html__( 'Confirm New Password', 'woocommerce-subscriptions-gifting' ),
 			'required' => true,
 			'password' => true,
 			'class'    => array( 'form-row-last' )
