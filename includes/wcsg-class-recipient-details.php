@@ -15,9 +15,9 @@ class WCSG_Recipient_Details {
 	public static function my_account_template_redirect() {
 		global $wp;
 		$current_user = wp_get_current_user();
-		if( is_account_page() ) {
+		if( is_account_page() && !isset( $wp->query_vars['customer-logout'] ) ) {
 			if( get_user_meta( $current_user->ID, 'wcsg_update_account', true )  && !isset( $wp->query_vars['new-recipient-account'] ) ) {
-				wp_redirect( wc_get_page_permalink( 'myaccount' ) . '/new-recipient-account/' );
+				wp_redirect( wc_get_page_permalink( 'myaccount' ) . 'new-recipient-account/' );
 				exit();
 			}else if ( !get_user_meta( $current_user->ID, 'wcsg_update_account', true ) && isset( $wp->query_vars['new-recipient-account'] ) ) {
 				wp_redirect( wc_get_page_permalink( 'myaccount' ) );
@@ -59,23 +59,22 @@ class WCSG_Recipient_Details {
 			if ( wc_notice_count( 'error' ) == 0 ) {
 
 				//update the user meta first name and last name and password.
-
 				$user = get_user_by( 'id' , $_POST['wcsg_new_recipient_customer'] );
 				$address = array();
 				foreach ( $form_fields as $key => $field ) {
 					if ( false == strpos( $key ,'password' ) ) {
-						update_user_meta( $user->ID, $key, $_POST[ $key ] );
+						update_user_meta( $user->ID, $key, wc_clean( $_POST[ $key ] ) );
 						$address[ str_replace( 'shipping' . '_', '', $key ) ] = wc_clean( $_POST[ $key ] );
 					}
 				}
-				$user->user_pass = sanitize_text_field( $_POST['new_password'] );
+				$user->user_pass = wc_clean( $_POST['new_password'] );
 
-				$user_first_name = sanitize_text_field( $_POST['shipping_first_name'] );
+				$user_first_name = wc_clean( $_POST['shipping_first_name'] );
 				update_user_meta( $user->ID, 'first_name', $user_first_name );
 				update_user_meta( $user->ID, 'nickname', $user_first_name );
 				$user->display_name = $user_first_name;
 
-				update_user_meta( $user->ID, 'last_name', sanitize_text_field( $_POST['shipping_last_name'] ) );
+				update_user_meta( $user->ID, 'last_name', wc_clean( $_POST['shipping_last_name'] ) );
 
 				wp_update_user( $user );
 
@@ -83,9 +82,10 @@ class WCSG_Recipient_Details {
 
 				foreach ( $recipient_subscriptions as $subscription_id ) {
 					$subscription = wc_get_order( $subscription_id );
-					$subscription->set_address( $address, 'Shipping' );
+					$subscription->set_address( $address, 'shipping' );
 				}
 				delete_user_meta( $user->ID, 'wcsg_update_account', true );
+				wc_add_notice( __( 'Your account has been updated', 'woocommerce-subscriptions-gifting' ), 'notice' );
 				wp_safe_redirect( wc_get_page_permalink( 'myaccount' ) );
 				exit;
 			}
@@ -110,14 +110,14 @@ class WCSG_Recipient_Details {
 
 		$personal_fields['new_password'] = array(
 			'type'     => 'password',
-			'label'    => 'New Password',
+			'label'    => __( 'New Password', 'woocommerce-subscriptions-gifting' ),
 			'required' => true,
 			'password' => true,
 			'class'    => array( 'form-row-first' )
 		);
 		$personal_fields['repeat_password'] = array(
 			'type'     => 'password',
-			'label'    => 'Confirm New Password',
+			'label'    => __( 'Confirm New Password', 'woocommerce-subscriptions-gifting' ),
 			'required' => true,
 			'password' => true,
 			'class'    => array( 'form-row-last' )
