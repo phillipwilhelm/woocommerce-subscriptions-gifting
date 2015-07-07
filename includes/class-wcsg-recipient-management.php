@@ -163,7 +163,7 @@ class WCSG_Recipient_Management{
 	 * @param string|user_title The title - recipient or purchaser
 	 */
 	public static function add_gifting_information_html( $name, $user_title ) {
-		return '<tr><th>' . esc_attr__( $user_title ) . ':</th><td data-title="' . esc_attr( $user_title ) . '">' . esc_html__( $name ) . '</td></tr>';
+		return '<tr><th>' . esc_html__( $user_title, 'woocommerce-subscriptions-gifting' ) . ':</th><td data-title="' . esc_attr( $user_title ) . '">' . esc_html( $name ) . '</td></tr>';
 	}
 
 }
