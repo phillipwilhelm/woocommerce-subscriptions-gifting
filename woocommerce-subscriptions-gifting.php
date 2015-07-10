@@ -76,16 +76,15 @@ class WCS_Gifting {
 	public static function update_cart_item_key( $item, $key , $new_recipient_data ) {
 
 		if ( empty( $item['wcsg_gift_recipients_email'] ) || $item['wcsg_gift_recipients_email'] != $new_recipient_data ) {
-			$cart_item_data = WC()->cart->get_item_data( $item );
-			$cart_item_data['wcsg_gift_recipients_email'] = $new_recipient_data;
-			$new_key = WC()->cart->generate_cart_id( $item['product_id'], $item['variation_id'], $item['variation'], $cart_item_data );
+			$new_key        = WC()->cart->generate_cart_id( $item['product_id'], $item['variation_id'], $item['variation'], array( 'wcsg_gift_recipients_email' => $new_recipient_data ) );
+			$cart_item      = WC()->cart->get_cart_item( $new_key );
 
-			if( !empty( WC()->cart->get_cart_item( $new_key ) ) ) {
-				$combined_quantity = $item['quantity'] + WC()->cart->get_cart_item( $new_key )['quantity'];
+			if ( ! empty( $cart_item ) ) {
+				$combined_quantity = $item['quantity'] + $cart_item['quantity'];
 				WC()->cart->cart_contents[ $new_key ]['quantity'] = $combined_quantity;
 				unset( WC()->cart->cart_contents[ $key ] );
 
-			} else {// there is no item in the cart with the same new key
+			} else { // there is no item in the cart with the same new key
 				WC()->cart->cart_contents[ $new_key ] = WC()->cart->cart_contents[ $key ];
 				WC()->cart->cart_contents[ $new_key ]['wcsg_gift_recipients_email'] = $new_recipient_data;
 				unset( WC()->cart->cart_contents[ $key ] );
