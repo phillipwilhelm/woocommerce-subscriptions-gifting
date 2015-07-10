@@ -1,5 +1,5 @@
 <?php
-class WCSG_Recipient_Management{
+class WCSG_Recipient_Management {
 
 	/**
 	 * Setup hooks & filters, when the class is initialised.
@@ -7,9 +7,9 @@ class WCSG_Recipient_Management{
 	public static function init() {
 		add_filter( 'wcs_get_users_subscriptions', __CLASS__ . '::add_recipient_subscriptions', 1, 2 );
 
-		add_action ( 'woocommerce_order_details_after_customer_details', __CLASS__ . '::gifting_information_after_customer_details', 1 );
+		add_action( 'woocommerce_order_details_after_customer_details', __CLASS__ . '::gifting_information_after_customer_details', 1 );
 
-		add_filter ( 'wcs_view_subscription_actions', __CLASS__ . '::add_recipient_actions', 1, 2 );
+		add_filter( 'wcs_view_subscription_actions', __CLASS__ . '::add_recipient_actions', 1, 2 );
 
 		//we want to handle the changing of subscription status before Subscriptions core
 		add_action( 'init', __CLASS__ . '::change_user_recipient_subscription', 99 );
@@ -92,9 +92,9 @@ class WCSG_Recipient_Management{
 	 *
 	 * @param bool|user_can_suspend Whether the user can suspend a subscription
 	 */
-	public static function recipient_can_suspend( $user_can_suspend, $subscription ){
+	public static function recipient_can_suspend( $user_can_suspend, $subscription ) {
 
-		if ( $subscription->recipient_user == wp_get_current_user()->ID ){
+		if ( $subscription->recipient_user == wp_get_current_user()->ID ) {
 
 			// Make sure subscription suspension count hasn't been reached
 			$suspension_count    = $subscription->suspension_count;
@@ -141,16 +141,16 @@ class WCSG_Recipient_Management{
 	/**
 	 * Adds recipient/purchaser information to the view subscription page
 	 */
-	public static function gifting_information_after_customer_details( $subscription ){
+	public static function gifting_information_after_customer_details( $subscription ) {
 		//check if the subscription is gifted
 		if ( ! empty( $subscription->recipient_user ) ) {
 			$customer_user  = get_user_by( 'id', $subscription->customer_user );
 			$recipient_user = get_user_by( 'id', $subscription->recipient_user );
 			$current_user   = wp_get_current_user();
 
-			if ( $current_user->ID == $customer_user->ID ){
+			if ( $current_user->ID == $customer_user->ID ) {
 				echo self::add_gifting_information_html( $recipient_user->first_name . ' ' . $recipient_user->last_name, 'Recipient' );
-			}else{
+			} else {
 				echo self::add_gifting_information_html( $customer_user->first_name . ' ' . $customer_user->last_name, 'Purchaser' );
 			}
 		}

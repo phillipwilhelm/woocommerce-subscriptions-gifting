@@ -20,7 +20,7 @@ class WCSG_Product {
 	 * @return cart_item_data
 	 */
 	public static function add_recipient_data( $cart_item_data ) {
-		if ( isset( $_POST['recipient_email'] ) && !empty( $_POST['recipient_email'][0]) ) {
+		if ( isset( $_POST['recipient_email'] ) && ! empty( $_POST['recipient_email'][0] ) ) {
 			$cart_item_data['wcsg_gift_recipients_email'] = $_POST['recipient_email'][0];
 		}
 		return $cart_item_data;
