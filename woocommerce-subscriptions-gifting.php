@@ -47,27 +47,6 @@ class WCS_Gifting {
 		add_action( 'wp_enqueue_scripts', __CLASS__ . '::gifting_scripts' );
 		// Load dependant files
 		add_action( 'plugins_loaded', __CLASS__ . '::load_dependant_classes' );
-
-		add_filter( 'wc_get_template', __CLASS__ . '::add_new_customer_template', 10, 5 );
-	}
-
-	/**
-	 * locates the new recipient details page template if the user is flagged for requiring further details.
-	 * @param $located
-	 * @param $template_name
-	 * @param $args
-	 * @param $template_path
-	 * @param $default_path
-	*/
-	public static function add_new_customer_template( $located, $template_name, $args, $template_path, $default_path ) {
-		global $wp;
-		$current_user = wp_get_current_user();
-		if( get_user_meta( $current_user->ID, 'wcsg_update_account',true) ) {
-			if ( 'myaccount/my-account.php' == $template_name && isset($wp->query_vars['new-recipient-account']) ) {
-				$located = wc_locate_template( 'new-recipient-account.php', $template_path, plugin_dir_path( __FILE__ ). 'templates/' );
-			}
-		}
-		return $located;
 	}
 
 	/**

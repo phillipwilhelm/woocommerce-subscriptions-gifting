@@ -7,6 +7,26 @@ class WCSG_Recipient_Details {
 	public static function init() {
 		add_filter( 'init', __CLASS__ . '::update_recipient_details', 1 );
 		add_action( 'template_redirect',  __CLASS__ . '::my_account_template_redirect' );
+		add_filter( 'wc_get_template', __CLASS__ . '::add_new_customer_template', 10, 5 );
+	}
+
+	/**
+	 * locates the new recipient details page template if the user is flagged for requiring further details.
+	 * @param $located
+	 * @param $template_name
+	 * @param $args
+	 * @param $template_path
+	 * @param $default_path
+	*/
+	public static function add_new_customer_template( $located, $template_name, $args, $template_path, $default_path ) {
+		global $wp;
+		$current_user = wp_get_current_user();
+		if ( get_user_meta( $current_user->ID, 'wcsg_update_account', true ) ) {
+			if ( 'myaccount/my-account.php' == $template_name && isset( $wp->query_vars['new-recipient-account'] ) ) {
+				$located = wc_locate_template( 'new-recipient-account.php', $template_path, plugin_dir_path( plugin_dir_path( __FILE__ ) ) . 'templates/' );
+			}
+		}
+		return $located;
 	}
 
 	/**
@@ -15,11 +35,11 @@ class WCSG_Recipient_Details {
 	public static function my_account_template_redirect() {
 		global $wp;
 		$current_user = wp_get_current_user();
-		if( is_account_page() && !isset( $wp->query_vars['customer-logout'] ) ) {
-			if( get_user_meta( $current_user->ID, 'wcsg_update_account', true )  && !isset( $wp->query_vars['new-recipient-account'] ) ) {
+		if ( is_account_page() && ! isset( $wp->query_vars['customer-logout'] ) ) {
+			if ( get_user_meta( $current_user->ID, 'wcsg_update_account', true )  && ! isset( $wp->query_vars['new-recipient-account'] ) ) {
 				wp_redirect( wc_get_page_permalink( 'myaccount' ) . 'new-recipient-account/' );
 				exit();
-			}else if ( !get_user_meta( $current_user->ID, 'wcsg_update_account', true ) && isset( $wp->query_vars['new-recipient-account'] ) ) {
+			} else if ( ! get_user_meta( $current_user->ID, 'wcsg_update_account', true ) && isset( $wp->query_vars['new-recipient-account'] ) ) {
 				wp_redirect( wc_get_page_permalink( 'myaccount' ) );
 				exit();
 			}
@@ -47,7 +67,7 @@ class WCSG_Recipient_Details {
 			}
 
 			foreach ( $form_fields as $key => $field ) {
-				if ( ( ! empty( $field['required'] ) && empty( $_POST[ $key ] ) ) && !in_array( $key, $seperate_validation_fields ) ) {
+				if ( ( ! empty( $field['required'] ) && empty( $_POST[ $key ] ) ) && ! in_array( $key, $seperate_validation_fields ) ) {
 					wc_add_notice( $field['label'] . ' ' . __( 'is a required field.', 'woocommerce-subscriptions-gifting' ), 'error' );
 				}
 			}
