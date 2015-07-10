@@ -11,6 +11,7 @@ class WCSG_Email {
 
 		add_action( 'woocommerce_init', __CLASS__ . '::hook_email' );
 	}
+
 	/**
 	 * Add WCS Gifting email classes.
 	 */

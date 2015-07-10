@@ -31,7 +31,7 @@ class WCSG_Email_Processing_Renewal_Order extends WCS_Email_Processing_Renewal_O
 		if ( $order_id ) {
 			$this->object    = wc_get_order( $order_id );
 			$subscription    = wcs_get_subscriptions_for_renewal_order( $order_id );
-			$recipient_id    = get_post_meta( array_values( $subscription )[0]->id, '_recipient_user' )[0];
+			$recipient_id    = get_post_meta( array_values( $subscription )[0]->id, '_recipient_user', true );
 			$this->recipient = get_user_by( 'id', $recipient_id )->user_email;
 		}
 
