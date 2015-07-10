@@ -54,7 +54,7 @@ class WCSG_Cart {
 						WC()->cart->cart_contents[ $new_key ]['quantity'] = $combined_quantity;
 						unset( WC()->cart->cart_contents[ $key ] );
 
-					} else {// there is no item in the cart with the same new key
+					} else { // there is no item in the cart with the same new key
 						WC()->cart->cart_contents[ $new_key ] = WC()->cart->cart_contents[ $key ];
 						WC()->cart->cart_contents[ $new_key ]['wcsg_gift_recipients_email'] = $_POST['recipient_email'][ $key ];
 						unset( WC()->cart->cart_contents[ $key ] );
@@ -70,9 +70,9 @@ class WCSG_Cart {
 	 */
 	public static function generate_minicart_gifting_html( $cart_item_key, $email ) {
 
-		return '<fieldset id="woocommerce_subscriptions_gifting_field">
-				<label class="woocommerce_subscriptions_gifting_recipient_email">' . esc_html__( 'Recipient: ', 'woocommerce-subscriptions-gifting' ) . '</label>' . esc_html( $email ) .
-				'</fieldset>';
+		return '<fieldset id="woocommerce_subscriptions_gifting_field">'
+		     . '<label class="woocommerce_subscriptions_gifting_recipient_email">' . esc_html__( 'Recipient: ', 'woocommerce-subscriptions-gifting' ) . '</label>' . esc_html( $email )
+		     . '</fieldset>';
 	}
 }
 WCSG_Cart::init();

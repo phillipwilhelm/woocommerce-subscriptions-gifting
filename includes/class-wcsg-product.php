@@ -34,11 +34,11 @@ class WCSG_Product {
 	 * @return object|item The session data with added cart item recipient information
 	 */
 	public static function get_cart_items_from_session( $item, $values ) {
-		if ( array_key_exists( 'wcsg_gift_recipients_email', $values ) ) { //previously added at the product page via $cart_item_data
+		if ( array_key_exists( 'wcsg_gift_recipients_email', $values ) ) { // previously added at the product page via $cart_item_data
 			$item['wcsg_gift_recipients_email'] = $values['wcsg_gift_recipients_email'];
 			unset( $values['wcsg_gift_recipients_email'] );
 		}
-			return $item;
+		return $item;
 	}
 
 	/**
