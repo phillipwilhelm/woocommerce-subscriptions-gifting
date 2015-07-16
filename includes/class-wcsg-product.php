@@ -21,7 +21,17 @@ class WCSG_Product {
 	 */
 	public static function add_recipient_data( $cart_item_data ) {
 		if ( isset( $_POST['recipient_email'] ) && ! empty( $_POST['recipient_email'][0] ) ) {
-			$cart_item_data['wcsg_gift_recipients_email'] = $_POST['recipient_email'][0];
+			$recipient_email = sanitize_email( $_POST['recipient_email'][0] );
+
+			if ( is_email( $recipient_email ) ) {
+				if ( WCS_Gifting::recipient_email_is_current_user( $recipient_email ) ) {
+					throw new Exception( __( 'You cannot gift a product to yourself.', 'woocommerce-subscriptions-gifting' ) );
+				} else {
+					$cart_item_data['wcsg_gift_recipients_email'] = $recipient_email;
+				}
+			} else {
+				throw new Exception( __( 'Invalid email address.', 'woocommerce-subscriptions-gifting' ) );
+			}
 		}
 		return $cart_item_data;
 	}
@@ -46,8 +56,10 @@ class WCSG_Product {
 	 */
 	public static function add_gifting_option_product() {
 		global $product;
+		$email = ( ! empty( $_POST['recipient_email'][0] ) ) ? $_POST['recipient_email'][0] : '';
+
 		if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
-			echo WCS_Gifting::generate_gifting_html( 0, '' );
+			echo WCS_Gifting::generate_gifting_html( 0, $email );
 		}
 	}
 }

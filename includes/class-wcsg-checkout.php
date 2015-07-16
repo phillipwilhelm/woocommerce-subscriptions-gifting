@@ -11,6 +11,8 @@ class WCSG_Checkout {
 
 		add_filter( 'woocommerce_subscriptions_recurring_cart_key', __CLASS__ . '::add_recipient_email_recurring_cart_key', 1, 2 );
 
+		add_action( 'woocommerce_checkout_process', __CLASS__ . '::check_recipient_email' );
+
 	}
 
 	/**
@@ -24,11 +26,8 @@ class WCSG_Checkout {
 	 */
 	public static function add_gifting_option_checkout( $quantity, $cart_item, $cart_item_key ) {
 		if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
-			if ( ! isset( $cart_item['wcsg_gift_recipients_email'] ) ) {
-				$quantity .= WCS_Gifting::generate_gifting_html( $cart_item_key, '' );
-			} else {
-				$quantity .= WCS_Gifting::generate_gifting_html( $cart_item_key, $cart_item['wcsg_gift_recipients_email'] );
-			}
+			$email = ( ! isset( $cart_item['wcsg_gift_recipients_email'] ) ) ? '' : $cart_item['wcsg_gift_recipients_email'];
+			$quantity .= WCS_Gifting::generate_gifting_html( $cart_item_key, $email );
 		}
 		return $quantity;
 	}
@@ -44,7 +43,10 @@ class WCSG_Checkout {
 		foreach ( $recurring_cart->cart_contents as $key => $item ) {
 			// check for last minute changes made on the checkout page
 			if ( isset( $_POST['recipient_email'][ $key ] ) ) {
-				$item['wcsg_gift_recipients_email'] = $_POST['recipient_email'][ $key ];
+				$recipient_email = sanitize_email( $_POST['recipient_email'][ $key ] );
+				if ( is_email( $recipient_email ) ){
+					$item['wcsg_gift_recipients_email'] = $recipient_email;
+				}
 			}
 
 			if ( ! empty( $item['wcsg_gift_recipients_email'] ) ) {
@@ -86,5 +88,23 @@ class WCSG_Checkout {
 
 	}
 
+	public static function check_recipient_email() {
+		if ( ! empty( $_POST['recipient_email'] ) ) {
+			$recipients = $_POST['recipient_email'];
+
+			foreach ( $recipients as $recipient ) {
+				$recipient = sanitize_email( $recipient );
+				if ( is_email( $recipient ) ) {
+					if ( WCS_Gifting::recipient_email_is_current_user( $recipient ) ) {
+						wc_add_notice( __( 'You cannot gift a product to yourself.', 'woocommerce-subscriptions-gifting' ), 'error' );
+						break;
+					}
+				} else {
+					wc_add_notice( __( 'Invalid email address.', 'woocommerce-subscriptions-gifting' ), 'error' );
+					break;
+				}
+			}
+		}
+	}
 }
 WCSG_Checkout::init();

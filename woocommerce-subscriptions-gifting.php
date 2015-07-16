@@ -59,11 +59,34 @@ class WCS_Gifting {
 	 * @param int|id The id attribute used to differeniate items on cart and checkout pages
 	 */
 	public static function generate_gifting_html( $id, $email ) {
+		$email_field_args = array(
+			'return'      => true,
+			'label'       => 'Recipient\'s Email Address:',
+			'placeholder' => 'recipient@example.com',
+			'class'       => array( 'woocommerce_subscriptions_gifting_recipient_email' ),
+		);
+
+		if ( ! empty( $email ) && ( self::recipient_email_is_current_user( $email ) || ! is_email( $email ) ) ) {
+			array_push( $email_field_args['class'], 'woocommerce-invalid' );
+		}
+
+		$email_field = woocommerce_form_field( 'recipient_email[' . $id . ']', $email_field_args , $email );
+
+		if ( empty( $email ) ) {
+			$email_field = str_replace( '<p', '<p style ="display: none"', $email_field );
+		}
+
+		$email_field = str_replace( 'type="text"', 'type="email"', $email_field );
+
 		return '<fieldset>'
-		     . '<input type="checkbox" id="gifting_' . esc_attr( $id ) . '_option" class="woocommerce_subscription_gifting_checkbox" value="gift" ' . ( ( empty( $email ) ) ? '' : 'checked' ) . ' >' . esc_html__( 'This is a gift', 'woocommerce_subscriptions_gifting' ) . '<br>'
-		     . '<label class="woocommerce_subscriptions_gifting_recipient_email" ' . ( ( empty( $email ) ) ? 'style="display: none;"' : '' ) . 'for="recipients_email">' . esc_html__( 'Recipient\'s Email Address: ', 'woocommerce_subscriptions_gifting' ) . '</label>'
-		     . '<input name="recipient_email[' . esc_attr( $id ) . ']" class="woocommerce_subscriptions_gifting_recipient_email" type = "email" placeholder="recipient@example.com" value = "' . esc_attr( $email ) . '" ' . ( ( empty( $email ) ) ? 'style="display: none;"' : '' ) . '>'
-		     . '</fieldset>';
+			 . '<input type="checkbox" id="gifting_' . esc_attr( $id ) . '_option" class="woocommerce_subscription_gifting_checkbox" value="gift" ' . ( ( empty( $email ) ) ? '' : 'checked' ) . ' >' . esc_html__( 'This is a gift', 'woocommerce_subscriptions_gifting' ) . '<br>'
+			 . $email_field
+			 . '</fieldset>';
+	}
+
+	public static function recipient_email_is_current_user( $recipient_email ){
+		$current_user_email = wp_get_current_user()->user_email;
+		return $current_user_email == $recipient_email;
 	}
 }
 WCS_Gifting::init();
