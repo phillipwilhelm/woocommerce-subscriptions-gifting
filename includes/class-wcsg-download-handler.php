@@ -52,7 +52,12 @@ class WCSG_Download_handler {
 		if ( $permitted && wcs_is_subscription( $order ) ) {
 			$recipient_id = get_post_meta( $order->id, '_recipient_user', true );
 			$is_gift      = ! empty( $recipient_id );
-			return ( $is_gift ) ? ( ( $recipient_id == get_current_user_id() ) ? true : $can_purchaser_download ) : true;
+
+			if ( $is_gift ) {
+				return ( $recipient_id == get_current_user_id() ) ? true : $can_purchaser_download;
+			} else {
+				return true;
+			}
 
 		} else if ( $permitted && ( 0 != count( $subscriptions ) ) ) {
 			foreach ( $subscriptions as $subscription ) {
