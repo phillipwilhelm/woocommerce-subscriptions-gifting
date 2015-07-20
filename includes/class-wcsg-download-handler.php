@@ -13,10 +13,10 @@ class WCSG_Download_handler {
 	/**
 	 * Adds additional gifting specific settings into Subscriptions settings
 	 *
-	 * @param array $settings current set of settings used my Subscriptions core.
-	 * @return array $settings new settings with appended wcsg settings.
+	 * @param array $settings Subscription's current set of settings.
+	 * @return array $settings new settings with appended wcsg specific settings.
 	 */
-	public static function register_gifting_settings( $settings ){
+	public static function register_gifting_settings( $settings ) {
 		$download_settings = array(
 			array(
 				'name'     => __( 'Gifting Subscriptions', 'woocommerce-subscriptions' ),
@@ -41,23 +41,22 @@ class WCSG_Download_handler {
 	 * Determines if the current user is permitted to download a file for a specific order/subscription.
 	 * If an order (parent order) is provided all subscriptions in the order will be used to determine if the current user is permitted.
 	 *
-	 * @param bool $permitted Subscription's determination of whether downloading is permitted
+	 * @param bool $permitted Predetermination of whether downloading is permitted
 	 * @param mixed $order A WC_Order object which contains downloadable products.
 	 * @return bool $permitted new determination of whether downloading is permitted for the current user.
 	 */
 	public static function is_download_permitted( $permitted, $order ) {
-		$purchaser_can_download_enabled = ( 'yes' == get_option( 'woocommerce_subscriptions_gifting_downloadable_products', 'no' ) ) ? true : false;
+		$can_purchaser_download = ( 'yes' == get_option( 'woocommerce_subscriptions_gifting_downloadable_products', 'no' ) ) ? true : false;
 		$subscriptions = wcs_get_subscriptions_for_order( $order );
 
 		if ( $permitted && wcs_is_subscription( $order ) ) {
 			$recipient_id = get_post_meta( $order->id, '_recipient_user', true );
 			$is_gift      = ! empty( $recipient_id );
+			return ( $is_gift ) ? ( ( $recipient_id == get_current_user_id() ) ? true : $can_purchaser_download ) : true;
 
-			return ( $is_gift ) ? ( ( $recipient_id == get_current_user_id() ) ? true : $purchaser_can_download_enabled ) : true;
-
-		} else if ( $permitted && ( 0 != count ( $subscriptions ) ) ) {
+		} else if ( $permitted && ( 0 != count( $subscriptions ) ) ) {
 			foreach ( $subscriptions as $subscription ) {
-				return self::is_download_permitted( $permitted, $subscription );
+				$permitted = $permitted && self::is_download_permitted( $permitted, $subscription );
 			}
 		}
 		return $permitted;
