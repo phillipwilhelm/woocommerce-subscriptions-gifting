@@ -17,7 +17,7 @@ class WCSG_Recipient_Details {
 	 * @param $args
 	 * @param $template_path
 	 * @param $default_path
-	*/
+	 */
 	public static function add_new_customer_template( $located, $template_name, $args, $template_path, $default_path ) {
 		global $wp;
 		$current_user = wp_get_current_user();
@@ -76,7 +76,7 @@ class WCSG_Recipient_Details {
 				wc_add_notice( __( 'Please enter a valid postcode/ZIP.', 'woocommerce-subscriptions-gifting' ), 'error' );
 			}
 
-			if ( wc_notice_count( 'error' ) == 0 ) {
+			if ( 0 == wc_notice_count( 'error' ) ) {
 				//update the user meta first name and last name and password.
 				$user = get_user_by( 'id' , $_POST['wcsg_new_recipient_customer'] );
 				$address = array();
@@ -104,7 +104,7 @@ class WCSG_Recipient_Details {
 					$subscription->set_address( $address, 'shipping' );
 				}
 				delete_user_meta( $user->ID, 'wcsg_update_account', true );
-				wc_add_notice( __( 'Your account has been updated', 'woocommerce-subscriptions-gifting' ), 'notice' );
+				wc_add_notice( __( 'Your account has been updated.', 'woocommerce-subscriptions-gifting' ), 'notice' );
 				wp_safe_redirect( wc_get_page_permalink( 'myaccount' ) );
 				exit;
 			}
