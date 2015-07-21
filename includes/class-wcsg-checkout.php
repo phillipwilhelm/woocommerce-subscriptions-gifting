@@ -7,7 +7,7 @@ class WCSG_Checkout {
 	public static function init() {
 		add_filter( 'woocommerce_checkout_cart_item_quantity', __CLASS__ . '::add_gifting_option_checkout', 1, 3 );
 
-		add_action( 'woocommerce_checkout_subscription_created', __CLASS__ . '::subscription_created', 1 , 3 );
+		add_action( 'woocommerce_checkout_subscription_created', __CLASS__ . '::subscription_created', 1, 3 );
 
 		add_filter( 'woocommerce_subscriptions_recurring_cart_key', __CLASS__ . '::add_recipient_email_recurring_cart_key', 1, 2 );
 

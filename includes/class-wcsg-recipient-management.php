@@ -33,7 +33,7 @@ class WCSG_Recipient_Management {
 					'url'  => self::get_recipient_change_status_link( $subscription->id, 'on-hold', $subscription->recipient_user ),
 					'name' => __( 'Suspend', 'woocommerce-subscriptions-gifting' )
 				);
-			} elseif ( $subscription->can_be_updated_to( 'active' ) && ! $subscription->needs_payment() ) {
+			} else if ( $subscription->can_be_updated_to( 'active' ) && ! $subscription->needs_payment() ) {
 				$actions['reactivate'] = array(
 					'url'  => self::get_recipient_change_status_link( $subscription->id, 'active', $subscription->recipient_user ),
 					'name' => __( 'Reactivate', 'woocommerce-subscriptions-gifting' )
