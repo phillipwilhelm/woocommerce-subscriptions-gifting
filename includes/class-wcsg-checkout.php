@@ -95,6 +95,11 @@ class WCSG_Checkout {
 
 	}
 
+	/**
+	 * When processing the checkout check if the recipient emails are valid
+	 * before proceeding. If an error occurs schedule a checkout reload so the user
+	 * can see the emails causing the errors.
+	 */
 	public static function check_recipient_email() {
 		if ( ! empty( $_POST['recipient_email'] ) ) {
 			$recipients          = $_POST['recipient_email'];

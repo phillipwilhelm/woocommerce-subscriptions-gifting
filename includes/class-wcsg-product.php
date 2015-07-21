@@ -15,6 +15,8 @@ class WCSG_Product {
 
 	/**
 	 * Attaches recipient information to cart item data when a subscription is added to cart via product page.
+	 * If the recipient email is invalid (incorrect email format or belongs to the current user) an exception is thrown
+	 * and caught by WooCommerce add to cart function - preventing the product being entered into the cart.
 	 *
 	 * @param cart_item_data
 	 * @return cart_item_data
