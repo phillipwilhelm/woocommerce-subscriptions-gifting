@@ -39,6 +39,8 @@ require_once( 'includes/class-wcsg-recipient-details.php' );
 
 class WCS_Gifting {
 
+	public static $plugin_file = __FILE__;
+
 	/**
 	 * Setup hooks & filters, when the class is initialised.
 	 */

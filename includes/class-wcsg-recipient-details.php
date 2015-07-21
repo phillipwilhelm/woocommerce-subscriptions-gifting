@@ -23,7 +23,7 @@ class WCSG_Recipient_Details {
 		$current_user = wp_get_current_user();
 		if ( get_user_meta( $current_user->ID, 'wcsg_update_account', true ) ) {
 			if ( 'myaccount/my-account.php' == $template_name && isset( $wp->query_vars['new-recipient-account'] ) ) {
-				$located = wc_locate_template( 'new-recipient-account.php', $template_path, plugin_dir_path( plugin_dir_path( __FILE__ ) ) . 'templates/' );
+				$located = wc_locate_template( 'new-recipient-account.php', $template_path, plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
 			}
 		}
 		return $located;
@@ -62,7 +62,7 @@ class WCSG_Recipient_Details {
 
 			if ( empty( $_POST['new_password'] ) || empty( $_POST['repeat_password'] ) ) {
 				wc_add_notice( __( 'Please enter both password fields.', 'woocommerce-subscriptions-gifting' ), 'error' );
-			}else if( $_POST['new_password'] != $_POST['repeat_password'] ) {
+			} else if ( $_POST['new_password'] != $_POST['repeat_password'] ) {
 				wc_add_notice( __( 'Passwords do not match.', 'woocommerce-subscriptions-gifting' ), 'error' );
 			}
 
@@ -72,17 +72,16 @@ class WCSG_Recipient_Details {
 				}
 			}
 
-			if ( $_POST['shipping_postcode'] && ! WC_Validation::is_postcode( $_POST['shipping_postcode'], $_POST['shipping_country'] ) ){
+			if ( $_POST['shipping_postcode'] && ! WC_Validation::is_postcode( $_POST['shipping_postcode'], $_POST['shipping_country'] ) ) {
 				wc_add_notice( __( 'Please enter a valid postcode/ZIP.', 'woocommerce-subscriptions-gifting' ), 'error' );
 			}
 
 			if ( wc_notice_count( 'error' ) == 0 ) {
-
 				//update the user meta first name and last name and password.
 				$user = get_user_by( 'id' , $_POST['wcsg_new_recipient_customer'] );
 				$address = array();
 				foreach ( $form_fields as $key => $field ) {
-					if ( false == strpos( $key ,'password' ) ) {
+					if ( false == strpos( $key, 'password' ) ) {
 						update_user_meta( $user->ID, $key, wc_clean( $_POST[ $key ] ) );
 						$address[ str_replace( 'shipping' . '_', '', $key ) ] = wc_clean( $_POST[ $key ] );
 					}
