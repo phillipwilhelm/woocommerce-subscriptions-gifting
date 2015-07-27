@@ -90,7 +90,7 @@ class WCS_Gifting {
 	 * @return bool Returns whether the email address belongs to the current user.
 	 */
 	public static function email_belongs_to_current_user( $email ) {
-		$current_user_email  = wp_get_current_user()->user_email;
+		$current_user_email = wp_get_current_user()->user_email;
 		return $current_user_email == $email;
 
 	}
