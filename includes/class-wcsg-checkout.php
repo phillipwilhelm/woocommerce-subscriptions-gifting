@@ -115,24 +115,9 @@ class WCSG_Checkout {
 	 */
 	public static function check_recipient_email() {
 		if ( ! empty( $_POST['recipient_email'] ) ) {
-			$recipients          = $_POST['recipient_email'];
-			$invalid_email_found = false;
-			$self_gifting_found  = false;
-			foreach ( $recipients as $key => $recipient ) {
-				//change to the update cart function once it is merged with master.
-				WC()->cart->cart_contents[ $key ]['wcsg_gift_recipients_email'] = $recipient;
-				$recipient = sanitize_email( $recipient );
-				if ( is_email( $recipient ) ) {
-					if ( ! $self_gifting_found && WCS_Gifting::recipient_email_is_current_user( $recipient ) ) {
-						wc_add_notice( __( 'You cannot gift a product to yourself.', 'woocommerce-subscriptions-gifting' ), 'error' );
-						$self_gifting_found = true;
-					}
-				} else if ( ! $invalid_email_found ) {
-					wc_add_notice( __( ' Invalid email address.', 'woocommerce-subscriptions-gifting' ), 'error' );
-					$invalid_email_found = true;
-				}
-			}
-			if ( $invalid_email_found || $self_gifting_found ) {
+			$recipients = $_POST['recipient_email'];
+
+			if ( ! WCS_Gifting::validate_recipient_emails( $recipients ) ) {
 				WC()->session->set( 'reload_checkout', true );
 			}
 		}

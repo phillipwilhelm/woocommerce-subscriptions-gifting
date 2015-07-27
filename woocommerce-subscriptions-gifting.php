@@ -66,7 +66,7 @@ class WCS_Gifting {
 			'class'       => array( 'woocommerce_subscriptions_gifting_recipient_email' ),
 		);
 
-		if ( ! empty( $email ) && ( self::recipient_email_is_current_user( $email ) || ! is_email( $email ) ) ) {
+		if ( ! empty( $email ) && ( self::email_belongs_to_current_user( $email ) || ! is_email( $email ) ) ) {
 			array_push( $email_field_args['class'], 'woocommerce-invalid' );
 		}
 
@@ -84,9 +84,39 @@ class WCS_Gifting {
 			 . '</fieldset>';
 	}
 
-	public static function recipient_email_is_current_user( $recipient_email ){
-		$current_user_email = wp_get_current_user()->user_email;
-		return $current_user_email == $recipient_email;
+	/**
+	 * Determines if an email address belongs to the current user,
+	 * @param string Email address.
+	 * @return bool Returns whether the email address belongs to the current user.
+	 */
+	public static function email_belongs_to_current_user( $email ) {
+		$current_user_email  = wp_get_current_user()->user_email;
+		return $current_user_email == $email;
+
+	}
+
+	/**
+	 * Validates an array of recipient emails scheduling error notices if an error is found.
+	 * @param array An array of recipient email addresses.
+	 * @return bool returns whether any errors have occurred.
+	 */
+	public static function validate_recipient_emails( $recipients ) {
+		$invalid_email_found = false;
+		$self_gifting_found  = false;
+		$current_user_email  = wp_get_current_user()->user_email;
+
+		foreach ( $recipients as $key => $recipient ) {
+			$cleaned_recipient = sanitize_email( $recipient );
+			if ( is_email( $cleaned_recipient ) ) {
+				if ( ! $self_gifting_found && self::email_belongs_to_current_user( $cleaned_recipient ) ) {
+					wc_add_notice( __( 'You cannot gift a product to yourself.', 'woocommerce-subscriptions-gifting' ), 'error' );
+					$self_gifting_found = true;
+				}
+			} else if ( ! empty( $recipient ) && ! $invalid_email_found ) {
+				wc_add_notice( __( ' Invalid email address.', 'woocommerce-subscriptions-gifting' ), 'error' );
+				$invalid_email_found = true;
+			}
+		}
 	}
 
 	/**
@@ -95,22 +125,23 @@ class WCS_Gifting {
 	 * @param object|item The item in the cart to be updated
 	 * @param string|key
 	 * @param new_recipient_data The new recipient information for the item
-	*/
+	 */
 	public static function update_cart_item_key( $item, $key , $new_recipient_data ) {
-
 		if ( empty( $item['wcsg_gift_recipients_email'] ) || $item['wcsg_gift_recipients_email'] != $new_recipient_data ) {
-			$new_key        = WC()->cart->generate_cart_id( $item['product_id'], $item['variation_id'], $item['variation'], array( 'wcsg_gift_recipients_email' => $new_recipient_data ) );
+			$cart_item_data = ( empty( $new_recipient_data ) ) ? NULL : array( 'wcsg_gift_recipients_email' => $new_recipient_data );
+			$new_key        = WC()->cart->generate_cart_id( $item['product_id'], $item['variation_id'], $item['variation'], $cart_item_data );
 			$cart_item      = WC()->cart->get_cart_item( $new_key );
 
-			if ( ! empty( $cart_item ) ) {
-				$combined_quantity = $item['quantity'] + $cart_item['quantity'];
-				WC()->cart->cart_contents[ $new_key ]['quantity'] = $combined_quantity;
-				unset( WC()->cart->cart_contents[ $key ] );
-
-			} else { // there is no item in the cart with the same new key
-				WC()->cart->cart_contents[ $new_key ] = WC()->cart->cart_contents[ $key ];
-				WC()->cart->cart_contents[ $new_key ]['wcsg_gift_recipients_email'] = $new_recipient_data;
-				unset( WC()->cart->cart_contents[ $key ] );
+			if ( $new_key != $key ) {
+				if ( ! empty( $cart_item ) ) {
+					$combined_quantity = $item['quantity'] + $cart_item['quantity'];
+					WC()->cart->cart_contents[ $new_key ]['quantity'] = $combined_quantity;
+					unset( WC()->cart->cart_contents[ $key ] );
+				} else { // there is no item in the cart with the same new key
+					WC()->cart->cart_contents[ $new_key ] = WC()->cart->cart_contents[ $key ];
+					WC()->cart->cart_contents[ $new_key ]['wcsg_gift_recipients_email'] = $new_recipient_data;
+					unset( WC()->cart->cart_contents[ $key ] );
+				}
 			}
 		}
 	}
