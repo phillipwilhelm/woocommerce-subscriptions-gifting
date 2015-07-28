@@ -11,6 +11,19 @@ class WCSG_Checkout {
 
 		add_filter( 'woocommerce_subscriptions_recurring_cart_key', __CLASS__ . '::add_recipient_email_recurring_cart_key', 1, 2 );
 
+		add_action( 'woocommerce_before_checkout_process', __CLASS__ . '::update_cart_before_checkout' );
+
+	}
+
+	/**
+	 * Updates the cart items for changes made to recipient infomation on the checkout page.
+	 * This needs to occur right before WooCommerce processes the cart.
+	 */
+	public static function update_cart_before_checkout() {
+
+		foreach( WC()->cart->cart_contents as $key => $item ) {
+			WCS_Gifting::update_cart_item_key( $item, $key, $_POST['recipient_email'][ $key ] );
+		}
 	}
 
 	/**
@@ -23,7 +36,7 @@ class WCSG_Checkout {
 	 * @return int|quantity The quantity of the cart item with ui elements appended on
 	 */
 	public static function add_gifting_option_checkout( $quantity, $cart_item, $cart_item_key ) {
-		if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
+		if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) && ! isset( $cart_item['subscription_renewal'] ) ) {
 			if ( ! isset( $cart_item['wcsg_gift_recipients_email'] ) ) {
 				$quantity .= WCS_Gifting::generate_gifting_html( $cart_item_key, '' );
 			} else {

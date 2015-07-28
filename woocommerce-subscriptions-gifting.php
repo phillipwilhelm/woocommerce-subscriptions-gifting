@@ -37,6 +37,8 @@ require_once( 'includes/class-wcsg-recipient-management.php' );
 
 require_once( 'includes/class-wcsg-recipient-details.php' );
 
+require_once( 'includes/class-wcsg-email.php' );
+
 class WCS_Gifting {
 
 	public static $plugin_file = __FILE__;
@@ -75,6 +77,32 @@ class WCS_Gifting {
 		     . '<label class="woocommerce_subscriptions_gifting_recipient_email" ' . ( ( empty( $email ) ) ? 'style="display: none;"' : '' ) . 'for="recipients_email">' . esc_html__( 'Recipient\'s Email Address: ', 'woocommerce_subscriptions_gifting' ) . '</label>'
 		     . '<input name="recipient_email[' . esc_attr( $id ) . ']" class="woocommerce_subscriptions_gifting_recipient_email" type = "email" placeholder="recipient@example.com" value = "' . esc_attr( $email ) . '" ' . ( ( empty( $email ) ) ? 'style="display: none;"' : '' ) . '>'
 		     . '</fieldset>';
+	}
+
+	/**
+	 * Attaches recipient information to a subscription cart item key when the recipient information is updated. If necessary
+	 * combines cart items if the same cart key exists in the cart.
+	 * @param object|item The item in the cart to be updated
+	 * @param string|key
+	 * @param new_recipient_data The new recipient information for the item
+	*/
+	public static function update_cart_item_key( $item, $key , $new_recipient_data ) {
+
+		if ( empty( $item['wcsg_gift_recipients_email'] ) || $item['wcsg_gift_recipients_email'] != $new_recipient_data ) {
+			$new_key        = WC()->cart->generate_cart_id( $item['product_id'], $item['variation_id'], $item['variation'], array( 'wcsg_gift_recipients_email' => $new_recipient_data ) );
+			$cart_item      = WC()->cart->get_cart_item( $new_key );
+
+			if ( ! empty( $cart_item ) ) {
+				$combined_quantity = $item['quantity'] + $cart_item['quantity'];
+				WC()->cart->cart_contents[ $new_key ]['quantity'] = $combined_quantity;
+				unset( WC()->cart->cart_contents[ $key ] );
+
+			} else { // there is no item in the cart with the same new key
+				WC()->cart->cart_contents[ $new_key ] = WC()->cart->cart_contents[ $key ];
+				WC()->cart->cart_contents[ $new_key ]['wcsg_gift_recipients_email'] = $new_recipient_data;
+				unset( WC()->cart->cart_contents[ $key ] );
+			}
+		}
 	}
 }
 WCS_Gifting::init();
