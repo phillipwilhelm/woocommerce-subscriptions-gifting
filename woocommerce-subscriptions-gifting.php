@@ -49,7 +49,7 @@ class WCS_Gifting {
 	public static function init() {
 
 		add_action( 'wp_enqueue_scripts', __CLASS__ . '::gifting_scripts' );
-		// Load dependant files
+
 		add_action( 'plugins_loaded', __CLASS__ . '::load_dependant_classes' );
 	}
 
@@ -59,6 +59,7 @@ class WCS_Gifting {
 	public static function load_dependant_classes() {
 		require_once( 'includes/class-wcsg-query.php' );
 	}
+
 	/**
 	 * Register/queue frontend scripts.
 	 */

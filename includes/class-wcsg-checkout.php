@@ -84,14 +84,14 @@ class WCSG_Checkout {
 				$subscription->set_address( array(
 					'first_name' => get_user_meta( $recipient_user_id, 'shipping_first_name', true ),
 					'last_name'  => get_user_meta( $recipient_user_id, 'shipping_last_name', true ),
-					'country' => get_user_meta( $recipient_user_id, 'shipping_country', true ),
-					'company' => get_user_meta( $recipient_user_id, 'shipping_company', true ),
-					'address_1' => get_user_meta( $recipient_user_id, 'shipping_address_1', true ),
-					'address_2' => get_user_meta( $recipient_user_id, 'shipping_address_2', true ),
-					'city' => get_user_meta( $recipient_user_id, 'shipping_city', true ),
-					'state' => get_user_meta( $recipient_user_id, 'shipping_state', true ),
-					'postcode' => get_user_meta( $recipient_user_id, 'shipping_postcode', true ),
-				), 'Shipping' );
+					'country'    => get_user_meta( $recipient_user_id, 'shipping_country', true ),
+					'company'    => get_user_meta( $recipient_user_id, 'shipping_company', true ),
+					'address_1'  => get_user_meta( $recipient_user_id, 'shipping_address_1', true ),
+					'address_2'  => get_user_meta( $recipient_user_id, 'shipping_address_2', true ),
+					'city'       => get_user_meta( $recipient_user_id, 'shipping_city', true ),
+					'state'      => get_user_meta( $recipient_user_id, 'shipping_state', true ),
+					'postcode'   => get_user_meta( $recipient_user_id, 'shipping_postcode', true ),
+				), 'shipping' );
 			}
 		}
 	}
