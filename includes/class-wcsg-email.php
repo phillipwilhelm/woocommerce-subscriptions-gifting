@@ -39,7 +39,7 @@ class WCSG_Email {
 
 		$renewal_notification_actions = array(
 			'woocommerce_order_status_pending_to_processing_renewal_notification',
-			'woocommerce_order_status_pending_to_on-hold_renewal_notification-hold',
+			'woocommerce_order_status_pending_to_on-hold_renewal_notification',
 			'woocommerce_order_status_completed_renewal_notification',
 		);
 		foreach ( $renewal_notification_actions as $action ) {
