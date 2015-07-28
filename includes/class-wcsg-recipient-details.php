@@ -100,7 +100,7 @@ class WCSG_Recipient_Details {
 				$recipient_subscriptions = WCSG_Recipient_Management::get_recipient_subscriptions( $user->ID );
 
 				foreach ( $recipient_subscriptions as $subscription_id ) {
-					$subscription = wc_get_order( $subscription_id );
+					$subscription = wcs_get_subscription( $subscription_id );
 					$subscription->set_address( $address, 'shipping' );
 				}
 				delete_user_meta( $user->ID, 'wcsg_update_account', true );
