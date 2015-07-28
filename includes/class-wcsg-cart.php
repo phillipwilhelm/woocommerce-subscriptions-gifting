@@ -16,7 +16,7 @@ class WCSG_Cart {
 	 * Adds gifting ui elements to subscription cart items.
 	 */
 	public static function add_gifting_option_cart( $title, $cart_item, $cart_item_key ) {
-		if ( is_page( wc_get_page_id( 'cart' ) ) && WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
+		if ( is_page( wc_get_page_id( 'cart' ) ) && WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) && ! isset( $cart_item['subscription_renewal'] ) ) {
 			if ( empty( $cart_item['wcsg_gift_recipients_email'] ) ) {
 				$title .= WCS_Gifting::generate_gifting_html( $cart_item_key, '' );
 			} else {
