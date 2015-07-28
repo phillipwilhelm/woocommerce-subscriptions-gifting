@@ -35,6 +35,8 @@ require_once( 'includes/class-wcsg-checkout.php' );
 
 require_once( 'includes/class-wcsg-recipient-management.php' );
 
+require_once( 'includes/class-wcsg-recipient-details.php' );
+
 require_once( 'includes/class-wcsg-email.php' );
 
 class WCS_Gifting {
@@ -48,6 +50,14 @@ class WCS_Gifting {
 
 		add_action( 'wp_enqueue_scripts', __CLASS__ . '::gifting_scripts' );
 
+		add_action( 'plugins_loaded', __CLASS__ . '::load_dependant_classes' );
+	}
+
+	/**
+	 * loads classes after plugins for classes dependant on other plugin files
+	 */
+	public static function load_dependant_classes() {
+		require_once( 'includes/class-wcsg-query.php' );
 	}
 
 	/**
