@@ -5,7 +5,7 @@ class WCSG_Recipient_Details {
 	 * Setup hooks & filters, when the class is initialised.
 	 */
 	public static function init() {
-		add_filter( 'init', __CLASS__ . '::update_recipient_details', 1 );
+		add_filter( 'template_redirect', __CLASS__ . '::update_recipient_details', 1 );
 		add_action( 'template_redirect',  __CLASS__ . '::my_account_template_redirect' );
 		add_filter( 'wc_get_template', __CLASS__ . '::add_new_customer_template', 10, 5 );
 	}
