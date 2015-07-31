@@ -81,8 +81,11 @@ class WCSG_Recipient_Details {
 				$user = get_user_by( 'id' , $_POST['wcsg_new_recipient_customer'] );
 				$address = array();
 				foreach ( $form_fields as $key => $field ) {
-					if ( false == strpos( $key, 'password' ) ) {
+					if ( false == strpos( $key, 'password' ) && $key != 'set_billing' ) {
 						update_user_meta( $user->ID, $key, wc_clean( $_POST[ $key ] ) );
+						if( isset ( $_POST['set_billing'] ) ) {
+							update_user_meta( $user->ID, str_replace( 'shipping', 'billing', $key ), wc_clean( $_POST[ $key ] ) );
+						}
 						$address[ str_replace( 'shipping' . '_', '', $key ) ] = wc_clean( $_POST[ $key ] );
 					}
 				}
@@ -141,6 +144,14 @@ class WCSG_Recipient_Details {
 			'password' => true,
 			'class'    => array( 'form-row-last' )
 		);
+		$form_fields['set_billing'] = array(
+			'type'     => 'checkbox',
+			'label'    => esc_html__( 'Set my billing address to the same as above.', 'woocommerce-subscriptions-gifting' ),
+			'class'    => array( 'form-row' ),
+			'required' => false,
+			'default'  => 1
+		);
+
 		return array_merge( $personal_fields, $form_fields );
 	}
 }

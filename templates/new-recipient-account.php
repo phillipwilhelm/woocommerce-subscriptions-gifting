@@ -15,7 +15,8 @@
 		if ( 'shipping_country' == $key ) { ?>
 			<h3> <?php esc_html_e( 'Shipping Address', 'woocommerce-subscriptions-gifting' ); ?></h3><?php
 		}
-		woocommerce_form_field( $key, $field, ! empty( $_POST[ $key ] ) ? wc_clean( $_POST[ $key ] ) : '' );
+		$default_value = isset( $field['default'] ) ? $field['default'] : '';
+		woocommerce_form_field( $key, $field, ! empty( $_POST[ $key ] ) ? wc_clean( $_POST[ $key ] ) : $default_value );
 	}
 
 ?>
