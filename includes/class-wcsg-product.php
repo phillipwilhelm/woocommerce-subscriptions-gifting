@@ -46,7 +46,7 @@ class WCSG_Product {
 	 */
 	public static function add_gifting_option_product() {
 		global $product;
-		if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
+		if ( WC_Subscriptions_Product::is_subscription( $product ) && ! isset( $_GET['switch-subscription'] ) ) {
 			echo WCS_Gifting::generate_gifting_html( 0, '' );
 		}
 	}

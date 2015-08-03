@@ -36,7 +36,7 @@ class WCSG_Checkout {
 	 * @return int|quantity The quantity of the cart item with ui elements appended on
 	 */
 	public static function add_gifting_option_checkout( $quantity, $cart_item, $cart_item_key ) {
-		if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) && ! isset( $cart_item['subscription_renewal'] ) ) {
+		if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) && ! isset( $cart_item['subscription_renewal'] ) && ! isset( $cart_item['subscription_switch'] ) ) {
 			if ( ! isset( $cart_item['wcsg_gift_recipients_email'] ) ) {
 				$quantity .= WCS_Gifting::generate_gifting_html( $cart_item_key, '' );
 			} else {
