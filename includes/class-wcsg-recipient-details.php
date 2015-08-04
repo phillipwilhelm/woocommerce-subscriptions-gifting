@@ -103,7 +103,7 @@ class WCSG_Recipient_Details {
 					$subscription = wcs_get_subscription( $subscription_id );
 					$subscription->set_address( $address, 'shipping' );
 				}
-				delete_user_meta( $user->ID, 'wcsg_update_account', true );
+				delete_user_meta( $user->ID, 'wcsg_update_account', 'true' );
 				wc_add_notice( __( 'Your account has been updated.', 'woocommerce-subscriptions-gifting' ), 'notice' );
 				wp_safe_redirect( wc_get_page_permalink( 'myaccount' ) );
 				exit;
