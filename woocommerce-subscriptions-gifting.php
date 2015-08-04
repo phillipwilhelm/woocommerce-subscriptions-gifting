@@ -115,8 +115,8 @@ class WCS_Gifting {
 	 * Install wcsg
 	 */
 	public static function wcsg_install() {
-		if ( ! get_option( 'wcsg_flush_rewrite_rules_flag' ) ) {
-			add_option( 'wcsg_flush_rewrite_rules_flag', true );
+		if ( 'false' === get_option( 'wcsg_flush_rewrite_rules_flag', 'false' ) ) {
+			add_option( 'wcsg_flush_rewrite_rules_flag', 'true' );
 		}
 	}
 
@@ -124,7 +124,7 @@ class WCS_Gifting {
 	 * Flush rewrite rules if they haven't been flushed since plugin activation
 	 */
 	public static function maybe_flush_rewrite_rules() {
-		if ( get_option( 'wcsg_flush_rewrite_rules_flag' ) ) {
+		if ( 'true' === get_option( 'wcsg_flush_rewrite_rules_flag', 'false' ) ) {
 			flush_rewrite_rules();
 			delete_option( 'wcsg_flush_rewrite_rules_flag' );
 		}
