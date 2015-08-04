@@ -21,7 +21,7 @@ class WCSG_Recipient_Details {
 	public static function add_new_customer_template( $located, $template_name, $args, $template_path, $default_path ) {
 		global $wp;
 		$current_user = wp_get_current_user();
-		if ( get_user_meta( $current_user->ID, 'wcsg_update_account', true ) ) {
+		if ( 'true' === get_user_meta( $current_user->ID, 'wcsg_update_account', true ) ) {
 			if ( 'myaccount/my-account.php' == $template_name && isset( $wp->query_vars['new-recipient-account'] ) ) {
 				$located = wc_locate_template( 'new-recipient-account.php', $template_path, plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
 			}
@@ -36,10 +36,10 @@ class WCSG_Recipient_Details {
 		global $wp;
 		$current_user = wp_get_current_user();
 		if ( is_account_page() && ! isset( $wp->query_vars['customer-logout'] ) ) {
-			if ( get_user_meta( $current_user->ID, 'wcsg_update_account', true )  && ! isset( $wp->query_vars['new-recipient-account'] ) ) {
+			if ( 'true' === get_user_meta( $current_user->ID, 'wcsg_update_account', true )  && ! isset( $wp->query_vars['new-recipient-account'] ) ) {
 				wp_redirect( wc_get_page_permalink( 'myaccount' ) . 'new-recipient-account/' );
 				exit();
-			} else if ( ! get_user_meta( $current_user->ID, 'wcsg_update_account', true ) && isset( $wp->query_vars['new-recipient-account'] ) ) {
+			} else if ( empty( get_user_meta( $current_user->ID, 'wcsg_update_account', true ) ) && isset( $wp->query_vars['new-recipient-account'] ) ) {
 				wp_redirect( wc_get_page_permalink( 'myaccount' ) );
 				exit();
 			}
