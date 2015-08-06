@@ -15,6 +15,41 @@ class WCSG_Recipient_Management {
 		add_action( 'init', __CLASS__ . '::change_user_recipient_subscription', 99 );
 
 		add_filter( 'wcs_can_user_put_subscription_on_hold' , __CLASS__ . '::recipient_can_suspend', 1, 2 );
+
+		add_filter( 'user_has_cap', __CLASS__ . '::grant_recipient_capabilities', 11, 3 );
+
+	}
+
+	/**
+	 * Grant view order capabilities for subscriptions and related orders to recipients
+	 *
+	 * @param array $allcaps An array of user capabilities
+	 * @param array $caps The capability being questioned
+	 * @param array $args Additional arguments related to the capability
+	 * @return array
+	 */
+	public static function grant_recipient_capabilities( $allcaps, $caps, $args ) {
+		if ( isset( $caps[0] ) ) {
+			if ( 'view_order' == $caps[0] && ! isset( $allcaps[ $caps[0] ] ) ) {
+				$user_id = $args[1];
+				$order   = wc_get_order( $args[2] );
+
+				if ( $order ) {
+					if ( 'shop_subscription' == get_post_type( $args[2] ) && $user_id == $order->recipient_user ) {
+						$allcaps['view_order'] = true;
+					} else if ( wcs_order_contains_subscription( $order ) ) {
+						$subscriptions = wcs_get_subscriptions_for_order( $order );
+						foreach ( $subscriptions as $subscription ) {
+							if ( $user_id == $subscription->recipient_user ) {
+								$allcaps['view_order'] = true;
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+		return $allcaps;
 	}
 
 	/**
@@ -121,8 +156,6 @@ class WCSG_Recipient_Management {
 
 		foreach ( $recipient_subs as $subscription_id ) {
 			$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
-			$user = new WP_User( $user_id );
-			$user->add_cap( 'view_order', $subscription_id );
 		}
 		return $subscriptions;
 	}
