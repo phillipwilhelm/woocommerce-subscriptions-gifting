@@ -7,7 +7,7 @@ class WCSG_Checkout {
 	public static function init() {
 		add_filter( 'woocommerce_checkout_cart_item_quantity', __CLASS__ . '::add_gifting_option_checkout', 1, 3 );
 
-		add_action( 'woocommerce_checkout_subscription_created', __CLASS__ . '::subscription_created', 1 , 3 );
+		add_action( 'woocommerce_checkout_subscription_created', __CLASS__ . '::subscription_created', 1, 3 );
 
 		add_filter( 'woocommerce_subscriptions_recurring_cart_key', __CLASS__ . '::add_recipient_email_recurring_cart_key', 1, 2 );
 
@@ -38,7 +38,7 @@ class WCSG_Checkout {
 	 * @return int|quantity The quantity of the cart item with ui elements appended on
 	 */
 	public static function add_gifting_option_checkout( $quantity, $cart_item, $cart_item_key ) {
-		if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) ) {
+		if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) && ! isset( $cart_item['subscription_renewal'] ) && ! isset( $cart_item['subscription_switch'] ) ) {
 
 			$email = '';
 			if ( ! empty( $_POST['recipient_email'][ $cart_item_key ] ) ) {
@@ -86,8 +86,21 @@ class WCSG_Checkout {
 					}
 					$password = wp_generate_password();
 					$recipient_user_id = wc_create_new_customer( $recipient_email, $username, $password );
+					add_user_meta( $recipient_user_id, 'wcsg_update_account', true );
 				}
 				update_post_meta( $subscription->id, '_recipient_user', $recipient_user_id );
+
+				$subscription->set_address( array(
+					'first_name' => get_user_meta( $recipient_user_id, 'shipping_first_name', true ),
+					'last_name'  => get_user_meta( $recipient_user_id, 'shipping_last_name', true ),
+					'country'    => get_user_meta( $recipient_user_id, 'shipping_country', true ),
+					'company'    => get_user_meta( $recipient_user_id, 'shipping_company', true ),
+					'address_1'  => get_user_meta( $recipient_user_id, 'shipping_address_1', true ),
+					'address_2'  => get_user_meta( $recipient_user_id, 'shipping_address_2', true ),
+					'city'       => get_user_meta( $recipient_user_id, 'shipping_city', true ),
+					'state'      => get_user_meta( $recipient_user_id, 'shipping_state', true ),
+					'postcode'   => get_user_meta( $recipient_user_id, 'shipping_postcode', true ),
+				), 'shipping' );
 			}
 		}
 	}

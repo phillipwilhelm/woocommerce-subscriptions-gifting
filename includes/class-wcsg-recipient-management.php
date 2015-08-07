@@ -33,7 +33,7 @@ class WCSG_Recipient_Management {
 					'url'  => self::get_recipient_change_status_link( $subscription->id, 'on-hold', $subscription->recipient_user ),
 					'name' => __( 'Suspend', 'woocommerce-subscriptions-gifting' )
 				);
-			} elseif ( $subscription->can_be_updated_to( 'active' ) && ! $subscription->needs_payment() ) {
+			} else if ( $subscription->can_be_updated_to( 'active' ) && ! $subscription->needs_payment() ) {
 				$actions['reactivate'] = array(
 					'url'  => self::get_recipient_change_status_link( $subscription->id, 'active', $subscription->recipient_user ),
 					'name' => __( 'Reactivate', 'woocommerce-subscriptions-gifting' )
@@ -117,23 +117,12 @@ class WCSG_Recipient_Management {
 	 */
 	public static function add_recipient_subscriptions( $subscriptions, $user_id ) {
 		//get the subscription posts that have been gifted to this user
-		$post_ids = get_posts( array(
-			'posts_per_page' => -1,
-			'post_status'    => 'any',
-			'post_type'      => 'shop_subscription',
-			'orderby'        => 'date',
-			'order'          => 'desc',
-			'meta_key'       => '_recipient_user',
-			'meta_value'     => $user_id,
-			'meta_compare'   => '=',
-			'fields'         => 'ids',
-		) );
-		//add all this user's gifted subscriptions
-		foreach ( $post_ids as $post_id ) {
-			$subscriptions[ $post_id ] = wcs_get_subscription( $post_id );
-			//allow the recipient to view their order
-			$user = get_user_by( 'id', $user_id );
-			$user->add_cap( 'view_order', $post_id );
+		$recipient_subs = self::get_recipient_subscriptions( $user_id );
+
+		foreach ( $recipient_subs as $subscription_id ) {
+			$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
+			$user = new WP_User( $user_id );
+			$user->add_cap( 'view_order', $subscription_id );
 		}
 		return $subscriptions;
 	}
@@ -149,9 +138,9 @@ class WCSG_Recipient_Management {
 			$current_user   = wp_get_current_user();
 
 			if ( $current_user->ID == $customer_user->ID ) {
-				echo self::add_gifting_information_html( $recipient_user->first_name . ' ' . $recipient_user->last_name, 'Recipient' );
+				echo self::add_gifting_information_html( $recipient_user->display_name, 'Recipient' );
 			} else {
-				echo self::add_gifting_information_html( $customer_user->first_name . ' ' . $customer_user->last_name, 'Purchaser' );
+				echo self::add_gifting_information_html( $customer_user->display_name, 'Purchaser' );
 			}
 		}
 	}
@@ -166,5 +155,24 @@ class WCSG_Recipient_Management {
 		return '<tr><th>' . esc_html__( $user_title, 'woocommerce-subscriptions-gifting' ) . ':</th><td data-title="' . esc_attr( $user_title ) . '">' . esc_html( $name ) . '</td></tr>';
 	}
 
+	/**
+	 * Gets an array of subscription ids which have been gifted to a user
+	 *
+	 * @param user_id The user id of the recipient
+	 * @return array An array of subscriptions gifted to the user
+	*/
+	public static function get_recipient_subscriptions( $user_id ) {
+		return get_posts( array(
+			'posts_per_page' => -1,
+			'post_status'    => 'any',
+			'post_type'      => 'shop_subscription',
+			'orderby'        => 'date',
+			'order'          => 'desc',
+			'meta_key'       => '_recipient_user',
+			'meta_value'     => $user_id,
+			'meta_compare'   => '=',
+			'fields'         => 'ids',
+		) );
+	}
 }
 WCSG_Recipient_Management::init();
