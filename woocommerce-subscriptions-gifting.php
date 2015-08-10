@@ -93,7 +93,7 @@ class WCS_Gifting {
 		$email_field = str_replace( 'type="text"', 'type="email"', $email_field );
 
 		return '<fieldset>'
-			 . '<input type="checkbox" id="gifting_' . esc_attr( $id ) . '_option" class="woocommerce_subscription_gifting_checkbox" value="gift" ' . ( ( empty( $email ) ) ? '' : 'checked' ) . ' >' . esc_html__( 'This is a gift', 'woocommerce_subscriptions_gifting' ) . '<br>'
+			 . '<input type="checkbox" id="gifting_' . esc_attr( $id ) . '_option" class="woocommerce_subscription_gifting_checkbox" value="gift" ' . ( ( empty( $email ) ) ? '' : 'checked' ) . ' />' . esc_html__( 'This is a gift', 'woocommerce_subscriptions_gifting' ) . '<br />'
 			 . $email_field
 			 . '</fieldset>';
 	}
