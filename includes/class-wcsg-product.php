@@ -60,7 +60,7 @@ class WCSG_Product {
 		global $product;
 		$email = ( ! empty( $_POST['recipient_email'][0] ) ) ? $_POST['recipient_email'][0] : '';
 
-		if ( WC_Subscriptions_Product::is_subscription( $product ) && ! isset( $_GET['switch-subscription'] )) {
+		if ( WC_Subscriptions_Product::is_subscription( $product ) && ! isset( $_GET['switch-subscription'] ) ) {
 			echo WCS_Gifting::generate_gifting_html( 0, $email );
 		}
 	}

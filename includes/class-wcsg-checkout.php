@@ -64,7 +64,7 @@ class WCSG_Checkout {
 			// check for last minute changes made on the checkout page
 			if ( isset( $_POST['recipient_email'][ $key ] ) ) {
 				$recipient_email = sanitize_email( $_POST['recipient_email'][ $key ] );
-				if ( is_email( $recipient_email ) ){
+				if ( is_email( $recipient_email ) ) {
 					$item['wcsg_gift_recipients_email'] = $recipient_email;
 				}
 			}

@@ -142,7 +142,7 @@ class WCS_Gifting {
 	 */
 	public static function update_cart_item_key( $item, $key , $new_recipient_data ) {
 		if ( empty( $item['wcsg_gift_recipients_email'] ) || $item['wcsg_gift_recipients_email'] != $new_recipient_data ) {
-			$cart_item_data = ( empty( $new_recipient_data ) ) ? NULL : array( 'wcsg_gift_recipients_email' => $new_recipient_data );
+			$cart_item_data = ( empty( $new_recipient_data ) ) ? null : array( 'wcsg_gift_recipients_email' => $new_recipient_data );
 			$new_key        = WC()->cart->generate_cart_id( $item['product_id'], $item['variation_id'], $item['variation'], $cart_item_data );
 			$cart_item      = WC()->cart->get_cart_item( $new_key );
 
