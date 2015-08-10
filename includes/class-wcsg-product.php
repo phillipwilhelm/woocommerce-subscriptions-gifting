@@ -25,7 +25,7 @@ class WCSG_Product {
 		if ( isset( $_POST['recipient_email'] ) && ! empty( $_POST['recipient_email'][0] ) ) {
 			$recipient_email = sanitize_email( $_POST['recipient_email'][0] );
 
-			if ( is_email( $recipient_email ) ) {
+			if ( $recipient_email == $_POST['recipient_email'][0] && is_email( $recipient_email ) ) {
 				if ( WCS_Gifting::email_belongs_to_current_user( $recipient_email ) ) {
 					throw new Exception( __( 'You cannot gift a product to yourself.', 'woocommerce-subscriptions-gifting' ) );
 				} else {

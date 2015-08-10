@@ -120,7 +120,7 @@ class WCS_Gifting {
 		if ( is_array( $recipients ) ) {
 			foreach ( $recipients as $key => $recipient ) {
 				$cleaned_recipient = sanitize_email( $recipient );
-				if ( is_email( $cleaned_recipient ) ) {
+				if ( $recipient == $cleaned_recipient && is_email( $cleaned_recipient ) ) {
 					if ( ! $self_gifting_found && self::email_belongs_to_current_user( $cleaned_recipient ) ) {
 						wc_add_notice( __( 'You cannot gift a product to yourself.', 'woocommerce-subscriptions-gifting' ), 'error' );
 						$self_gifting_found = true;
