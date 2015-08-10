@@ -117,17 +117,18 @@ class WCS_Gifting {
 		$invalid_email_found = false;
 		$self_gifting_found  = false;
 		$current_user_email  = wp_get_current_user()->user_email;
-
-		foreach ( $recipients as $key => $recipient ) {
-			$cleaned_recipient = sanitize_email( $recipient );
-			if ( is_email( $cleaned_recipient ) ) {
-				if ( ! $self_gifting_found && self::email_belongs_to_current_user( $cleaned_recipient ) ) {
-					wc_add_notice( __( 'You cannot gift a product to yourself.', 'woocommerce-subscriptions-gifting' ), 'error' );
-					$self_gifting_found = true;
+		if ( is_array( $recipients ) ) {
+			foreach ( $recipients as $key => $recipient ) {
+				$cleaned_recipient = sanitize_email( $recipient );
+				if ( is_email( $cleaned_recipient ) ) {
+					if ( ! $self_gifting_found && self::email_belongs_to_current_user( $cleaned_recipient ) ) {
+						wc_add_notice( __( 'You cannot gift a product to yourself.', 'woocommerce-subscriptions-gifting' ), 'error' );
+						$self_gifting_found = true;
+					}
+				} else if ( ! empty( $recipient ) && ! $invalid_email_found ) {
+					wc_add_notice( __( ' Invalid email address.', 'woocommerce-subscriptions-gifting' ), 'error' );
+					$invalid_email_found = true;
 				}
-			} else if ( ! empty( $recipient ) && ! $invalid_email_found ) {
-				wc_add_notice( __( ' Invalid email address.', 'woocommerce-subscriptions-gifting' ), 'error' );
-				$invalid_email_found = true;
 			}
 		}
 	}
