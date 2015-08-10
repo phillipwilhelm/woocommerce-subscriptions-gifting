@@ -48,9 +48,14 @@ class WCS_Gifting {
 	 */
 	public static function init() {
 
+		register_activation_hook( __FILE__, __CLASS__ . '::wcsg_install' );
+
 		add_action( 'wp_enqueue_scripts', __CLASS__ . '::gifting_scripts' );
 
 		add_action( 'plugins_loaded', __CLASS__ . '::load_dependant_classes' );
+
+		add_action( 'init', __CLASS__ . '::maybe_flush_rewrite_rules' );
+
 	}
 
 	/**
@@ -104,6 +109,26 @@ class WCS_Gifting {
 				unset( WC()->cart->cart_contents[ $key ] );
 			}
 		}
+	}
+
+	/**
+	 * Install wcsg
+	 */
+	public static function wcsg_install() {
+		if ( 'false' === get_option( 'wcsg_flush_rewrite_rules_flag', 'false' ) ) {
+			add_option( 'wcsg_flush_rewrite_rules_flag', 'true' );
+		}
+	}
+
+	/**
+	 * Flush rewrite rules if they haven't been flushed since plugin activation
+	 */
+	public static function maybe_flush_rewrite_rules() {
+		if ( 'true' === get_option( 'wcsg_flush_rewrite_rules_flag', 'false' ) ) {
+			flush_rewrite_rules();
+			delete_option( 'wcsg_flush_rewrite_rules_flag' );
+		}
+
 	}
 }
 WCS_Gifting::init();
