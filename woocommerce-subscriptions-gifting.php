@@ -106,7 +106,6 @@ class WCS_Gifting {
 	public static function email_belongs_to_current_user( $email ) {
 		$current_user_email = wp_get_current_user()->user_email;
 		return $current_user_email == $email;
-
 	}
 
 	/**
