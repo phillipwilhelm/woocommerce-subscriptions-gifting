@@ -83,7 +83,7 @@ class WCSG_Recipient_Details {
 				foreach ( $form_fields as $key => $field ) {
 					if ( false == strpos( $key, 'password' ) && $key != 'set_billing' ) {
 						update_user_meta( $user->ID, $key, wc_clean( $_POST[ $key ] ) );
-						if ( isset ( $_POST['set_billing'] ) ) {
+						if ( isset( $_POST['set_billing'] ) ) {
 							update_user_meta( $user->ID, str_replace( 'shipping', 'billing', $key ), wc_clean( $_POST[ $key ] ) );
 						}
 						$address[ str_replace( 'shipping' . '_', '', $key ) ] = wc_clean( $_POST[ $key ] );
