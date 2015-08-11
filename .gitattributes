@@ -1,0 +1,13 @@
+.gitattributes export-ignore
+.gitmodules export-ignore
+.gitignore export-ignore
+deploy.sh export-ignore
+deploy-beta.sh export-ignore
+tests export-ignore
+.travis.yml export-ignore
+Gruntfile.js export-ignore
+README.md export-ignore
+codeception.sample.yml export-ignore
+package.json export-ignore
+phpunit.xml.dist export-ignore
+.tx export-ignore

@@ -16,6 +16,8 @@ WP_VERSION=${5-latest}
 WP_TESTS_DIR="${PWD}/tmp/wordpress-tests-lib"
 WP_CORE_DIR="${PWD}/tmp/wordpress/"
 
+GITHUB_TOKEN=63da660fce82171eeb5967f550ed0221be0cd85f
+
 set -ex
 
 install_wp() {

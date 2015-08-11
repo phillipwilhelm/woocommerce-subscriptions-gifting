@@ -33,7 +33,7 @@ To install simply use the `install.sh` script by typing:
 
 Sample usage:
 
-    $ tests/bin/install.sh woocommerce_tests root root 127.0.0.1
+    $ tests/bin/install.sh wcsg_tests root root 127.0.0.1
     
 This will install WordPress, the WP Unit Test library, PHP_CodeSniffer and the WordPress Coding Standards components to a `tmp` directory within the WCSG plugin root directory. 
 

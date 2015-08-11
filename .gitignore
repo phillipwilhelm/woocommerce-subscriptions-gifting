@@ -1,1 +1,21 @@
+sql-dumps
+*.sql
+clean-slate.sh
+dump-db.sh
+*.zip
+sftp-config.json
 .DS_Store
+
+# WP Test install
+/tmp
+
+#grunt
+/node_modules/
+npm-debug.log
+
+# codeception
+codecept.phar
+codeception.yml
+tests/acceptance.suite.yml
+tests/_output/*
+!tests/_output/index.php

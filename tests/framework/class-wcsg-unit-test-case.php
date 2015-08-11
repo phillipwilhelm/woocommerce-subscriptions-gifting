@@ -1,10 +1,10 @@
 <?php
 /**
  *
- * @see WC_Unit_Test_Case::setUp()
+ * @see WCG_Unit_Test_Case::setUp()
  * @since 2.0
  */
-class WCS_Unit_Test_Case extends WC_Unit_Test_Case {
+class WCSG_Unit_Test_Case extends WC_Unit_Test_Case {
 
 	/* Susbcription product used for testing */
 	public static $simple_subscription_product;
@@ -191,6 +191,6 @@ class WCS_Unit_Test_Case extends WC_Unit_Test_Case {
 	}
 }
 
-function wc_schedule_single_action() {
+/* function wc_schedule_single_action() {
 	return;
-}
+} */
