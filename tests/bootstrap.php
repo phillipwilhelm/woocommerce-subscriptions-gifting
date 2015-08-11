@@ -42,12 +42,11 @@ class WCS_Unit_Tests_Bootstrap {
 		// load test function so tests_add_filter() is available
 		require_once( $this->wp_tests_dir  . '/includes/functions.php' );
 
-		// load WC and WCS
-		tests_add_filter( 'muplugins_loaded', array( $this, 'load_wc_and_wcs' ) );
+		// load WC
+		tests_add_filter( 'muplugins_loaded', array( $this, 'load_wc' ) );
 
-		// install WC and WCS
+		// install WC
 		tests_add_filter( 'setup_theme', array( $this, 'install_wc' ) );
-		tests_add_filter( 'setup_theme', array( $this, 'install_wcs' ) );
 
 		$GLOBALS['wp_options'] = array(
 			'active_plugins' => array(
@@ -62,6 +61,9 @@ class WCS_Unit_Tests_Bootstrap {
 		// load testing framework
 		$this->includes();
 
+		// load WooCommerce Subcriptions
+		require_once( $this->modules_dir . '/woocommerce-subscriptions/woocommerce-subscriptions.php' );
+
 		// load WooCommerce Subcriptions Gifting
 		require_once( $this->plugin_dir . '/woocommerce-subscriptions-gifting.php' );
 
@@ -73,45 +75,12 @@ class WCS_Unit_Tests_Bootstrap {
 	}
 
 	/**
-	 * Load WooCommerce and WooCommerce Subscriptions
+	 * Load WooCommerce
 	 *
 	 * @since 2.0
 	 */
-	public function load_wc_and_wcs() {
+	public function load_wc() {
 		require_once( $this->modules_dir . '/woocommerce/woocommerce.php' );
-
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/wcs-functions.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/class-wc-subscriptions-coupon.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/class-wc-subscriptions-product.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/admin/class-wc-subscriptions-admin.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/class-wc-subscriptions-manager.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/class-wc-subscriptions-cart.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/class-wc-subscriptions-order.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/class-wc-subscriptions-renewal-order.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/class-wc-subscriptions-checkout.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/class-wc-subscriptions-email.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/class-wc-subscriptions-addresses.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/class-wc-subscriptions-change-payment-gateway.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/gateways/class-wc-subscriptions-payment-gateways.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/gateways/gateway-paypal-standard-subscriptions.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/class-wc-subscriptions-switcher.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/class-wc-subscriptions-synchroniser.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/upgrades/class-wc-subscriptions-upgrader.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/upgrades/class-wcs-upgrade-logger.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/libraries/action-scheduler/action-scheduler.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/abstracts/abstract-wcs-scheduler.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/class-wcs-action-scheduler.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/class-wcs-cart-renewal.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/class-wcs-cart-resubscribe.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/class-wcs-cart-initial-payment.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/abstracts/abstract-wcs-hook-deprecator.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/abstracts/abstract-wcs-dynamic-hook-deprecator.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/deprecated/class-wcs-action-deprecator.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/deprecated/class-wcs-filter-deprecator.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/deprecated/class-wcs-dynamic-action-deprecator.php' );
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/deprecated/class-wcs-dynamic-filter-deprecator.php' );
-
-		require_once( $this->modules_dir . '/woocommerce-subscriptions/woocommerce-subscriptions.php' );
 	}
 
 	/**
@@ -135,20 +104,6 @@ class WCS_Unit_Tests_Bootstrap {
 		WC()->init();
 
 		echo "WooCommerce Finished Installing..." . PHP_EOL;
-	}
-
-	/**
-	 * Load WooCommerce Subscriptions for testing
-	 *
-	 * @since 2.0
-	 */
-	function install_wcs() {
-
-		echo "Installing WooCommerce Subscriptions..." . PHP_EOL;
-
-		WC_Subscriptions::init();
-
-		echo "WooCommerce Subscriptions Finished Installing..." . PHP_EOL;
 	}
 
 	/**
@@ -179,9 +134,9 @@ class WCS_Unit_Tests_Bootstrap {
 		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/class-wcs-api.php' );
 
 		// Load WCS Frameworks
-		//require_once( $this->modules_dir . '/woocommerce-subscriptions/tests/framework/class-wcs-unit-test-case.php' );
+		require_once( $this->modules_dir . '/woocommerce-subscriptions/tests/framework/class-wcs-unit-test-case.php' );
 		require_once( $this->modules_dir . '/woocommerce-subscriptions/tests/framework/class-wcs-unit-test-factory.php' );
-		//require_once( $this->modules_dir . '/woocommerce-subscriptions/tests/framework/class-wcs-api-unit-test-case.php' );
+		require_once( $this->modules_dir . '/woocommerce-subscriptions/tests/framework/class-wcs-api-unit-test-case.php' );
 		require_once( $this->modules_dir . '/woocommerce-subscriptions/tests/framework/class-wcs-test-subscription-class.php' );
 
 		// Load WC Helper Functions
@@ -196,7 +151,7 @@ class WCS_Unit_Tests_Bootstrap {
 		require_once( $this->modules_dir . '/woocommerce-subscriptions/tests/framework/helpers/class-wcs-helper-product.php' );
 
 		// Load WCSG Frameworks
-		require_once( 'framework/class-wcsg-unit-test-case.php' );
+		// require_once( 'framework/class-wcsg-unit-test-case.php' );
 		// require_once( 'framework/class-wcsg-unit-test-factory.php' );
 
 		// Load WCSG Helper Functions
