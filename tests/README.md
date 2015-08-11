@@ -25,7 +25,17 @@ To do this, open your `~/.bash_profile` file and add something like (modifying t
 
 You will need WooCommerce 2.3 and WooCommerce Subscriptions 2.0 or newer from the official github repo as it includes unit testing framework and helper methods relied upon by these tests.
 
-4) Change to the WCSG plugin root directory. 
+4) Create a github personal access token following the standard [github instructions](https://help.github.com/articles/creating-an-access-token-for-command-line-use/) with the `Access private repositories` scope. This token does NOT need any other scopes/permissions to delete, write etc.
+
+Once you have an access token, add a local environment variable on your system named `GITHUB_TOKEN` with the access token as the value. On Mac OSX you can use a command like:
+
+	export GITHUB_TOKEN=<access-token>
+
+The reason we use this access token is because Subscriptions and Subscriptions Gifting is hosted in private repositories and we need to authorise the requests. It also helps get around some of the github rate limiting when accessing github resources. 
+
+Similarly, Travis has been configured with a a `GITHUB_TOKEN` environment variable within its settings that is used when running builds/jobs.
+
+5) Change to the WCSG plugin root directory. 
 
 To install simply use the `install.sh` script by typing:
 
