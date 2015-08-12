@@ -27,7 +27,9 @@ You will need WooCommerce 2.3 and WooCommerce Subscriptions 2.0 or newer from th
 
 4) Create a github personal access token following the standard [github instructions](https://help.github.com/articles/creating-an-access-token-for-command-line-use/) with the `Access private repositories` scope. This token does NOT need any other scopes/permissions to delete, write etc.
 
-Once you have an access token, add a local environment variable on your system named `GITHUB_TOKEN` with the access token as the value. On Mac OSX you can use a command like:
+Once you have an access token, add a local environment variable on your system named `GITHUB_TOKEN` with the access token as the value.
+
+To do this, open your `~/.bash_profile` file and add something like (modifying the path to suit your local installation):
 
 	export GITHUB_TOKEN=<access-token>
 
