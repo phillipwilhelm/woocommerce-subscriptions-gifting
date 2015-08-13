@@ -95,6 +95,7 @@ class WCS_Gifting {
 		return '<fieldset>'
 			 . '<input type="checkbox" id="gifting_' . esc_attr( $id ) . '_option" class="woocommerce_subscription_gifting_checkbox" value="gift" ' . ( ( empty( $email ) ) ? '' : 'checked' ) . ' />' . esc_html__( 'This is a gift', 'woocommerce_subscriptions_gifting' ) . '<br />'
 			 . $email_field
+			 . wp_nonce_field( 'wcsg_add_recipient', '_wcsgnonce' )
 			 . '</fieldset>';
 	}
 

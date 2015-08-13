@@ -11,23 +11,9 @@ class WCSG_Checkout {
 
 		add_filter( 'woocommerce_subscriptions_recurring_cart_key', __CLASS__ . '::add_recipient_email_recurring_cart_key', 1, 2 );
 
-		add_action( 'woocommerce_checkout_process', __CLASS__ . '::check_recipient_email' );
-
-		add_action( 'woocommerce_before_checkout_process', __CLASS__ . '::update_cart_before_checkout' );
+		add_action( 'woocommerce_checkout_process', __CLASS__ . '::update_cart_before_checkout' );
 
 	}
-
-	/**
-	 * Updates the cart items for changes made to recipient infomation on the checkout page.
-	 * This needs to occur right before WooCommerce processes the cart.
-	 */
-	public static function update_cart_before_checkout() {
-
-		foreach( WC()->cart->cart_contents as $key => $item ) {
-			WCS_Gifting::update_cart_item_key( $item, $key, $_POST['recipient_email'][ $key ] );
-		}
-	}
-
 	/**
 	 * Adds gifting ui elements to the checkout page, adding in previously set
 	 * recipient information if it exists.
@@ -61,14 +47,6 @@ class WCSG_Checkout {
 	 */
 	public static function subscription_created( $subscription, $order, $recurring_cart ) {
 		foreach ( $recurring_cart->cart_contents as $key => $item ) {
-			// check for last minute changes made on the checkout page
-			if ( isset( $_POST['recipient_email'][ $key ] ) ) {
-				$recipient_email = sanitize_email( $_POST['recipient_email'][ $key ] );
-				if ( is_email( $recipient_email ) ) {
-					$item['wcsg_gift_recipients_email'] = $recipient_email;
-				}
-			}
-
 			if ( ! empty( $item['wcsg_gift_recipients_email'] ) ) {
 
 				$recipient_email = $item['wcsg_gift_recipients_email'];
@@ -122,17 +100,21 @@ class WCSG_Checkout {
 	}
 
 	/**
-	 * When processing the checkout check if the recipient emails are valid
-	 * before proceeding. If an error occurs schedule a checkout reload so the user
-	 * can see the emails causing the errors.
+	 * Updates the cart items for changes made to recipient infomation on the checkout page.
+	 * This needs to occur right before WooCommerce processes the cart.
+	 * If an error occurs schedule a checkout reload so the user can see the emails causing the errors.
 	 */
-	public static function check_recipient_email() {
-		if ( ! empty( $_POST['recipient_email'] ) ) {
+	public static function update_cart_before_checkout() {
+		if ( ! empty( $_POST['recipient_email'] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
 			$recipients = $_POST['recipient_email'];
-
 			if ( ! WCS_Gifting::validate_recipient_emails( $recipients ) ) {
 				WC()->session->set( 'reload_checkout', true );
 			}
+			foreach ( WC()->cart->cart_contents as $key => $item ) {
+				WCS_Gifting::update_cart_item_key( $item, $key, $_POST['recipient_email'][ $key ] );
+			}
+		} else {
+			wc_add_notice( __( 'There was an error with your request. Please try again..', 'woocommerce-subscriptions-gifting' ), 'error' );
 		}
 	}
 }

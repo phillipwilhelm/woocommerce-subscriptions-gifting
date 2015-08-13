@@ -22,7 +22,7 @@ class WCSG_Product {
 	 * @return cart_item_data
 	 */
 	public static function add_recipient_data( $cart_item_data ) {
-		if ( isset( $_POST['recipient_email'] ) && ! empty( $_POST['recipient_email'][0] ) ) {
+		if ( isset( $_POST['recipient_email'] ) && ! empty( $_POST['recipient_email'][0] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
 			$recipient_email = sanitize_email( $_POST['recipient_email'][0] );
 
 			if ( $recipient_email == $_POST['recipient_email'][0] && is_email( $recipient_email ) ) {
@@ -34,6 +34,8 @@ class WCSG_Product {
 			} else {
 				throw new Exception( __( 'Invalid email address.', 'woocommerce-subscriptions-gifting' ) );
 			}
+		} else {
+			throw new Exception( __( 'There was an error with your request. Please try again..', 'woocommerce-subscriptions-gifting' ) );
 		}
 		return $cart_item_data;
 	}
