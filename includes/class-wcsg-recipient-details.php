@@ -51,7 +51,7 @@ class WCSG_Recipient_Details {
 	 * if there are no errors in validation.
 	 */
 	public static function update_recipient_details() {
-		if ( isset( $_POST['wcsg_new_recipient_customer'] ) ) {
+		if ( isset( $_POST['wcsg_new_recipient_customer'] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_new_recipient_data' ) ) {
 			$form_fields = self::get_new_recipient_account_form_fields();
 
 			$seperate_validation_fields = ['shipping_first_name','shipping_last_name','new_password','repeat_password'];
@@ -111,6 +111,8 @@ class WCSG_Recipient_Details {
 				wp_safe_redirect( wc_get_page_permalink( 'myaccount' ) );
 				exit;
 			}
+		} else if ( isset( $_POST['wcsg_new_recipient_customer'] ) ) {
+			wc_add_notice( __( 'There was an error with your request to update your account. Please try again..', 'woocommerce-subscriptions-gifting' ), 'error' );
 		}
 	}
 
