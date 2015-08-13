@@ -56,6 +56,8 @@ class WCS_Gifting {
 
 		add_action( 'init', __CLASS__ . '::maybe_flush_rewrite_rules' );
 
+		add_filter( 'woocommerce_form_field_email', __CLASS__ . '::generate_email_form_field', 1, 4 );
+
 	}
 
 	/**
@@ -71,37 +73,6 @@ class WCS_Gifting {
 	public static function gifting_scripts() {
 		wp_register_script( 'woocommerce_subscriptions_gifting', plugins_url( '/js/wcs-gifting.js', __FILE__ ), array( 'jquery' ) );
 		wp_enqueue_script( 'woocommerce_subscriptions_gifting' );
-	}
-
-	/**
-	 * Returns gifting ui html elements assigning values and styles specified by whether $email is provided
-	 * @param int|id The id attribute used to differeniate items on cart and checkout pages
-	 */
-	public static function generate_gifting_html( $id, $email ) {
-		$email_field_args = array(
-			'return'      => true,
-			'label'       => 'Recipient\'s Email Address:',
-			'placeholder' => 'recipient@example.com',
-			'class'       => array( 'woocommerce_subscriptions_gifting_recipient_email' ),
-		);
-
-		if ( ! empty( $email ) && ( self::email_belongs_to_current_user( $email ) || ! is_email( $email ) ) ) {
-			array_push( $email_field_args['class'], 'woocommerce-invalid' );
-		}
-
-		$email_field = woocommerce_form_field( 'recipient_email[' . $id . ']', $email_field_args , $email );
-
-		if ( empty( $email ) ) {
-			$email_field = str_replace( '<p', '<p style ="display: none"', $email_field );
-		}
-
-		$email_field = str_replace( 'type="text"', 'type="email"', $email_field );
-
-		return '<fieldset>'
-			 . '<input type="checkbox" id="gifting_' . esc_attr( $id ) . '_option" class="woocommerce_subscription_gifting_checkbox" value="gift" ' . ( ( empty( $email ) ) ? '' : 'checked' ) . ' />' . esc_html__( 'This is a gift', 'woocommerce_subscriptions_gifting' ) . '<br />'
-			 . $email_field
-			 . wp_nonce_field( 'wcsg_add_recipient', '_wcsgnonce' )
-			 . '</fieldset>';
 	}
 
 	/**
@@ -184,6 +155,21 @@ class WCS_Gifting {
 			delete_option( 'wcsg_flush_rewrite_rules_flag' );
 		}
 
+	}
+
+	/**
+	 * Converts a text woocommerce_form_field into an email field and applies any custom attributes to the label 
+	 */
+	public static function generate_email_form_field( $field, $key, $args, $value ) {
+		unset( $args['type'] );
+		$args['return'] = true;
+		$email_field = woocommerce_form_field( $key, $args , $value );
+		if ( isset( $args['label_custom_attributes'] ) ) {
+			$email_field = str_replace( '<p', '<p . ' . implode('', $args['label_custom_attributes'] ), $email_field );
+		}
+
+		$email_field = str_replace( 'type="text"', 'type="email"', $email_field );
+		return $email_field;
 	}
 }
 WCS_Gifting::init();

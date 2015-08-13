@@ -67,7 +67,7 @@ class WCSG_Product {
 			if ( ! empty( $_POST['recipient_email'][0] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
 				$email = $_POST['recipient_email'][0];
 			}
-			echo WCS_Gifting::generate_gifting_html( 0, $email );
+			wc_get_template( 'html-add-recipient.php', array( 'id' => 0, 'email' => $email ), '', plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
 		}
 	}
 }

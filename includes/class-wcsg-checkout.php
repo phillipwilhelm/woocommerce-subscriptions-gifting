@@ -26,15 +26,15 @@ class WCSG_Checkout {
 	 */
 	public static function add_gifting_option_checkout( $quantity, $cart_item, $cart_item_key ) {
 		if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) && ! isset( $cart_item['subscription_renewal'] ) && ! isset( $cart_item['subscription_switch'] ) ) {
-
 			$email = '';
 			if ( ! empty( $_POST['recipient_email'][ $cart_item_key ] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
 				$email = $_POST['recipient_email'][ $cart_item_key ];
 			} else if ( ! empty( $cart_item['wcsg_gift_recipients_email'] ) ) {
 				$email = $cart_item['wcsg_gift_recipients_email'];
 			}
-
-			$quantity .= WCS_Gifting::generate_gifting_html( $cart_item_key, $email );
+			ob_start();
+			wc_get_template( 'html-add-recipient.php', array( 'id' => $cart_item_key, 'email' => $email ),'' , plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
+			return $quantity . ob_get_clean();
 		}
 		return $quantity;
 	}
