@@ -15,8 +15,12 @@
 		if ( 'shipping_country' == $key ) { ?>
 			<h3> <?php esc_html_e( 'Shipping Address', 'woocommerce-subscriptions-gifting' ); ?></h3><?php
 		}
-		$default_value = isset( $field['default'] ) ? $field['default'] : '';
-		woocommerce_form_field( $key, $field, ! empty( $_POST[ $key ] ) ? wc_clean( $_POST[ $key ] ) : $default_value );
+		$value = isset( $field['default'] ) ? $field['default'] : '';
+
+		if ( ! empty( $_POST[ $key ] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_new_recipient_data' ) ) {
+			$value = wc_clean( $_POST[ $key ] );
+		}
+		woocommerce_form_field( $key, $field, $value );
 	}
 	wp_nonce_field( 'wcsg_new_recipient_data', '_wcsgnonce' );
 
