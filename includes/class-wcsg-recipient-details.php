@@ -54,7 +54,7 @@ class WCSG_Recipient_Details {
 		if ( isset( $_POST['wcsg_new_recipient_customer'] ) ) {
 			$form_fields = self::get_new_recipient_account_form_fields();
 
-			$seperate_validation_fields = ['shipping_first_name','shipping_last_name','new_password','repeat_password'];
+			$seperate_validation_fields = [ 'shipping_first_name','shipping_last_name','new_password','repeat_password' ];
 
 			if ( empty( $_POST['shipping_first_name'] ) || empty( $_POST['shipping_last_name'] ) ) {
 				wc_add_notice( __( 'Please enter your name.', 'woocommerce-subscriptions-gifting' ), 'error' );
@@ -132,14 +132,14 @@ class WCSG_Recipient_Details {
 			'label'    => esc_html__( 'New Password', 'woocommerce-subscriptions-gifting' ),
 			'required' => true,
 			'password' => true,
-			'class'    => array( 'form-row-first' )
+			'class'    => array( 'form-row-first' ),
 		);
 		$personal_fields['repeat_password'] = array(
 			'type'     => 'password',
 			'label'    => esc_html__( 'Confirm New Password', 'woocommerce-subscriptions-gifting' ),
 			'required' => true,
 			'password' => true,
-			'class'    => array( 'form-row-last' )
+			'class'    => array( 'form-row-last' ),
 		);
 		return array_merge( $personal_fields, $form_fields );
 	}
