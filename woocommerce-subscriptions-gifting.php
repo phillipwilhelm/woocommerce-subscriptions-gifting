@@ -158,14 +158,14 @@ class WCS_Gifting {
 	}
 
 	/**
-	 * Converts a text woocommerce_form_field into an email field and applies any custom attributes to the label 
+	 * Converts a text woocommerce_form_field into an email field and applies any custom attributes to the label
 	 */
 	public static function generate_email_form_field( $field, $key, $args, $value ) {
 		unset( $args['type'] );
 		$args['return'] = true;
 		$email_field = woocommerce_form_field( $key, $args , $value );
 		if ( isset( $args['label_custom_attributes'] ) ) {
-			$email_field = str_replace( '<p', '<p . ' . implode('', $args['label_custom_attributes'] ), $email_field );
+			$email_field = str_replace( '<p', '<p . ' . implode( '', $args['label_custom_attributes'] ), $email_field );
 		}
 
 		$email_field = str_replace( 'type="text"', 'type="email"', $email_field );

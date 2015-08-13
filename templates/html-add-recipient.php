@@ -20,6 +20,6 @@ if ( empty( $email ) ) {
 ?>
 <fieldset>
 	<input type="checkbox" id="gifting_<?php esc_attr_e( $id, 'woocommerce_subscriptions_gifting' ) ?>_option" class="woocommerce_subscription_gifting_checkbox" value="gift" <?php esc_attr_e( ( empty( $email ) ) ? '' : 'checked', 'woocommerce_subscriptions_gifting' ) ?> /> <?php echo esc_html__( 'This is a gift', 'woocommerce_subscriptions_gifting' ) ?> <br />
-	 <?php woocommerce_form_field( 'recipient_email[' . $id . ']', $email_field_args , $email );
-	 wp_nonce_field( 'wcsg_add_recipient', '_wcsgnonce' ); ?>
+	 	<?php woocommerce_form_field( 'recipient_email[' . $id . ']', $email_field_args , $email );
+	 	wp_nonce_field( 'wcsg_add_recipient', '_wcsgnonce' ); ?>
 </fieldset>
