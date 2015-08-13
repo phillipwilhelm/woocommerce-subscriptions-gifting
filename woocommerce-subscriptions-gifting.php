@@ -92,7 +92,7 @@ class WCS_Gifting {
 	 * @param string|key
 	 * @param new_recipient_data The new recipient information for the item
 	*/
-	public static function update_cart_item_key( $item, $key , $new_recipient_data ) {
+	public static function update_cart_item_key( $item, $key, $new_recipient_data ) {
 
 		if ( empty( $item['wcsg_gift_recipients_email'] ) || $item['wcsg_gift_recipients_email'] != $new_recipient_data ) {
 			$new_key        = WC()->cart->generate_cart_id( $item['product_id'], $item['variation_id'], $item['variation'], array( 'wcsg_gift_recipients_email' => $new_recipient_data ) );

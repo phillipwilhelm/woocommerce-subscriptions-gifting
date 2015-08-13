@@ -31,19 +31,19 @@ class WCSG_Recipient_Management {
 			if ( $subscription->can_be_updated_to( 'on-hold' ) ) {
 				$actions['suspend'] = array(
 					'url'  => self::get_recipient_change_status_link( $subscription->id, 'on-hold', $subscription->recipient_user ),
-					'name' => __( 'Suspend', 'woocommerce-subscriptions-gifting' )
+					'name' => __( 'Suspend', 'woocommerce-subscriptions-gifting' ),
 				);
 			} else if ( $subscription->can_be_updated_to( 'active' ) && ! $subscription->needs_payment() ) {
 				$actions['reactivate'] = array(
 					'url'  => self::get_recipient_change_status_link( $subscription->id, 'active', $subscription->recipient_user ),
-					'name' => __( 'Reactivate', 'woocommerce-subscriptions-gifting' )
+					'name' => __( 'Reactivate', 'woocommerce-subscriptions-gifting' ),
 				);
 			}
 
 			if ( $subscription->can_be_updated_to( 'cancelled' ) ) {
 				$actions['cancel'] = array(
 					'url'  => self::get_recipient_change_status_link( $subscription->id, 'cancelled', $subscription->recipient_user ),
-					'name' => __( 'Cancel', 'woocommerce-subscriptions-gifting' )
+					'name' => __( 'Cancel', 'woocommerce-subscriptions-gifting' ),
 				);
 			}
 		}

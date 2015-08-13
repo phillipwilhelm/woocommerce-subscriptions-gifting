@@ -40,7 +40,7 @@ class WCSG_Cart {
 	 * Updates the cart items for changes made to recipient infomation on the cart page.
 	 */
 	public static function cart_update( $cart_updated ) {
-		foreach( WC()->cart->cart_contents as $key => $item ) {
+		foreach ( WC()->cart->cart_contents as $key => $item ) {
 			WCS_Gifting::update_cart_item_key( $item, $key, $_POST['recipient_email'][ $key ] );
 		}
 		return $cart_updated;
