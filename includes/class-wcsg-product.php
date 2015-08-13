@@ -34,8 +34,8 @@ class WCSG_Product {
 			} else {
 				throw new Exception( __( 'Invalid email address.', 'woocommerce-subscriptions-gifting' ) );
 			}
-		} else {
-			throw new Exception( __( 'There was an error with your request. Please try again..', 'woocommerce-subscriptions-gifting' ) );
+		} else if ( isset( $_POST['recipient_email'] ) ) {
+			throw new Exception( __( 'There was an error with your request PRODUCT. Please try again..', 'woocommerce-subscriptions-gifting' ) );
 		}
 		return $cart_item_data;
 	}
