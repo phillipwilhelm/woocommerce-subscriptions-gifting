@@ -48,9 +48,14 @@ class WCS_Gifting {
 	 */
 	public static function init() {
 
+		register_activation_hook( __FILE__, __CLASS__ . '::wcsg_install' );
+
 		add_action( 'wp_enqueue_scripts', __CLASS__ . '::gifting_scripts' );
 
 		add_action( 'plugins_loaded', __CLASS__ . '::load_dependant_classes' );
+
+		add_action( 'init', __CLASS__ . '::maybe_flush_rewrite_rules' );
+
 	}
 
 	/**
@@ -141,7 +146,7 @@ class WCS_Gifting {
 	 * @param string|key
 	 * @param new_recipient_data The new recipient information for the item
 	 */
-	public static function update_cart_item_key( $item, $key , $new_recipient_data ) {
+	public static function update_cart_item_key( $item, $key, $new_recipient_data ) {
 		if ( empty( $item['wcsg_gift_recipients_email'] ) || $item['wcsg_gift_recipients_email'] != $new_recipient_data ) {
 			$cart_item_data = ( empty( $new_recipient_data ) ) ? null : array( 'wcsg_gift_recipients_email' => $new_recipient_data );
 			$new_key        = WC()->cart->generate_cart_id( $item['product_id'], $item['variation_id'], $item['variation'], $cart_item_data );
@@ -159,6 +164,26 @@ class WCS_Gifting {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Install wcsg
+	 */
+	public static function wcsg_install() {
+		if ( 'false' === get_option( 'wcsg_flush_rewrite_rules_flag', 'false' ) ) {
+			add_option( 'wcsg_flush_rewrite_rules_flag', 'true' );
+		}
+	}
+
+	/**
+	 * Flush rewrite rules if they haven't been flushed since plugin activation
+	 */
+	public static function maybe_flush_rewrite_rules() {
+		if ( 'true' === get_option( 'wcsg_flush_rewrite_rules_flag', 'false' ) ) {
+			flush_rewrite_rules();
+			delete_option( 'wcsg_flush_rewrite_rules_flag' );
+		}
+
 	}
 }
 WCS_Gifting::init();

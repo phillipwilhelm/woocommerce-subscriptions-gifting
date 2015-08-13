@@ -97,7 +97,7 @@ class WCSG_Email {
 					WC()->mailer();
 					$user_password = $new_customer_data['user_pass'];
 					$current_user = wp_get_current_user();
-					$subscription_purchaser = $current_user->first_name . ' ' . $current_user->last_name;
+					$subscription_purchaser = self::get_purchaser_name_for_email( $current_user->id );
 					do_action( 'wcsg_created_customer_notification', $customer_id, $user_password, $subscription_purchaser );
 					break;
 				}
@@ -116,6 +116,22 @@ class WCSG_Email {
 			WC()->mailer();
 			do_action( current_filter() . '_recipient', $order_id );
 		}
+	}
+
+	/**
+	 * Returns a combination of the customer's first name, last name and email depending on what the customer has set.
+	 *
+	 * @param int $user_id The ID of the customer user
+	 */
+	public static function get_purchaser_name_for_email( $user_id ) {
+		$user = get_user_by( 'id', $user_id );
+		$name = '';
+		if ( ! empty( $user->first_name ) ) {
+			$name = $user->first_name . ( ( ! empty( $user->last_name ) ) ? ' ' . $user->last_name : '' ) . ' (' . $user->user_email . ')';
+		} else {
+			$name = $user->user_email;
+		}
+		return $name;
 	}
 
 }

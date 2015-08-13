@@ -14,6 +14,7 @@ class WCSG_Checkout {
 		add_action( 'woocommerce_checkout_process', __CLASS__ . '::update_cart_before_checkout' );
 
 	}
+
 	/**
 	 * Adds gifting ui elements to the checkout page, adding in previously set
 	 * recipient information if it exists.
@@ -105,16 +106,18 @@ class WCSG_Checkout {
 	 * If an error occurs schedule a checkout reload so the user can see the emails causing the errors.
 	 */
 	public static function update_cart_before_checkout() {
-		if ( ! empty( $_POST['recipient_email'] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
-			$recipients = $_POST['recipient_email'];
-			if ( ! WCS_Gifting::validate_recipient_emails( $recipients ) ) {
-				WC()->session->set( 'reload_checkout', true );
+		if ( ! empty( $_POST['recipient_email'] ) ) {
+			if ( ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
+				$recipients = $_POST['recipient_email'];
+				if ( ! WCS_Gifting::validate_recipient_emails( $recipients ) ) {
+					WC()->session->set( 'reload_checkout', true );
+				}
+				foreach ( WC()->cart->cart_contents as $key => $item ) {
+					WCS_Gifting::update_cart_item_key( $item, $key, $_POST['recipient_email'][ $key ] );
+				}
+			} else {
+				wc_add_notice( __( 'There was an error with your request. Please try again..', 'woocommerce-subscriptions-gifting' ), 'error' );
 			}
-			foreach ( WC()->cart->cart_contents as $key => $item ) {
-				WCS_Gifting::update_cart_item_key( $item, $key, $_POST['recipient_email'][ $key ] );
-			}
-		} else {
-			wc_add_notice( __( 'There was an error with your request. Please try again..', 'woocommerce-subscriptions-gifting' ), 'error' );
 		}
 	}
 }
