@@ -62,9 +62,11 @@ class WCSG_Product {
 	 */
 	public static function add_gifting_option_product() {
 		global $product;
-		$email = ( ! empty( $_POST['recipient_email'][0] ) ) ? $_POST['recipient_email'][0] : '';
-
 		if ( WC_Subscriptions_Product::is_subscription( $product ) && ! isset( $_GET['switch-subscription'] ) ) {
+			$email = '';
+			if ( ! empty( $_POST['recipient_email'][0] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
+				$email = $_POST['recipient_email'][0];
+			}
 			echo WCS_Gifting::generate_gifting_html( 0, $email );
 		}
 	}

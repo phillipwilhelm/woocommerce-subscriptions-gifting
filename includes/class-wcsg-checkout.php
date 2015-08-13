@@ -28,7 +28,7 @@ class WCSG_Checkout {
 		if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) && ! isset( $cart_item['subscription_renewal'] ) && ! isset( $cart_item['subscription_switch'] ) ) {
 
 			$email = '';
-			if ( ! empty( $_POST['recipient_email'][ $cart_item_key ] ) ) {
+			if ( ! empty( $_POST['recipient_email'][ $cart_item_key ] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
 				$email = $_POST['recipient_email'][ $cart_item_key ];
 			} else if ( ! empty( $cart_item['wcsg_gift_recipients_email'] ) ) {
 				$email = $cart_item['wcsg_gift_recipients_email'];
