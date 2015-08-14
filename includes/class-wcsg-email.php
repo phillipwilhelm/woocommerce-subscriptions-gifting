@@ -111,8 +111,9 @@ class WCSG_Email {
 	 * @param int $order_id The ID of the renewal order with a new status of processing/completed
 	 */
 	public static function maybe_send_recipient_renewal_notification( $order_id ) {
-		$subscription = wcs_get_subscriptions_for_renewal_order( $order_id );
-		if ( ! empty( get_post_meta( array_values( $subscription )[0]->id, '_recipient_user' )[0] ) ) {
+		$subscriptions = wcs_get_subscriptions_for_renewal_order( $order_id );
+		$subscriptions = array_values( $subscriptions );
+		if ( ! empty( get_post_meta( $subscriptions[0]->id, '_recipient_user' )[0] ) ) {
 			WC()->mailer();
 			do_action( current_filter() . '_recipient', $order_id );
 		}

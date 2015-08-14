@@ -119,7 +119,7 @@ class WCSG_Recipient_Details {
 		$form_fields = WC()->countries->get_address_fields( '', 'shipping_', true );
 
 		$name_fields = array( 'shipping_first_name', 'shipping_last_name' );
-		$personal_fields = [];
+		$personal_fields = array();
 
 		//move the name fields to the front of the array for display purposes.
 		foreach ( $name_fields as $element ) {
