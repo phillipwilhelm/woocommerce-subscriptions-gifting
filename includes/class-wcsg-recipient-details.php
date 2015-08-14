@@ -54,7 +54,7 @@ class WCSG_Recipient_Details {
 		if ( isset( $_POST['wcsg_new_recipient_customer'] ) ) {
 			$form_fields = self::get_new_recipient_account_form_fields();
 
-			$seperate_validation_fields = [ 'shipping_first_name','shipping_last_name','new_password','repeat_password' ];
+			$seperate_validation_fields = array( 'shipping_first_name','shipping_last_name','new_password','repeat_password' );
 
 			if ( empty( $_POST['shipping_first_name'] ) || empty( $_POST['shipping_last_name'] ) ) {
 				wc_add_notice( __( 'Please enter your name.', 'woocommerce-subscriptions-gifting' ), 'error' );
