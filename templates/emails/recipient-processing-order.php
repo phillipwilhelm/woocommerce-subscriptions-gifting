@@ -36,11 +36,11 @@ foreach ( $subscriptions as $subscription_id ) {
 		foreach ( $items as $item ) {
 			echo '<tr><td style="text-align:left; vertical-align:middle; border: 1px solid #eee; word-wrap:break-word;">' . sprintf( '<a href="%s">%s</a>', esc_url( get_permalink( $item['product_id'] ) ), esc_attr( $item['name'] ) ). '</td>';
 			echo '<td style="text-align:left; vertical-align:middle; border: 1px solid #eee; word-wrap:break-word;">' . esc_attr( $item['item_meta']['_qty'][0] ) . '</td>';
-			echo '<td style="text-align:left; vertical-align:middle; border: 1px solid #eee; word-wrap:break-word;">' . esc_attr( WC_Subscriptions_Product::get_price_string( $item['product_id'], array( 'price' => wc_price( $item['line_subtotal'] ) ) ) ) . '</td></tr>';
+			echo '<td style="text-align:left; vertical-align:middle; border: 1px solid #eee; word-wrap:break-word;">' . wp_kses_post( WC_Subscriptions_Product::get_price_string( $item['product_id'], array( 'price' => wc_price( $item['line_subtotal'] ) ) ) ) . '</td></tr>';
 		} ?>
 		<tr>
 			<th scope="row" colspan="2" style="border: 1px solid #eee;"><?php echo esc_html( 'Total' ); ?></th>
-			<td class="product-total" style="border: 1px solid #eee;"><?php echo '<b>' . esc_attr( $total ) . '</b>'; ?></td>
+			<td class="product-total" style="border: 1px solid #eee;"><?php echo '<b>' . wp_kses_post( $total ) . '</b>'; ?></td>
 		</tr>
 		</tbody>
 	</table><?php
