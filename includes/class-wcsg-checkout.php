@@ -20,9 +20,10 @@ class WCSG_Checkout {
 	 * This needs to occur right before WooCommerce processes the cart.
 	 */
 	public static function update_cart_before_checkout() {
-
-		foreach ( WC()->cart->cart_contents as $key => $item ) {
-			WCS_Gifting::update_cart_item_key( $item, $key, $_POST['recipient_email'][ $key ] );
+		if ( isset( $_POST['recipient_email'] ) ) {
+			foreach( WC()->cart->cart_contents as $key => $item ) {
+				WCS_Gifting::update_cart_item_key( $item, $key, $_POST['recipient_email'][ $key ] );
+			}
 		}
 	}
 

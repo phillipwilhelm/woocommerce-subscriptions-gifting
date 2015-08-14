@@ -159,10 +159,11 @@ class WCSG_Recipient_Management {
 	 * Gets an array of subscription ids which have been gifted to a user
 	 *
 	 * @param user_id The user id of the recipient
+	 * @param $order_id The Order ID which contains the subscription
 	 * @return array An array of subscriptions gifted to the user
 	*/
-	public static function get_recipient_subscriptions( $user_id ) {
-		return get_posts( array(
+	public static function get_recipient_subscriptions( $user_id, $order_id = 0 ) {
+		$args = array(
 			'posts_per_page' => -1,
 			'post_status'    => 'any',
 			'post_type'      => 'shop_subscription',
@@ -172,7 +173,12 @@ class WCSG_Recipient_Management {
 			'meta_value'     => $user_id,
 			'meta_compare'   => '=',
 			'fields'         => 'ids',
-		) );
+		);
+
+		if ( 0 != $order_id ) {
+			$args['post_parent'] = $order_id;
+		}
+		return get_posts( $args );
 	}
 }
 WCSG_Recipient_Management::init();
