@@ -113,7 +113,8 @@ class WCSG_Email {
 	public static function maybe_send_recipient_renewal_notification( $order_id ) {
 		$subscriptions = wcs_get_subscriptions_for_renewal_order( $order_id );
 		$subscriptions = array_values( $subscriptions );
-		if ( ! empty( get_post_meta( $subscriptions[0]->id, '_recipient_user', true ) ) ) {
+		$recipient_id  = get_post_meta( $subscriptions[0]->id, '_recipient_user', true )
+		if ( ! empty( $recipient_id ) ) {
 			WC()->mailer();
 			do_action( current_filter() . '_recipient', $order_id );
 		}
