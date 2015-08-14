@@ -63,9 +63,9 @@ class WCSG_Email_Customer_New_Account extends WC_Email {
 			'subscription_purchaser' => $this->subscription_owner,
 			'sent_to_admin'          => false,
 			'plain_text'             => false,
-		),
-		'',
-		$this->template_base
+			),
+			'',
+			$this->template_base
 		);
 		return ob_get_clean();
 	}
@@ -83,10 +83,10 @@ class WCSG_Email_Customer_New_Account extends WC_Email {
 			'subscription_purchaser' => $this->subscription_owner,
 			'sent_to_admin'          => false,
 			'plain_text'             => true,
-		),
-		'',
-		$this->template_base
-		);
+			),
+			'',
+			$this->template_base
+			);
 		return ob_get_clean();
 	}
 }
