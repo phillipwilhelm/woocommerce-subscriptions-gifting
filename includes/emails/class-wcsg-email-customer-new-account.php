@@ -86,7 +86,7 @@ class WCSG_Email_Customer_New_Account extends WC_Email {
 			),
 			'',
 			$this->template_base
-			);
+		);
 		return ob_get_clean();
 	}
 }
