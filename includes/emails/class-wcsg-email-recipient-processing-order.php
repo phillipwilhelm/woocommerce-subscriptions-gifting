@@ -55,9 +55,9 @@ class WCSG_Email_Recipient_Processing_Order extends WC_Email {
 			'subscriptions'          => $this->subscriptions,
 			'sent_to_admin'          => false,
 			'plain_text'             => false,
-		),
-		'',
-		$this->template_base
+			),
+			'',
+			$this->template_base
 		);
 		return ob_get_clean();
 	}
