@@ -20,11 +20,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <?php
 	foreach ( $subscriptions as $subscription_id ) {
-		error_log('inside foreach');
 		$subscription = wcs_get_subscription( $subscription_id );
 		$items        = $subscription->get_items();
 		$total        = $subscription->get_formatted_order_total();
-		error_log('printing sub title: ' . $subscription_id );
 		echo '<h3>' . sprintf( __( 'Subscription #%s', 'woocommerce-subscriptions-gifting' ), $subscription_id ) . '</h3>';?>
 		<table cellspacing="0" cellpadding="6" style="width: 100%; border: 1px solid #eee;" border="1" bordercolor="#eee">
 			<thead>
@@ -36,13 +34,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</thead>
 			<tbody><?php
 		foreach ( $items as $item ) {
-			error_log('getting items');
 			echo '<tr><td style="text-align:left; vertical-align:middle; border: 1px solid #eee; word-wrap:break-word;">' . sprintf( '<a href="%s">%s</a>', get_permalink( $item['product_id'] ), $item['name'] ) . '</td>';
 			echo '<td style="text-align:left; vertical-align:middle; border: 1px solid #eee; word-wrap:break-word;">' . $item['item_meta']['_qty'][0] . '</td>';
 			echo '<td style="text-align:left; vertical-align:middle; border: 1px solid #eee; word-wrap:break-word;">' . WC_Subscriptions_Product::get_price_string( $item['product_id'], array( 'price' => wc_price( $item['line_subtotal'] ) ) ) . '</td></tr>';
-		}
-		error_log('printing sub total');
-		 ?>
+		} ?>
 			<tr>
 				<th scope="row" colspan="2" style="border: 1px solid #eee;"><?php echo esc_html( 'Total' ); ?></th>
 				<td class="product-total" style="border: 1px solid #eee;"><?php echo '<b>' . $total . '</b>'; ?></td>
