@@ -17,7 +17,7 @@ class WCSG_Email_Recipient_Processing_Order extends WC_Email {
 		$this->subject      	= __( 'Your new subscriptions at {site_title}', 'woocommerce-subscriptions-gifting' );
 
 		$this->template_html  = 'emails/recipient-processing-order.php';
-		//$this->template_plain = 'emails/plain/new-recipient-customer.php';
+		$this->template_plain = 'emails/plain/recipient-processing-order.php';
 		$this->template_base  = plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/';
 
 		// Trigger for this email
@@ -66,6 +66,19 @@ class WCSG_Email_Recipient_Processing_Order extends WC_Email {
 	 * get_content_plain function.
 	 */
 	function get_content_plain() {
+		ob_start();
+		wc_get_template( $this->template_plain, array(
+			'email_heading'          => $this->get_heading(),
+			'blogname'               => $this->get_blogname(),
+			'subscription_purchaser' => $this->subscription_owner,
+			'subscriptions'          => $this->subscriptions,
+			'sent_to_admin'          => false,
+			'plain_text'             => true,
+			),
+			'',
+			$this->template_base
+		);
+		return ob_get_clean();
 
 	}
 }

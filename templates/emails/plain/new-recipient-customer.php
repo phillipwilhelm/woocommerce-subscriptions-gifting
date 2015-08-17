@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-echo '= ' . $email_heading . ' =\n\n';
+echo '= ' . $email_heading . " =\n\n";
 
 echo sprintf( __( 'Hi there,', 'woocommerce-subscriptions-gifting' ) ) . "\n\n";
 echo sprintf( __( '%s just purchased a subscription for you at %s so we\'ve created an account for you to manage the subscription.', 'woocommerce-subscriptions-gifting' ), esc_html( $subscription_purchaser ), esc_html( $blogname ) ) . "\n\n";
