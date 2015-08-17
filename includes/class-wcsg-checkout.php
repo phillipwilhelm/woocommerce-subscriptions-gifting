@@ -21,7 +21,7 @@ class WCSG_Checkout {
 	 */
 	public static function update_cart_before_checkout() {
 
-		foreach( WC()->cart->cart_contents as $key => $item ) {
+		foreach ( WC()->cart->cart_contents as $key => $item ) {
 			WCS_Gifting::update_cart_item_key( $item, $key, $_POST['recipient_email'][ $key ] );
 		}
 	}

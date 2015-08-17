@@ -54,7 +54,7 @@ class WCSG_Recipient_Details {
 		if ( isset( $_POST['wcsg_new_recipient_customer'] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_new_recipient_data' ) ) {
 			$form_fields = self::get_new_recipient_account_form_fields();
 
-			$seperate_validation_fields = ['shipping_first_name','shipping_last_name','new_password','repeat_password'];
+			$seperate_validation_fields = array( 'shipping_first_name','shipping_last_name','new_password','repeat_password' );
 
 			if ( empty( $_POST['shipping_first_name'] ) || empty( $_POST['shipping_last_name'] ) ) {
 				wc_add_notice( __( 'Please enter your name.', 'woocommerce-subscriptions-gifting' ), 'error' );
@@ -124,7 +124,7 @@ class WCSG_Recipient_Details {
 		$form_fields = WC()->countries->get_address_fields( '', 'shipping_', true );
 
 		$name_fields = array( 'shipping_first_name', 'shipping_last_name' );
-		$personal_fields = [];
+		$personal_fields = array();
 
 		//move the name fields to the front of the array for display purposes.
 		foreach ( $name_fields as $element ) {

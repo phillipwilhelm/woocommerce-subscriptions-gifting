@@ -32,8 +32,9 @@ class WCSG_Email_Completed_Renewal_Order extends WCS_Email_Completed_Renewal_Ord
 	function trigger( $order_id ) {
 		if ( $order_id ) {
 			$this->object    = wc_get_order( $order_id );
-			$subscription    = wcs_get_subscriptions_for_renewal_order( $order_id );
-			$recipient_id    = get_post_meta( array_values( $subscription )[0]->id, '_recipient_user', true );
+			$subscriptions   = wcs_get_subscriptions_for_renewal_order( $order_id );
+			$subscriptions   = array_values( $subscriptions );
+			$recipient_id    = get_post_meta( $subscriptions[0]->id, '_recipient_user', true );
 			$this->recipient = get_userdata( $recipient_id )->user_email;
 		}
 
