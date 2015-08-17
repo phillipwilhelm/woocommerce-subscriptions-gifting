@@ -1,6 +1,6 @@
 <p><?php
 	esc_html_e( 'We just need a few details from you to complete your account creation.', 'woocommerce-subscriptions-gifting' ); ?><br><?php
-	/* translators: 1$: user's email, 2$-3$: opening and closing link tags, logs the user out.*/
+	// translators: 1$: user's email, 2$-3$: opening and closing link tags, logs the user out.
 	printf( esc_html__( '(not %1$s? %2$sSign out%3$s)', 'woocommerce-subscriptions-gifting' ),
 		esc_html( wp_get_current_user()->user_email ),
 		'<a href="' . esc_url( wc_get_endpoint_url( 'customer-logout', '', wc_get_page_permalink( 'myaccount' ) ) ) . '">',
