@@ -30,7 +30,7 @@ class WCSG_Query extends WC_Query {
 		wp_enqueue_script( 'wc-country-select' );
 		wp_enqueue_script( 'wc-address-i18n' );
 		if ( is_main_query() && in_the_loop() && is_page() && isset( $wp->query_vars['new-recipient-account'] ) ) {
-			$title = esc_html_e( 'Account Details', 'woocommerce-subscriptions-gifting' );
+			$title = __( 'Account Details', 'woocommerce-subscriptions-gifting' );
 		}
 
 		return $title;
