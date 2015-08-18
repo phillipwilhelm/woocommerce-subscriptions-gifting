@@ -56,8 +56,6 @@ class WCS_Gifting {
 
 		add_action( 'init', __CLASS__ . '::maybe_flush_rewrite_rules' );
 
-		add_filter( 'woocommerce_form_field_email', __CLASS__ . '::generate_email_form_field', 1, 4 );
-
 	}
 
 	/**
@@ -156,20 +154,25 @@ class WCS_Gifting {
 		}
 
 	}
-
 	/**
-	 * Converts a text woocommerce_form_field into an email field and applies any custom attributes to the label
+	 * Generates an array of arguments used to create the recipient email html fields
+	 * @return array | email_field_args A set of html attributes
 	 */
-	public static function generate_email_form_field( $field, $key, $args, $value ) {
-		unset( $args['type'] );
-		$args['return'] = true;
-		$email_field = woocommerce_form_field( $key, $args , $value );
-		if ( isset( $args['label_custom_attributes'] ) ) {
-			$email_field = str_replace( '<p', '<p . ' . implode( '', $args['label_custom_attributes'] ), $email_field );
+	public static function get_recipient_email_field_args( $email ) {
+		$email_field_args = array(
+			'placeholder'      => 'recipient@example.com',
+			'class'            => array( 'woocommerce_subscriptions_gifting_recipient_email' ),
+			'style_attributes' => array(),
+		);
+
+		if ( ! empty( $email ) && ( WCS_Gifting::email_belongs_to_current_user( $email ) || ! is_email( $email ) ) ) {
+			array_push( $email_field_args['class'], 'woocommerce-invalid' );
 		}
 
-		$email_field = str_replace( 'type="text"', 'type="email"', $email_field );
-		return $email_field;
+		if ( empty( $email ) ) {
+			array_push( $email_field_args['style_attributes'], 'display: none' );
+		}
+		return apply_filters( 'wcsg_recipient_email_field_args', $email_field_args, $email );
 	}
 }
 WCS_Gifting::init();

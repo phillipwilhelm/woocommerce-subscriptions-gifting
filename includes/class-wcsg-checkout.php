@@ -33,7 +33,7 @@ class WCSG_Checkout {
 				$email = $cart_item['wcsg_gift_recipients_email'];
 			}
 			ob_start();
-			wc_get_template( 'html-add-recipient.php', array( 'id' => $cart_item_key, 'email' => $email ),'' , plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
+			wc_get_template( 'html-add-recipient.php', array( 'email_field_args' => WCS_Gifting::get_recipient_email_field_args( $email ), 'id' => $cart_item_key, 'email' => $email ),'' , plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
 			return $quantity . ob_get_clean();
 		}
 		return $quantity;
