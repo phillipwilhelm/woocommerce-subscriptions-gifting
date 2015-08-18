@@ -65,7 +65,7 @@ class WCSG_Checkout {
 					}
 					$password = wp_generate_password();
 					$recipient_user_id = wc_create_new_customer( $recipient_email, $username, $password );
-					add_user_meta( $recipient_user_id, 'wcsg_update_account', true );
+					update_user_meta( $recipient_user_id, 'wcsg_update_account', 'true' );
 				}
 				update_post_meta( $subscription->id, '_recipient_user', $recipient_user_id );
 
