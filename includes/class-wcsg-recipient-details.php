@@ -39,7 +39,7 @@ class WCSG_Recipient_Details {
 			if ( 'true' === get_user_meta( $current_user->ID, 'wcsg_update_account', true )  && ! isset( $wp->query_vars['new-recipient-account'] ) ) {
 				wp_redirect( wc_get_page_permalink( 'myaccount' ) . 'new-recipient-account/' );
 				exit();
-			} else if ( empty( get_user_meta( $current_user->ID, 'wcsg_update_account', true ) ) && isset( $wp->query_vars['new-recipient-account'] ) ) {
+			} else if ( 'true' !== get_user_meta( $current_user->ID, 'wcsg_update_account', true ) && isset( $wp->query_vars['new-recipient-account'] ) ) {
 				wp_redirect( wc_get_page_permalink( 'myaccount' ) );
 				exit();
 			}
