@@ -51,10 +51,10 @@ class WCSG_Recipient_Details {
 	 * if there are no errors in validation.
 	 */
 	public static function update_recipient_details() {
-		if ( isset( $_POST['wcsg_new_recipient_customer'] ) ) {
+		if ( isset( $_POST['wcsg_new_recipient_customer'] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_new_recipient_data' ) ) {
 			$form_fields = self::get_new_recipient_account_form_fields();
 
-			$seperate_validation_fields = ['shipping_first_name','shipping_last_name','new_password','repeat_password'];
+			$seperate_validation_fields = array( 'shipping_first_name','shipping_last_name','new_password','repeat_password' );
 
 			if ( empty( $_POST['shipping_first_name'] ) || empty( $_POST['shipping_last_name'] ) ) {
 				wc_add_notice( __( 'Please enter your name.', 'woocommerce-subscriptions-gifting' ), 'error' );
@@ -81,8 +81,11 @@ class WCSG_Recipient_Details {
 				$user = get_user_by( 'id' , $_POST['wcsg_new_recipient_customer'] );
 				$address = array();
 				foreach ( $form_fields as $key => $field ) {
-					if ( false == strpos( $key, 'password' ) ) {
+					if ( false == strpos( $key, 'password' ) && 'set_billing' != $key ) {
 						update_user_meta( $user->ID, $key, wc_clean( $_POST[ $key ] ) );
+						if ( isset( $_POST['set_billing'] ) ) {
+							update_user_meta( $user->ID, str_replace( 'shipping', 'billing', $key ), wc_clean( $_POST[ $key ] ) );
+						}
 						$address[ str_replace( 'shipping' . '_', '', $key ) ] = wc_clean( $_POST[ $key ] );
 					}
 				}
@@ -108,6 +111,8 @@ class WCSG_Recipient_Details {
 				wp_safe_redirect( wc_get_page_permalink( 'myaccount' ) );
 				exit;
 			}
+		} else if ( isset( $_POST['wcsg_new_recipient_customer'] ) ) {
+			wc_add_notice( __( 'There was an error with your request to update your account. Please try again..', 'woocommerce-subscriptions-gifting' ), 'error' );
 		}
 	}
 
@@ -119,7 +124,7 @@ class WCSG_Recipient_Details {
 		$form_fields = WC()->countries->get_address_fields( '', 'shipping_', true );
 
 		$name_fields = array( 'shipping_first_name', 'shipping_last_name' );
-		$personal_fields = [];
+		$personal_fields = array();
 
 		//move the name fields to the front of the array for display purposes.
 		foreach ( $name_fields as $element ) {
@@ -132,15 +137,23 @@ class WCSG_Recipient_Details {
 			'label'    => esc_html__( 'New Password', 'woocommerce-subscriptions-gifting' ),
 			'required' => true,
 			'password' => true,
-			'class'    => array( 'form-row-first' )
+			'class'    => array( 'form-row-first' ),
 		);
 		$personal_fields['repeat_password'] = array(
 			'type'     => 'password',
 			'label'    => esc_html__( 'Confirm New Password', 'woocommerce-subscriptions-gifting' ),
 			'required' => true,
 			'password' => true,
-			'class'    => array( 'form-row-last' )
+			'class'    => array( 'form-row-last' ),
 		);
+		$form_fields['set_billing'] = array(
+			'type'     => 'checkbox',
+			'label'    => esc_html__( 'Set my billing address to the same as above.', 'woocommerce-subscriptions-gifting' ),
+			'class'    => array( 'form-row' ),
+			'required' => false,
+			'default'  => 1,
+		);
+
 		return array_merge( $personal_fields, $form_fields );
 	}
 }

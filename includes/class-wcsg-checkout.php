@@ -11,19 +11,8 @@ class WCSG_Checkout {
 
 		add_filter( 'woocommerce_subscriptions_recurring_cart_key', __CLASS__ . '::add_recipient_email_recurring_cart_key', 1, 2 );
 
-		add_action( 'woocommerce_before_checkout_process', __CLASS__ . '::update_cart_before_checkout' );
+		add_action( 'woocommerce_checkout_process', __CLASS__ . '::update_cart_before_checkout' );
 
-	}
-
-	/**
-	 * Updates the cart items for changes made to recipient infomation on the checkout page.
-	 * This needs to occur right before WooCommerce processes the cart.
-	 */
-	public static function update_cart_before_checkout() {
-
-		foreach( WC()->cart->cart_contents as $key => $item ) {
-			WCS_Gifting::update_cart_item_key( $item, $key, $_POST['recipient_email'][ $key ] );
-		}
 	}
 
 	/**
@@ -37,11 +26,15 @@ class WCSG_Checkout {
 	 */
 	public static function add_gifting_option_checkout( $quantity, $cart_item, $cart_item_key ) {
 		if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) && ! isset( $cart_item['subscription_renewal'] ) && ! isset( $cart_item['subscription_switch'] ) ) {
-			if ( ! isset( $cart_item['wcsg_gift_recipients_email'] ) ) {
-				$quantity .= WCS_Gifting::generate_gifting_html( $cart_item_key, '' );
-			} else {
-				$quantity .= WCS_Gifting::generate_gifting_html( $cart_item_key, $cart_item['wcsg_gift_recipients_email'] );
+			$email = '';
+			if ( ! empty( $_POST['recipient_email'][ $cart_item_key ] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
+				$email = $_POST['recipient_email'][ $cart_item_key ];
+			} else if ( ! empty( $cart_item['wcsg_gift_recipients_email'] ) ) {
+				$email = $cart_item['wcsg_gift_recipients_email'];
 			}
+			ob_start();
+			wc_get_template( 'html-add-recipient.php', array( 'email_field_args' => WCS_Gifting::get_recipient_email_field_args( $email ), 'id' => $cart_item_key, 'email' => $email ),'' , plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
+			return $quantity . ob_get_clean();
 		}
 		return $quantity;
 	}
@@ -55,11 +48,6 @@ class WCSG_Checkout {
 	 */
 	public static function subscription_created( $subscription, $order, $recurring_cart ) {
 		foreach ( $recurring_cart->cart_contents as $key => $item ) {
-			// check for last minute changes made on the checkout page
-			if ( isset( $_POST['recipient_email'][ $key ] ) ) {
-				$item['wcsg_gift_recipients_email'] = $_POST['recipient_email'][ $key ];
-			}
-
 			if ( ! empty( $item['wcsg_gift_recipients_email'] ) ) {
 
 				$recipient_email = $item['wcsg_gift_recipients_email'];
@@ -112,5 +100,25 @@ class WCSG_Checkout {
 
 	}
 
+	/**
+	 * Updates the cart items for changes made to recipient infomation on the checkout page.
+	 * This needs to occur right before WooCommerce processes the cart.
+	 * If an error occurs schedule a checkout reload so the user can see the emails causing the errors.
+	 */
+	public static function update_cart_before_checkout() {
+		if ( ! empty( $_POST['recipient_email'] ) ) {
+			if ( ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
+				$recipients = $_POST['recipient_email'];
+				if ( ! WCS_Gifting::validate_recipient_emails( $recipients ) ) {
+					WC()->session->set( 'reload_checkout', true );
+				}
+				foreach ( WC()->cart->cart_contents as $key => $item ) {
+					WCS_Gifting::update_cart_item_key( $item, $key, $_POST['recipient_email'][ $key ] );
+				}
+			} else {
+				wc_add_notice( __( 'There was an error with your request. Please try again..', 'woocommerce-subscriptions-gifting' ), 'error' );
+			}
+		}
+	}
 }
 WCSG_Checkout::init();
