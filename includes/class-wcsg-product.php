@@ -15,13 +15,29 @@ class WCSG_Product {
 
 	/**
 	 * Attaches recipient information to cart item data when a subscription is added to cart via product page.
+	 * If the recipient email is invalid (incorrect email format or belongs to the current user) an exception is thrown
+	 * and caught by WooCommerce add to cart function - preventing the product being entered into the cart.
 	 *
 	 * @param cart_item_data
 	 * @return cart_item_data
 	 */
 	public static function add_recipient_data( $cart_item_data ) {
 		if ( isset( $_POST['recipient_email'] ) && ! empty( $_POST['recipient_email'][0] ) ) {
-			$cart_item_data['wcsg_gift_recipients_email'] = $_POST['recipient_email'][0];
+			if ( ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
+				$recipient_email = sanitize_email( $_POST['recipient_email'][0] );
+
+				if ( $recipient_email == $_POST['recipient_email'][0] && is_email( $recipient_email ) ) {
+					if ( WCS_Gifting::email_belongs_to_current_user( $recipient_email ) ) {
+						throw new Exception( __( 'You cannot gift a product to yourself.', 'woocommerce-subscriptions-gifting' ) );
+					} else {
+						$cart_item_data['wcsg_gift_recipients_email'] = $recipient_email;
+					}
+				} else {
+					throw new Exception( __( 'Invalid email address.', 'woocommerce-subscriptions-gifting' ) );
+				}
+			} else {
+				throw new Exception( __( 'There was an error with your request. Please try again..', 'woocommerce-subscriptions-gifting' ) );
+			}
 		}
 		return $cart_item_data;
 	}
@@ -47,7 +63,11 @@ class WCSG_Product {
 	public static function add_gifting_option_product() {
 		global $product;
 		if ( WC_Subscriptions_Product::is_subscription( $product ) && ! isset( $_GET['switch-subscription'] ) ) {
-			echo WCS_Gifting::generate_gifting_html( 0, '' );
+			$email = '';
+			if ( ! empty( $_POST['recipient_email'][0] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
+				$email = $_POST['recipient_email'][0];
+			}
+			wc_get_template( 'html-add-recipient.php', array( 'email_field_args' => WCS_Gifting::get_recipient_email_field_args( $email ), 'id' => 0, 'email' => $email ), '', plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
 		}
 	}
 }
