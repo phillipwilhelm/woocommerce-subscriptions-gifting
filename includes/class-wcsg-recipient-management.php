@@ -21,7 +21,7 @@ class WCSG_Recipient_Management {
 	}
 
 	/**
-	 * Grant view order capabilities for subscriptions and related orders to recipients
+	 * Grant capabilities for subscriptions and related orders to recipients
 	 *
 	 * @param array $allcaps An array of user capabilities
 	 * @param array $caps The capability being questioned
@@ -30,23 +30,35 @@ class WCSG_Recipient_Management {
 	 */
 	public static function grant_recipient_capabilities( $allcaps, $caps, $args ) {
 		if ( isset( $caps[0] ) ) {
-			if ( 'view_order' == $caps[0] && ! isset( $allcaps[ $caps[0] ] ) ) {
-				$user_id = $args[1];
-				$order   = wc_get_order( $args[2] );
+			switch ( $caps[0] ) {
+				case 'view_order' :
 
-				if ( $order ) {
-					if ( 'shop_subscription' == get_post_type( $args[2] ) && $user_id == $order->recipient_user ) {
-						$allcaps['view_order'] = true;
-					} else if ( wcs_order_contains_subscription( $order ) ) {
-						$subscriptions = wcs_get_subscriptions_for_order( $order );
-						foreach ( $subscriptions as $subscription ) {
-							if ( $user_id == $subscription->recipient_user ) {
-								$allcaps['view_order'] = true;
-								break;
+					$user_id = $args[1];
+					$order   = wc_get_order( $args[2] );
+
+					if ( $order ) {
+						if ( 'shop_subscription' == get_post_type( $args[2] ) && $user_id == $order->recipient_user ) {
+							$allcaps['view_order'] = true;
+						} else if ( wcs_order_contains_subscription( $order ) ) {
+							$subscriptions = wcs_get_subscriptions_for_order( $order );
+							foreach ( $subscriptions as $subscription ) {
+								if ( $user_id == $subscription->recipient_user ) {
+									$allcaps['view_order'] = true;
+									break;
+								}
 							}
 						}
 					}
-				}
+					break;
+				case 'edit_shop_subscription_payment_method' :
+
+					$user_id      = $args[1];
+					$subscription = wcs_get_subscription( $args[2] );
+
+					if ( $user_id == $subscription->recipient_user ) {
+						$allcaps['edit_shop_subscription_payment_method'] = true;
+					}
+					break;
 			}
 		}
 		return $allcaps;
@@ -79,6 +91,13 @@ class WCSG_Recipient_Management {
 				$actions['cancel'] = array(
 					'url'  => self::get_recipient_change_status_link( $subscription->id, 'cancelled', $subscription->recipient_user ),
 					'name' => __( 'Cancel', 'woocommerce-subscriptions-gifting' ),
+				);
+			}
+
+			if ( $subscription->can_be_updated_to( 'new-payment-method' ) ) {
+				$actions['change_payment_method'] = array(
+					'url'  => wp_nonce_url( add_query_arg( array( 'change_payment_method' => $subscription->id ), $subscription->get_checkout_payment_url() ) ),
+					'name' => __( 'Change Payment', 'woocommerce-subscriptions-gifting' ),
 				);
 			}
 		}
