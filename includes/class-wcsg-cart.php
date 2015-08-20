@@ -17,11 +17,10 @@ class WCSG_Cart {
 	 */
 	public static function add_gifting_option_cart( $title, $cart_item, $cart_item_key ) {
 		if ( is_page( wc_get_page_id( 'cart' ) ) && WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) && ! isset( $cart_item['subscription_renewal'] ) && ! isset( $cart_item['subscription_switch'] ) ) {
-			if ( empty( $cart_item['wcsg_gift_recipients_email'] ) ) {
-				$title .= WCS_Gifting::generate_gifting_html( $cart_item_key, '' );
-			} else {
-				$title .= WCS_Gifting::generate_gifting_html( $cart_item_key, $cart_item['wcsg_gift_recipients_email'] );
-			}
+			ob_start();
+			$email = ( empty( $cart_item['wcsg_gift_recipients_email'] ) ) ? '' : $cart_item['wcsg_gift_recipients_email'];
+			wc_get_template( 'html-add-recipient.php', array( 'email_field_args' => WCS_Gifting::get_recipient_email_field_args( $email ), 'id' => $cart_item_key, 'email' => $email ),'' , plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
+			return  $title . ob_get_clean();
 		}
 		return $title;
 	}
@@ -40,9 +39,18 @@ class WCSG_Cart {
 	 * Updates the cart items for changes made to recipient infomation on the cart page.
 	 */
 	public static function cart_update( $cart_updated ) {
-		foreach( WC()->cart->cart_contents as $key => $item ) {
-			WCS_Gifting::update_cart_item_key( $item, $key, $_POST['recipient_email'][ $key ] );
+		if ( ! empty( $_POST['recipient_email'] ) ) {
+			if ( ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
+				$recipients = $_POST['recipient_email'];
+				WCS_Gifting::validate_recipient_emails( $recipients );
+				foreach ( WC()->cart->cart_contents as $key => $item ) {
+					WCS_Gifting::update_cart_item_key( $item, $key, $_POST['recipient_email'][ $key ] );
+				}
+			} else {
+				wc_add_notice( __( 'There was an error with your request. Please try again..', 'woocommerce-subscriptions-gifting' ), 'error' );
+			}
 		}
+
 		return $cart_updated;
 	}
 
