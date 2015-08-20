@@ -138,21 +138,11 @@ class WCSG_Recipient_Management {
 			$current_user   = wp_get_current_user();
 
 			if ( $current_user->ID == $customer_user->ID ) {
-				echo self::add_gifting_information_html( $recipient_user->display_name, 'Recipient' );
+				wc_get_template( 'html-view-subscription-gifting-information.php', array( 'user_title' => 'Recipient', 'name' => $recipient_user->display_name ), '', plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
 			} else {
-				echo self::add_gifting_information_html( $customer_user->display_name, 'Purchaser' );
+				wc_get_template( 'html-view-subscription-gifting-information.php', array( 'user_title' => 'Purchaser', 'name' => $customer_user->display_name ), '', plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
 			}
 		}
-	}
-
-	/**
-	 * Generates and returns the html for additional gifting information specified by the $user_title and $name
-	 *
-	 * @param string|name The name of the purchaser or recipient
-	 * @param string|user_title The title - recipient or purchaser
-	 */
-	public static function add_gifting_information_html( $name, $user_title ) {
-		return '<tr><th>' . esc_html__( $user_title, 'woocommerce-subscriptions-gifting' ) . ':</th><td data-title="' . esc_attr( $user_title ) . '">' . esc_html( $name ) . '</td></tr>';
 	}
 
 	/**
@@ -161,7 +151,7 @@ class WCSG_Recipient_Management {
 	 * @param user_id The user id of the recipient
 	 * @param $order_id The Order ID which contains the subscription
 	 * @return array An array of subscriptions gifted to the user
-	*/
+	 */
 	public static function get_recipient_subscriptions( $user_id, $order_id = 0 ) {
 		$args = array(
 			'posts_per_page' => -1,
