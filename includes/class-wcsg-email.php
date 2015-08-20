@@ -118,7 +118,7 @@ class WCSG_Email {
 					WC()->mailer();
 					$user_password = $new_customer_data['user_pass'];
 					$current_user = wp_get_current_user();
-					$subscription_purchaser = self::get_purchaser_name_for_email( $current_user->id );
+					$subscription_purchaser = self::get_purchaser_name_for_email( $current_user->ID );
 					do_action( 'wcsg_created_customer_notification', $customer_id, $user_password, $subscription_purchaser );
 					break;
 				}
