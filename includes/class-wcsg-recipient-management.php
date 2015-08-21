@@ -18,6 +18,9 @@ class WCSG_Recipient_Management {
 
 		add_filter( 'user_has_cap', __CLASS__ . '::grant_recipient_capabilities', 11, 3 );
 
+		add_action( 'woocommerce_add_order_item_meta', __CLASS__ . '::maybe_add_recipient_order_item_meta', 10, 3 );
+
+		add_filter( 'woocommerce_attribute_label', __CLASS__ . '::format_recipient_meta_label', 10, 2 );
 	}
 
 	/**
@@ -215,6 +218,26 @@ class WCSG_Recipient_Management {
 			'meta_compare'   => '=',
 			'fields'         => 'ids',
 		) );
+	}
+
+	/**
+	 * Maybe adds recipient information to order item meta for displaying in order item tables.
+	 */
+	public static function maybe_add_recipient_order_item_meta( $item_id, $values, $cart_item_key ) {
+		if ( isset( $values['wcsg_gift_recipients_email'] ) ) {
+			wc_update_order_item_meta( $item_id, 'wcsg_recipient', $values['wcsg_gift_recipients_email'] );
+		}
+	}
+
+	/**
+	 * Format the order item meta label to be displayed.
+	 */
+	public static function format_recipient_meta_label( $label, $name ) {
+		if ( 'wcsg_recipient' == $name ) {
+			$label = 'Recipient';
+		}
+		return $label;
+
 	}
 }
 WCSG_Recipient_Management::init();
