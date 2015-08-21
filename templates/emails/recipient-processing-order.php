@@ -16,8 +16,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 <p><?php printf( esc_html__( 'Hi there,', 'woocommerce-subscriptions-gifting' ) ); ?></p>
 <p><?php printf( esc_html__( '%s just purchased ' .  _n( 'a subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' for you at %s.', 'woocommerce-subscriptions-gifting' ), esc_html( $subscription_purchaser ), esc_html( $blogname ) ); ?></p>
 
-<p><?php printf( esc_html__( 'The order has been received and is being processed. Details of the ' . _n( 'subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' are shown below:', 'woocommerce-subscriptions-gifting' ) ); ?></p>
-
+<p><?php printf( esc_html__( 'The order has been received and is being processed. Details of the ' . _n( 'subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' are shown below.', 'woocommerce-subscriptions-gifting' ) ); ?></p>
+<p><?php printf( esc_html__( 'You may access your account area to view your new ' . _n( 'subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' here: %1$sMy Account%2$s.', 'woocommerce-subscriptions-gifting' ),
+	'<a href="' . esc_url( wc_get_page_permalink( 'myaccount' ) )  . '">',
+	'</a>'
+); ?></p>
 <?php
 foreach ( $subscriptions as $subscription_id ) {
 	$subscription = wcs_get_subscription( $subscription_id );
@@ -34,7 +37,11 @@ foreach ( $subscriptions as $subscription_id ) {
 		</thead>
 		<tbody><?php
 		foreach ( $items as $item ) {
-			echo '<tr><td style="text-align:left; vertical-align:middle; border: 1px solid #eee; word-wrap:break-word;">' . sprintf( '<a href="%s">%s</a>', esc_url( get_permalink( $item['product_id'] ) ), esc_attr( $item['name'] ) ). '</td>';
+			$_product  = $subscription->get_product_from_item( $item );
+			$item_meta = wcs_get_order_item_meta( $item, $_product );
+			echo '<tr><td style="text-align:left; vertical-align:middle; border: 1px solid #eee; word-wrap:break-word;">' . sprintf( '<a href="%s">%s</a>', esc_url( get_permalink( $item['product_id'] ) ), esc_attr( $item['name'] ) );
+			$item_meta->display();
+			echo '</td>';
 			echo '<td style="text-align:left; vertical-align:middle; border: 1px solid #eee; word-wrap:break-word;">' . esc_attr( $item['item_meta']['_qty'][0] ) . '</td>';
 			echo '<td style="text-align:left; vertical-align:middle; border: 1px solid #eee; word-wrap:break-word;">' . wp_kses_post( WC_Subscriptions_Product::get_price_string( $item['product_id'], array( 'price' => wc_price( $item['line_subtotal'] ) ) ) ) . '</td></tr>';
 		} ?>
@@ -47,6 +54,5 @@ foreach ( $subscriptions as $subscription_id ) {
 }
 ?>
 
-<p><?php printf( esc_html__( 'You may access your account area to view your new ' . _n( 'subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' here: %s.', 'woocommerce-subscriptions-gifting' ), esc_url( wc_get_page_permalink( 'myaccount' ) ) ); ?></p>
 
 <?php do_action( 'woocommerce_email_footer' ); ?>
