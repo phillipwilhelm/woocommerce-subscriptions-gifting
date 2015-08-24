@@ -15,6 +15,8 @@ class WCSG_Recipient_Management {
 		add_action( 'init', __CLASS__ . '::change_user_recipient_subscription', 99 );
 
 		add_filter( 'wcs_can_user_put_subscription_on_hold' , __CLASS__ . '::recipient_can_suspend', 1, 2 );
+
+		add_filter( 'woocommerce_subscription_related_orders', __CLASS__ . '::maybe_remove_parent_order', 11, 4 );
 	}
 
 	/**
@@ -163,6 +165,19 @@ class WCSG_Recipient_Management {
 			'meta_compare'   => '=',
 			'fields'         => 'ids',
 		) );
+	}
+
+	/**
+	 * Filter the WC_Subscription::get_related_orders() method removing parent orders for recipients.
+	 */
+	public static function maybe_remove_parent_order( $related_orders, $subscription ) {
+		if ( wp_get_current_user()->ID == $subscription->recipient_user ) {
+			$related_order_ids = array_keys( $related_orders );
+			if ( in_array( $subscription->order->id, $related_order_ids ) ) {
+				unset( $related_orders[ $subscription->order->id ] );
+			}
+		}
+		return $related_orders;
 	}
 }
 WCSG_Recipient_Management::init();
