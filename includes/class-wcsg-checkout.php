@@ -47,6 +47,7 @@ class WCSG_Checkout {
 	 * @param object|recurring_cart An array of subscription products that make up the subscription
 	 */
 	public static function subscription_created( $subscription, $order, $recurring_cart ) {
+		error_log( 'subscription created: ' . print_r( $subscription ) );
 		foreach ( $recurring_cart->cart_contents as $key => $item ) {
 			if ( ! empty( $item['wcsg_gift_recipients_email'] ) ) {
 
