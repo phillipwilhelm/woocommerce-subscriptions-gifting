@@ -34,15 +34,14 @@ class WCSG_Recipient_Management {
 		if ( isset( $caps[0] ) ) {
 			switch ( $caps[0] ) {
 				case 'view_order' :
-
 					$user_id = $args[1];
 					$order   = wc_get_order( $args[2] );
 
 					if ( $order ) {
 						if ( 'shop_subscription' == get_post_type( $args[2] ) && $user_id == $order->recipient_user ) {
 							$allcaps['view_order'] = true;
-						} else if ( wcs_order_contains_subscription( $order ) ) {
-							$subscriptions = wcs_get_subscriptions_for_order( $order );
+						} else if ( wcs_order_contains_renewal( $order ) ) {
+							$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
 							foreach ( $subscriptions as $subscription ) {
 								if ( $user_id == $subscription->recipient_user ) {
 									$allcaps['view_order'] = true;

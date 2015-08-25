@@ -56,6 +56,8 @@ class WCS_Gifting {
 
 		add_action( 'init', __CLASS__ . '::maybe_flush_rewrite_rules' );
 
+		add_action( 'wc_get_template', __CLASS__ . '::get_recent_orders_template', 1 , 3 );
+
 	}
 
 	/**
@@ -173,6 +175,20 @@ class WCS_Gifting {
 			array_push( $email_field_args['style_attributes'], 'display: none' );
 		}
 		return apply_filters( 'wcsg_recipient_email_field_args', $email_field_args, $email );
+	}
+
+	/**
+	 * Overrides the default recent order template for gifted subscriptions
+	 */
+	public static function get_recent_orders_template( $located, $template_name, $args ) {
+
+		if ( 'myaccount/subscription-recent-orders.php' == $template_name ) {
+			$subscription = $args['subscription'];
+			if ( ! empty( $subscription->recipient_user ) ) {
+				$located = wc_locate_template( 'gifted-subscription-recent-orders.php', '', plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
+			}
+		}
+		return $located;
 	}
 }
 WCS_Gifting::init();
