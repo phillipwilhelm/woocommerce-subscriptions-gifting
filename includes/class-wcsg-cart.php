@@ -10,6 +10,9 @@ class WCSG_Cart {
 		add_filter( 'woocommerce_widget_cart_item_quantity', __CLASS__ . '::add_gifting_option_minicart', 1, 3 );
 
 		add_filter( 'woocommerce_update_cart_action_cart_updated', __CLASS__ . '::cart_update', 1, 1 );
+
+		add_filter( 'woocommerce_add_to_cart_validation', __CLASS__ . '::prevent_products_in_gifted_renewal_orders', 10 );
+
 	}
 
 	/**
@@ -64,6 +67,23 @@ class WCSG_Cart {
 		return '<fieldset id="woocommerce_subscriptions_gifting_field">'
 		     . '<label class="woocommerce_subscriptions_gifting_recipient_email">' . esc_html__( 'Recipient: ', 'woocommerce-subscriptions-gifting' ) . '</label>' . esc_html( $email )
 		     . '</fieldset>';
+	}
+
+	/**
+	 * Prevent products being added to the cart if the cart contains a gifted subscription renewal.
+	 */
+	public static function prevent_products_in_gifted_renewal_orders( $passed ) {
+		foreach ( WC()->cart->cart_contents as $key => $item ) {
+			if ( isset( $item['subscription_renewal'] ) ) {
+				$subscription = wcs_get_subscription( $item['subscription_renewal']['subscription_id'] );
+				if ( isset( $subscription->recipient_user ) ) {
+					$passed = false;
+					wc_add_notice( __( 'You can not purchase additional products in subscription renewal orders.', 'woocommerce-subscriptions-gifting' ), 'error' );
+					break;
+				}
+			}
+		}
+		return $passed;
 	}
 }
 WCSG_Cart::init();
