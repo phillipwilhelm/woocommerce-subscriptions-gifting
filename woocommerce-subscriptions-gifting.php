@@ -58,6 +58,15 @@ class WCS_Gifting {
 
 		add_action( 'wc_get_template', __CLASS__ . '::get_recent_orders_template', 1 , 3 );
 
+		add_filter( 'wcs_renewal_order_meta_query', __CLASS__ . '::remove_renewal_order_meta_query', 11 );
+	}
+
+	/**
+	 * Don't carry recipient meta data to renewal orders
+	 */
+	public static function remove_renewal_order_meta_query( $order_meta_query ) {
+		$order_meta_query .= " AND `meta_key` NOT IN ('_recipient_user')";
+		return $order_meta_query;
 	}
 
 	/**
