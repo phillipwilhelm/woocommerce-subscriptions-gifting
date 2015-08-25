@@ -13,7 +13,7 @@ If using MAMP for local development follow the instructions above but place a co
 	/Applications/MAMP/bin/php/php5.4.19/bin/
 	/Applications/MAMP/bin/php/php5.5.3/bin/
     
-2) Ensure that you can use the `mysqladm` command and that your local database is running. 
+2) Ensure that you can use the `mysqladmin` command and that your local database is running. 
 
 For MAMP users you may need to add `/Applications/MAMP/Library/bin` to your path so mysqladmin can be used. 
 
