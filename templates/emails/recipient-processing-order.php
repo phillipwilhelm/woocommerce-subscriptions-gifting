@@ -1,6 +1,6 @@
 <?php
 /**
- * Recipient customer new account email
+ * Recipient new subscription(s) notification email
  *
  * @author James Allan
  */
@@ -53,6 +53,4 @@ foreach ( $subscriptions as $subscription_id ) {
 	</table><?php
 }
 ?>
-
-
 <?php do_action( 'woocommerce_email_footer' ); ?>

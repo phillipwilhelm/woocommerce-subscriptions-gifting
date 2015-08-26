@@ -52,6 +52,12 @@ class WCSG_Email {
 		}
 	}
 
+	/**
+	 * If an order contains subscriptions with recipient data send an email to the recipient
+	 * notifying them on their new subscription(s)
+	 *
+	 * @param int $order_id
+	 */
 	public static function maybe_send_recipient_order_emails( $order_id ) {
 		$subscriptions = wcs_get_subscriptions( array( 'order_id' => $order_id ) );
 		$processed_recipients = array();
