@@ -14,9 +14,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 <?php do_action( 'woocommerce_email_header', $email_heading ); ?>
 
 <p><?php printf( esc_html__( 'Hi there,', 'woocommerce-subscriptions-gifting' ) ); ?></p>
-<p><?php printf( esc_html__( '%s just purchased ' .  _n( 'a subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' for you at %s.', 'woocommerce-subscriptions-gifting' ), esc_html( $subscription_purchaser ), esc_html( $blogname ) ); ?></p>
-
-<p><?php printf( esc_html__( 'The order has been received and is being processed. Details of the ' . _n( 'subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' are shown below.', 'woocommerce-subscriptions-gifting' ) ); ?></p>
+<p><?php printf( esc_html__( '%s just purchased ' .  _n( 'a subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' for you at %s.', 'woocommerce-subscriptions-gifting' ), esc_html( $subscription_purchaser ), esc_html( $blogname ) ); ?>
+<?php printf( esc_html__( ' The order has been received and is being processed. Details of the ' . _n( 'subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' are shown below:', 'woocommerce-subscriptions-gifting' ) ); ?>
+</p>
 <p><?php printf( esc_html__( 'You may access your account area to view your new ' . _n( 'subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' here: %1$sMy Account%2$s.', 'woocommerce-subscriptions-gifting' ),
 	'<a href="' . esc_url( wc_get_page_permalink( 'myaccount' ) )  . '">',
 	'</a>'

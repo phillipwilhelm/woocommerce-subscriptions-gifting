@@ -56,6 +56,7 @@ class WCSG_Email {
 		$subscriptions = wcs_get_subscriptions( array( 'order_id' => $order_id ) );
 		$processed_recipients = array();
 		if ( ! empty( $subscriptions ) ) {
+			WC()->mailer();
 			foreach ( $subscriptions as $subscription ) {
 				if ( isset( $subscription->recipient_user ) ) {
 					if ( ! in_array( $subscription->recipient_user, $processed_recipients ) ) {
