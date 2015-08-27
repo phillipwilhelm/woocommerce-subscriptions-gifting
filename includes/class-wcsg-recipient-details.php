@@ -121,7 +121,8 @@ class WCSG_Recipient_Details {
 	 * @return array Form elements for recipient details page
 	 */
 	public static function get_new_recipient_account_form_fields() {
-		$form_fields = WC()->countries->get_address_fields( '', 'shipping_', true );
+		$country = ( ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_new_recipient_data' ) && ! empty( $_POST['shipping_country'] ) ) ? $_POST['shipping_country'] : '';
+		$form_fields = WC()->countries->get_address_fields( $country, 'shipping_', true );
 
 		$name_fields = array( 'shipping_first_name', 'shipping_last_name' );
 		$personal_fields = array();
