@@ -270,8 +270,7 @@ class WCSG_Recipient_Management {
 	public static function format_recipient_meta_value( $value ) {
 		if ( false !== strpos( $value, 'wcsg_recipient_id' ) ) {
 			$recipient_id = substr( $value, strlen( 'wcsg_recipient_id_' ) );
-			$recipient    = get_userdata( $recipient_id );
-			$value        = $recipient->user_email;
+			$value        = WCS_Gifting::get_user_display_name( $recipient_id );
 		}
 		return $value;
 	}
@@ -291,9 +290,8 @@ class WCSG_Recipient_Management {
 		$recipient_meta = wc_get_order_item_meta( $item_id, 'wcsg_recipient' );
 		if ( ! empty( $recipient_meta ) ) {
 			$recipient_id = substr( $recipient_meta, strlen( 'wcsg_recipient_id_' ) );
-			$recipient    = get_userdata( $recipient_id );
 			echo '<br>';
-			echo '<b>Recipient:</b> ' . wp_kses( make_clickable( $recipient->user_email ), wp_kses_allowed_html( 'user_description' ) );
+			echo '<b>Recipient:</b> ' . wp_kses( WCS_Gifting::get_user_display_name( $recipient_id ), wp_kses_allowed_html( 'user_description' ) );
 		}
 	}
 }
