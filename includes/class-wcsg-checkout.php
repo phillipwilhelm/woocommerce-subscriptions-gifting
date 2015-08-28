@@ -12,7 +12,6 @@ class WCSG_Checkout {
 		add_filter( 'woocommerce_subscriptions_recurring_cart_key', __CLASS__ . '::add_recipient_email_recurring_cart_key', 1, 2 );
 
 		add_action( 'woocommerce_checkout_process', __CLASS__ . '::update_cart_before_checkout' );
-
 	}
 
 	/**
@@ -47,7 +46,6 @@ class WCSG_Checkout {
 	 * @param object|recurring_cart An array of subscription products that make up the subscription
 	 */
 	public static function subscription_created( $subscription, $order, $recurring_cart ) {
-
 		foreach ( $recurring_cart->cart_contents as $key => $item ) {
 			if ( ! empty( $item['wcsg_gift_recipients_email'] ) ) {
 
