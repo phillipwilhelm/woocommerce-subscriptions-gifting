@@ -1,5 +1,5 @@
 <header>
-	<h2><?php esc_html_e( 'Recent Orders', 'woocommerce-subscriptions-gifting' ); ?></h2>
+	<h2><?php esc_html_e( 'Related Orders', 'woocommerce-subscriptions-gifting' ); ?></h2>
 </header>
 
 <table class="shop_table shop_table_responsive my_account_orders">

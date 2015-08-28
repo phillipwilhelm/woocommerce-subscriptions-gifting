@@ -190,11 +190,10 @@ class WCS_Gifting {
 	 * Overrides the default recent order template for gifted subscriptions
 	 */
 	public static function get_recent_orders_template( $located, $template_name, $args ) {
-
-		if ( 'myaccount/subscription-recent-orders.php' == $template_name ) {
+		if ( 'myaccount/related-orders.php' == $template_name ) {
 			$subscription = $args['subscription'];
 			if ( ! empty( $subscription->recipient_user ) ) {
-				$located = wc_locate_template( 'gifted-subscription-recent-orders.php', '', plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
+				$located = wc_locate_template( 'related-orders.php', '', plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
 			}
 		}
 		return $located;
