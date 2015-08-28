@@ -21,6 +21,12 @@ class WCSG_Recipient_Management {
 		add_action( 'woocommerce_add_order_item_meta', __CLASS__ . '::maybe_add_recipient_order_item_meta', 10, 3 );
 
 		add_filter( 'woocommerce_attribute_label', __CLASS__ . '::format_recipient_meta_label', 10, 2 );
+
+		add_filter( 'woocommerce_order_item_display_meta_value', __CLASS__ . '::format_recipient_meta_value', 10 );
+
+		add_filter( 'woocommerce_hidden_order_itemmeta', __CLASS__ . '::hide_recipient_order_item_meta', 10, 1 );
+
+		add_action( 'woocommerce_before_order_itemmeta', __CLASS__ . '::display_recipient_meta_admin', 10, 1 );
 	}
 
 	/**
@@ -224,8 +230,27 @@ class WCSG_Recipient_Management {
 	 * Maybe adds recipient information to order item meta for displaying in order item tables.
 	 */
 	public static function maybe_add_recipient_order_item_meta( $item_id, $values, $cart_item_key ) {
+
 		if ( isset( $values['wcsg_gift_recipients_email'] ) ) {
-			wc_update_order_item_meta( $item_id, 'wcsg_recipient', $values['wcsg_gift_recipients_email'] );
+			$recipient_email = $values['wcsg_gift_recipients_email'];
+			$recipient_user_id = email_exists( $recipient_email );
+
+			if ( empty( $recipient_user_id ) ) {
+				// create a username for the new customer
+				$username  = explode( '@', $recipient_email );
+				$username  = sanitize_user( $username[0] );
+				$counter   = 1;
+				$_username = $username;
+				while ( username_exists( $username ) ) {
+					$username = $_username . $counter;
+					$counter++;
+				}
+				$password = wp_generate_password();
+				$recipient_user_id = wc_create_new_customer( $recipient_email, $username, $password );
+				update_user_meta( $recipient_user_id, 'wcsg_update_account', 'true' );
+			}
+
+			wc_update_order_item_meta( $item_id, 'wcsg_recipient', 'wcsg_recipient_id_' . $recipient_user_id );
 		}
 	}
 
@@ -237,7 +262,39 @@ class WCSG_Recipient_Management {
 			$label = 'Recipient';
 		}
 		return $label;
+	}
 
+	/**
+	 * Format recipient order item meta value.
+	 */
+	public static function format_recipient_meta_value( $value ) {
+		if ( false !== strpos( $value, 'wcsg_recipient_id' ) ) {
+			$recipient_id = substr( $value, strlen( 'wcsg_recipient_id_' ) );
+			$recipient    = get_userdata( $recipient_id );
+			$value        = $recipient->user_email;
+		}
+		return $value;
+	}
+
+	/**
+	 * Prevents default display of recipient meta in admin panel.
+	 */
+	public static function hide_recipient_order_item_meta( $ignored_meta_keys ) {
+		array_push( $ignored_meta_keys,'wcsg_recipient' );
+		return $ignored_meta_keys;
+	}
+
+	/**
+	 * Displays recipient order item meta for admin panel.
+	 */
+	public static function display_recipient_meta_admin( $item_id ) {
+		$recipient_meta = wc_get_order_item_meta( $item_id, 'wcsg_recipient' );
+		if ( ! empty( $recipient_meta ) ) {
+			$recipient_id = substr( $recipient_meta, strlen( 'wcsg_recipient_id_' ) );
+			$recipient    = get_userdata( $recipient_id );
+			echo '<br>';
+			echo '<b>Recipient:</b> ' . wp_kses( make_clickable( $recipient->user_email ), wp_kses_allowed_html( 'user_description' ) );
+		}
 	}
 }
 WCSG_Recipient_Management::init();

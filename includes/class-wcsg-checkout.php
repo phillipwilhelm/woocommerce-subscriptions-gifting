@@ -47,26 +47,11 @@ class WCSG_Checkout {
 	 * @param object|recurring_cart An array of subscription products that make up the subscription
 	 */
 	public static function subscription_created( $subscription, $order, $recurring_cart ) {
+
 		foreach ( $recurring_cart->cart_contents as $key => $item ) {
 			if ( ! empty( $item['wcsg_gift_recipients_email'] ) ) {
 
-				$recipient_email = $item['wcsg_gift_recipients_email'];
-				$recipient_user_id = email_exists( $recipient_email );
-
-				if ( empty( $recipient_user_id ) ) {
-					// create a username for the new customer
-					$username  = explode( '@', $recipient_email );
-					$username  = sanitize_user( $username[0] );
-					$counter   = 1;
-					$_username = $username;
-					while ( username_exists( $username ) ) {
-						$username = $_username . $counter;
-						$counter++;
-					}
-					$password = wp_generate_password();
-					$recipient_user_id = wc_create_new_customer( $recipient_email, $username, $password );
-					update_user_meta( $recipient_user_id, 'wcsg_update_account', 'true' );
-				}
+				$recipient_user_id = email_exists( $item['wcsg_gift_recipients_email'] );
 				update_post_meta( $subscription->id, '_recipient_user', $recipient_user_id );
 
 				$subscription->set_address( array(
