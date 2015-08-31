@@ -84,4 +84,4 @@
 	</tbody>
 </table>
 
-<?php do_action( 'woocommerce_subscription_details_after_subscription_recent_order_table', $subscription ); ?>
+<?php do_action( 'woocommerce_subscription_details_after_subscription_related_orders_table', $subscription ); ?>
