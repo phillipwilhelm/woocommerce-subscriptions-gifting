@@ -117,7 +117,9 @@ class WCSG_Checkout {
 					WC()->session->set( 'reload_checkout', true );
 				}
 				foreach ( WC()->cart->cart_contents as $key => $item ) {
-					WCS_Gifting::update_cart_item_key( $item, $key, $_POST['recipient_email'][ $key ] );
+					if ( isset( $_POST['recipient_email'][ $key ] ) ) {
+						WCS_Gifting::update_cart_item_key( $item, $key, $_POST['recipient_email'][ $key ] );
+					}
 				}
 			} else {
 				wc_add_notice( __( 'There was an error with your request. Please try again..', 'woocommerce-subscriptions-gifting' ), 'error' );
