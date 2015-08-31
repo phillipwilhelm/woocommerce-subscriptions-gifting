@@ -191,9 +191,9 @@ class WCSG_Recipient_Management {
 			$current_user   = wp_get_current_user();
 
 			if ( $current_user->ID == $customer_user->ID ) {
-				wc_get_template( 'html-view-subscription-gifting-information.php', array( 'user_title' => 'Recipient', 'name' => $recipient_user->display_name ), '', plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
+				wc_get_template( 'html-view-subscription-gifting-information.php', array( 'user_title' => 'Recipient', 'name' => WCS_Gifting::get_user_display_name( $subscription->recipient_user ) ), '', plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
 			} else {
-				wc_get_template( 'html-view-subscription-gifting-information.php', array( 'user_title' => 'Purchaser', 'name' => $customer_user->display_name ), '', plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
+				wc_get_template( 'html-view-subscription-gifting-information.php', array( 'user_title' => 'Purchaser', 'name' => WCS_Gifting::get_user_display_name( $subscription->customer_user ) ), '', plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
 			}
 		}
 	}
