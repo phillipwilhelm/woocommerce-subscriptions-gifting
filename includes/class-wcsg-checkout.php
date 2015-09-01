@@ -25,7 +25,7 @@ class WCSG_Checkout {
 	 * @return int|quantity The quantity of the cart item with ui elements appended on
 	 */
 	public static function add_gifting_option_checkout( $quantity, $cart_item, $cart_item_key ) {
-		if ( WCS_Gifting::is_giftable_cart_item( $cart_item ) ) {
+		if ( WCSG_Cart::is_giftable_cart_item( $cart_item ) ) {
 			$email = '';
 			if ( ! empty( $_POST['recipient_email'][ $cart_item_key ] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
 				$email = $_POST['recipient_email'][ $cart_item_key ];

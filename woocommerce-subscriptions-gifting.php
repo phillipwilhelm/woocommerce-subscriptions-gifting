@@ -200,15 +200,5 @@ class WCS_Gifting {
 		}
 		return $name;
 	}
-
-	/**
-	 * Determines if a cart item is able to be gifted.
-	 * Only subscriptions that are not a renewal or switch subscription are giftable.
-	 *
-	 * @return bool | whether the cart item is giftable.
-	 */
-	public static function is_giftable_cart_item( $cart_item ) {
-		return WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) && ! isset( $cart_item['subscription_renewal'] ) && ! isset( $cart_item['subscription_switch'] );
-	}
 }
 WCS_Gifting::init();
