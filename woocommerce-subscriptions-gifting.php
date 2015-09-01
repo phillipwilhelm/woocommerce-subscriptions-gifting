@@ -116,6 +116,7 @@ class WCS_Gifting {
 				}
 			}
 		}
+		return ! ( $invalid_email_found || $self_gifting_found );
 	}
 
 	/**
