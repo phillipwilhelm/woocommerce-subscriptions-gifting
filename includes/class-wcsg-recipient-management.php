@@ -18,7 +18,7 @@ class WCSG_Recipient_Management {
 
 		add_filter( 'user_has_cap', __CLASS__ . '::grant_recipient_capabilities', 11, 3 );
 
-		add_action( 'woocommerce_add_order_item_meta', __CLASS__ . '::maybe_add_recipient_order_item_meta', 10, 3 );
+		add_action( 'woocommerce_add_order_item_meta', __CLASS__ . '::maybe_add_recipient_order_item_meta', 10, 2 );
 
 		add_filter( 'woocommerce_attribute_label', __CLASS__ . '::format_recipient_meta_label', 10, 2 );
 
@@ -227,12 +227,14 @@ class WCSG_Recipient_Management {
 	}
 
 	/**
-	 * Maybe adds recipient information to order item meta for displaying in order item tables.
+	 * Maybe add recipient information to order item meta for displaying in order item tables.
+	 *
+	 * @param int $item_id
+	 * @param array $cart_item
 	 */
-	public static function maybe_add_recipient_order_item_meta( $item_id, $values, $cart_item_key ) {
-
-		if ( isset( $values['wcsg_gift_recipients_email'] ) ) {
-			$recipient_email = $values['wcsg_gift_recipients_email'];
+	public static function maybe_add_recipient_order_item_meta( $item_id, $cart_item ) {
+		if ( isset( $cart_item['wcsg_gift_recipients_email'] ) ) {
+			$recipient_email = $cart_item['wcsg_gift_recipients_email'];
 			$recipient_user_id = email_exists( $recipient_email );
 
 			if ( empty( $recipient_user_id ) ) {
@@ -256,6 +258,9 @@ class WCSG_Recipient_Management {
 
 	/**
 	 * Format the order item meta label to be displayed.
+	 *
+	 * @param string $label The item meta label displayed
+	 * @param string $name The name of the order item meta (key)
 	 */
 	public static function format_recipient_meta_label( $label, $name ) {
 		if ( 'wcsg_recipient' == $name ) {
@@ -265,7 +270,9 @@ class WCSG_Recipient_Management {
 	}
 
 	/**
-	 * Format recipient order item meta value.
+	 * Format recipient order item meta value by extracting the recipient user id.
+	 *
+	 * @param mixed $value Order item meta value
 	 */
 	public static function format_recipient_meta_value( $value ) {
 		if ( false !== strpos( $value, 'wcsg_recipient_id' ) ) {
@@ -277,6 +284,8 @@ class WCSG_Recipient_Management {
 
 	/**
 	 * Prevents default display of recipient meta in admin panel.
+	 *
+	 * @param array $ignored_meta_keys An array of order item meta keys which are skipped when displaying meta.
 	 */
 	public static function hide_recipient_order_item_meta( $ignored_meta_keys ) {
 		array_push( $ignored_meta_keys,'wcsg_recipient' );
@@ -285,6 +294,8 @@ class WCSG_Recipient_Management {
 
 	/**
 	 * Displays recipient order item meta for admin panel.
+	 *
+	 * @param int $item_id The id of the order item.
 	 */
 	public static function display_recipient_meta_admin( $item_id ) {
 		$recipient_meta = wc_get_order_item_meta( $item_id, 'wcsg_recipient' );
