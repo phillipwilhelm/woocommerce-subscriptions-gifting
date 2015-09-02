@@ -18,6 +18,9 @@ class WCSG_Recipient_Management {
 
 		add_filter( 'user_has_cap', __CLASS__ . '::grant_recipient_capabilities', 11, 3 );
 
+		add_action( 'delete_user_form', __CLASS__ . '::maybe_display_delete_recipient_warning', 10 );
+
+		add_action( 'delete_user', __CLASS__ . '::maybe_remove_recipient', 10, 1 );
 	}
 
 	/**
@@ -215,6 +218,57 @@ class WCSG_Recipient_Management {
 			'meta_compare'   => '=',
 			'fields'         => 'ids',
 		) );
+	}
+
+	/**
+	 * Removes recipient subscription meta from gifted subscriptions if the recipient is deleted.
+	 *
+	 * @param int $user_id The id of the user being deleted.
+	 */
+	public static function maybe_remove_recipient( $user_id ) {
+		$gifted_subscriptions = WCSG_Recipient_Management::get_recipient_subscriptions( $user_id );
+		if ( 0 != count( $gifted_subscriptions ) ) {
+			foreach ( $gifted_subscriptions as $subscription_id ) {
+				delete_post_meta( $subscription_id, '_recipient_user' );
+			}
+		}
+	}
+
+	/**
+	 * Displays a warning message if a recipient is in the process of being deleted.
+	 */
+	public static function maybe_display_delete_recipient_warning() {
+
+		$recipient_users = array();
+
+		if ( empty( $_REQUEST['users'] ) ) {
+			$user_ids = array( $_REQUEST['user'] );
+		} else {
+			$user_ids = $_REQUEST['users'];
+		}
+
+		foreach ( $user_ids as $user_id ) {
+			$gifted_subscriptions = WCSG_Recipient_Management::get_recipient_subscriptions( $user_id );
+			if ( 0 != count( $gifted_subscriptions ) ) {
+				$recipient_users[ $user_id ] = $gifted_subscriptions;
+			}
+		}
+
+		$recipients_count = count( $recipient_users );
+		if ( 0 != $recipients_count ) {
+			echo '<p><strong>' . esc_html__( 'WARNING:', 'woocommerce-subscriptions-gifting' ) . ' </strong>';
+			// translators: %s is a placeholder for either user or users depending on the number.
+			echo esc_html( sprintf( __( 'The following %s will be will be removed from their gifted subscriptions:', 'woocommerce-subscriptions-gifting' ), _n( 'user', 'users', $recipients_count, 'woocommerce-subscriptions-gifting' ) ) );
+			echo '<p><dl>';
+			foreach ( $recipient_users as $recipient_id => $subscriptions ) {
+				$recipient = get_userdata( $recipient_id );
+				echo '<dt>ID #' . esc_attr( $recipient_id ) . ': ' . esc_attr( $recipient->user_login ) . '</dt>';
+				foreach ( $subscriptions as $subscription ) {
+					echo '<dd>' . esc_html__( 'Subscription' , 'woocommerce-subscriptions-gifting' ) . ' <a href="'. esc_url( wcs_get_edit_post_link( $subscription ) ) . '">#' . esc_html( $subscription ) . '</a></dd>';
+				}
+			}
+			echo '</dl>';
+		}
 	}
 }
 WCSG_Recipient_Management::init();
