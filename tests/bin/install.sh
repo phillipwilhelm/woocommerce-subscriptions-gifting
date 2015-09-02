@@ -85,7 +85,7 @@ install_cs() {
 	mkdir -p "wordpress-coding-standards"
 
 	# uncompress the coding standards into the directory we created
-	curl -L https://api.github.com/repos/WordPress-Coding-Standards/WordPress-Coding-Standards/tarball/master?access_token=$GITHUB_TOKEN | tar --strip-components=1 -zx -C "wordpress-coding-standards"
+	curl -L https://api.github.com/repos/WordPress-Coding-Standards/WordPress-Coding-Standards/tarball/0.6.0?access_token=$GITHUB_TOKEN | tar --strip-components=1 -zx -C "wordpress-coding-standards"
 
 	# make a directory for the Prospress coding standard rules
 	mkdir -p "prospress-coding-standards"
@@ -95,7 +95,7 @@ install_cs() {
 
 	# move in the codesniffer directory
 	cd php-codesniffer
- 	
+
  	# install the WP conding standard rules
  	scripts/phpcs --config-set installed_paths ../wordpress-coding-standards,../prospress-coding-standards
 
