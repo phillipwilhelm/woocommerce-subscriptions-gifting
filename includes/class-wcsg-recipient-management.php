@@ -233,8 +233,18 @@ class WCSG_Recipient_Management {
 	 * @param array $cart_item
 	 */
 	public static function maybe_add_recipient_order_item_meta( $item_id, $cart_item ) {
-		if ( isset( $cart_item['wcsg_gift_recipients_email'] ) ) {
+		$recipient_email = '';
+
+		if ( isset( $cart_item['subscription_renewal'] ) ) {
+			$recipient_id    = get_post_meta( $cart_item['subscription_renewal']['subscription_id'], '_recipient_user', true );
+			$recipient       = get_user_by( 'id', $recipient_id );
+			$recipient_email = $recipient->user_email;
+		} else if ( isset( $cart_item['wcsg_gift_recipients_email'] ) ) {
 			$recipient_email = $cart_item['wcsg_gift_recipients_email'];
+		}
+
+		if ( ! empty( $recipient_email ) ) {
+
 			$recipient_user_id = email_exists( $recipient_email );
 
 			if ( empty( $recipient_user_id ) ) {
