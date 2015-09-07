@@ -311,8 +311,25 @@ class WCSG_Recipient_Management {
 		$recipient_meta = wc_get_order_item_meta( $item_id, 'wcsg_recipient' );
 		if ( ! empty( $recipient_meta ) ) {
 			$recipient_id = substr( $recipient_meta, strlen( 'wcsg_recipient_id_' ) );
+			$recipient_shipping_address = WC()->countries->get_formatted_address( array(
+				'first_name' => get_user_meta( $recipient_id, 'shipping_first_name', true ) ,
+				'last_name' => get_user_meta( $recipient_id, 'shipping_last_name', true ) ,
+				'company' => get_user_meta( $recipient_id, 'shipping_company', true ) ,
+				'address_1' => get_user_meta( $recipient_id, 'shipping_address_1', true ) ,
+				'address_2' => get_user_meta( $recipient_id, 'shipping_address_2', true ) ,
+				'city' => get_user_meta( $recipient_id, 'shipping_city', true ) ,
+				'state' => get_user_meta( $recipient_id, 'shipping_state', true ) ,
+				'postcode' => get_user_meta( $recipient_id, 'shipping_postcode', true ) ,
+				'country' => get_user_meta( $recipient_id, 'shipping_country', true )
+			) );
+
+			if ( empty( $recipient_shipping_address ) ) {
+				$recipient_shipping_address = 'N/A';
+			}
 			echo '<br>';
 			echo '<b>Recipient:</b> ' . wp_kses( WCS_Gifting::get_user_display_name( $recipient_id ), wp_kses_allowed_html( 'user_description' ) );
+			echo '<img class="help_tip" data-tip="Shipping: ' . esc_attr( $recipient_shipping_address ) . '" src="' . esc_url( WC()->plugin_url() ) . '/assets/images/help.png" height="16" width="16" />';
+
 		}
 	}
 }
