@@ -39,11 +39,11 @@ require_once( 'includes/class-wcsg-recipient-details.php' );
 
 require_once( 'includes/class-wcsg-email.php' );
 
-require_once( 'includes/class-wcsg-download-handler.php');
-
-public static $plugin_file = __FILE__;
+require_once( 'includes/class-wcsg-download-handler.php' );
 
 class WCS_Gifting {
+
+	public static $plugin_file = __FILE__;
 
 	/**
 	 * Setup hooks & filters, when the class is initialised.
