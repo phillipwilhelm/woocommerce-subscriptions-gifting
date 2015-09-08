@@ -27,14 +27,15 @@ class WCSG_Download_handler {
 
 			if ( $can_purchaser_download ) {
 				remove_filter( 'woocommerce_downloadable_file_permission_data', __CLASS__ . '::grant_recipient_download_permissions', 11 );
+
 				wc_downloadable_file_permission( $data['download_id'], $data['product_id'] , $subscription );
+
 				add_filter( 'woocommerce_downloadable_file_permission_data', __CLASS__ . '::grant_recipient_download_permissions', 11 );
 			}
 
-			$recipient_id = $subscription->recipient_user;
-			$recipient = get_user_by( 'id', $recipient_id );
-
-			$data['user_id'] = $recipient_id;
+			$recipient_id       = $subscription->recipient_user;
+			$recipient          = get_user_by( 'id', $recipient_id );
+			$data['user_id']    = $recipient_id;
 			$data['user_email'] = $recipient->user_email;
 		}
 		return $data;
