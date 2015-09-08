@@ -36,7 +36,7 @@ To purchase a subscription for another customer via the Single Product page:
 4. Type in the recipient’s email address.
 5. click “Sign Up Now”.
 
-![Single Product Page](https://cldup.com/kXmf1yXzGC-3000x3000.png)
+<img src="https://cldup.com/kXmf1yXzGC-3000x3000.png" height="621" width="740">
 
 #### 2.1.2 Cart Page
 When reviewing their cart, customers can also choose a subscription cart item to be gifted by:
@@ -45,7 +45,7 @@ When reviewing their cart, customers can also choose a subscription cart item to
 2. Type in the recipient’s email address.
 3. click “Update Cart”.
 
-![Cart Page](https://cldup.com/sFeLKUucKK-3000x3000.png)
+<img src="https://cldup.com/sFeLKUucKK-3000x3000.png" height="409" width="606">
 
 #### 2.1.3 Checkout
 To purchase a gifted subscription via the checkout: 
@@ -55,12 +55,17 @@ To purchase a gifted subscription via the checkout:
 3. Type in the recipient’s email address.
 5. click “Place Order”.
 
-![Checkout Page](https://cldup.com/kA3UOUCnyE-3000x3000.png)
+<img src="https://cldup.com/kA3UOUCnyE-3000x3000.png" height="736" width="449">
+
+#### 2.1.4 Mini Cart Widget
+In order to make it clear to customers how their cart is arranged, the cart items that have been assigned a gift recipient will display recipient details alongside their products in the mini cart. 
+
+<img src="https://cldup.com/7Z_W7LHABo-3000x3000.png" height="534" width="242">
 
 ### 2.2 Completing an Order with Gifted Subscriptions
 Once an order with a gifted subscription is placed, customers are given an overview of their order. Here the purchaser can see which products in their order have been purchased and for who. 
 
-![Order Recieved](https://cldup.com/HNLhiWHwPi-3000x3000.png)
+<img src="https://cldup.com/HNLhiWHwPi-3000x3000.png" height="721" width="450">
 
 #### 2.2.1 Subscription Grouping
 Similar to how WooCommerce Subscriptions version 2.0 creates subscriptions through [**subscription product grouping**](http://docs.woothemes.com/document/subscriptions/multiple-subscriptions/#section-3), subscription products with an equivalent billing schedule and recipient are grouped into the one subscription.
@@ -97,7 +102,7 @@ In the event that a recipient does not have an account with your store at the ti
 
 The first time the new recipient logs into their account they will be prompted to enter their shipping address as well as change their password.
 
-![Recipient Details Form](https://cldup.com/hbICzQoNWr-3000x3000.png)
+<img src="https://cldup.com/hbICzQoNWr-3000x3000.png" height="777" width="597">
 
 #### 2.3.1 Emails
 In order to keep recipients up-to-date with their gifted subscriptions, WooCommerce Subscriptions Gifting communicates with them via the following emails:
@@ -110,11 +115,10 @@ In order to keep recipients up-to-date with their gifted subscriptions, WooComme
 ### 2.4 Processing Orders with Gift Recipients
 When an order is placed which contains gifted subscription products, the gift recipient is stored alongside their order line items. When processing orders this allows you to see which line items in an order are being purchased for another customer. 
 
-![Admin Panel](https://cldup.com/pen2oWA7uk-3000x3000.png)
+<img src="https://cldup.com/pen2oWA7uk-3000x3000.png">
 
 ## Notes
 ### Topics Not Yet Documented
-* How the mini cart widget displays gifting recipients
 * The differences on the view subscription page for gifted subscriptions: 
   * Purchaser/recipient name in the customer details table
   * The additional information in the related orders table - _Purchased By:_
