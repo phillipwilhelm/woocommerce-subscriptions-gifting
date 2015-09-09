@@ -16,7 +16,6 @@ class WCSG_Checkout {
 		add_filter( 'woocommerce_ship_to_different_address_checked', __CLASS__ . '::maybe_ship_to_recipient', 10, 1 );
 
 		add_filter( 'woocommerce_checkout_get_value', __CLASS__ . '::maybe_get_recipient_shipping', 10, 2 );
-
 	}
 
 	/**
