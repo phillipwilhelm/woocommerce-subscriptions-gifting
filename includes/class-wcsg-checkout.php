@@ -127,7 +127,11 @@ class WCSG_Checkout {
 	}
 
 	/**
-	 * If the cart contains a gifted subscriptions renewal tell the checkout to ship to a different address.
+	 * If the cart contains a gifted subscription renewal tell the checkout to ship to a different address.
+	 *
+	 * @param bool $ship_to_different_address Whether the order will ship to a different address
+	 *
+	 * @return bool $ship_to_different_address
 	 */
 	public static function maybe_ship_to_recipient( $ship_to_different_address ) {
 		if ( wcs_cart_contains_renewal() ) {
@@ -142,19 +146,21 @@ class WCSG_Checkout {
 
 	/**
 	 * Returns recipient's shipping address if the checkout is requesting
-	 * the shipping fields for a gifted subscription renewal
+	 * the shipping fields for a gifted subscription renewal.
+	 *
+	 * @param string $value Default checkout field value.
+	 * @param string $key The checkout form field name/key
 	 */
 	public static function maybe_get_recipient_shipping( $value, $key ) {
-
 		$shipping_fields = WC()->countries->get_address_fields( '', 'shipping_' );
 
 		if ( wcs_cart_contains_renewal() && array_key_exists( $key, $shipping_fields ) ) {
-			$item = wcs_cart_contains_renewal();
+
+			$item         = wcs_cart_contains_renewal();
 			$subscription = wcs_get_subscription( $item['subscription_renewal']['subscription_id'] );
+
 			if ( isset( $subscription->recipient_user ) ) {
-				if ( ! empty( get_user_meta( $subscription->recipient_user, $key, true ) ) ) {
-					return get_user_meta( $subscription->recipient_user, $key, true );
-				}
+				return get_user_meta( $subscription->recipient_user, $key, true );
 			}
 		}
 		return $value;
