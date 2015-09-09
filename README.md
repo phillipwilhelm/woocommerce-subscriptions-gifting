@@ -124,6 +124,7 @@ When an order is placed which contains gifted subscription products, the gift re
   * The additional information in the related orders table - _Purchased By:_
 * How downloadable products work.
 * Cannot gift a product while switching
+* When manually renewing a gifted subscription the recipient's shipping address is entered into the checkout. 
 * ...
 
 ### Additional resources
