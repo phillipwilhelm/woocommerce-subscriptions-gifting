@@ -6,19 +6,19 @@ class WCSG_Download_handler {
 	* Setup hooks & filters, when the class is initialised.
 	*/
 	public static function init() {
-		add_filter( 'woocommerce_subscription_settings', __CLASS__ . '::register_gifting_settings' );
+		add_filter( 'woocommerce_subscription_settings', __CLASS__ . '::register_download_settings' );
 		add_filter( 'woocommerce_downloadable_file_permission_data', __CLASS__ . '::grant_recipient_download_permissions', 11 );
 		add_filter( 'woocommerce_get_item_downloads', __CLASS__ . '::get_item_download_links', 10, 3 );
 	}
 
 	/**
-	* Gets the current user's download links for a downloadable order item.
-	*
-	* @param array $files Downloadable files for the order item
-	* @param array $item Order line item
-	* @param object $order
-	* @return array $files
-	*/
+	 * Gets the current user's download links for a downloadable order item.
+	 *
+	 * @param array $files Downloadable files for the order item
+	 * @param array $item Order line item.
+	 * @param object $order
+	 * @return array $files
+	 */
 	public static function get_item_download_links( $files, $item, $order ) {
 		global $wp_query;
 
@@ -45,12 +45,12 @@ class WCSG_Download_handler {
 	}
 
 	/**
-	* Grants download permissions to the recipient rather than the purchaser by default. However if the
-	* purchaser can download setting is selected, permissions are granted to both recipient and purchaser.
-	*
-	* @param array $data download permission data inserted into the wp_woocommerce_downloadable_product_permissions table.
-	* @return array $data
-	*/
+	 * Grants download permissions to the recipient rather than the purchaser by default. However if the
+	 * purchaser can download setting is selected, permissions are granted to both recipient and purchaser.
+	 *
+	 * @param array $data download permission data inserted into the wp_woocommerce_downloadable_product_permissions table.
+	 * @return array $data
+	 */
 	public static function grant_recipient_download_permissions( $data ) {
 
 		$subscription = wcs_get_subscription( $data['order_id'] );
@@ -76,15 +76,15 @@ class WCSG_Download_handler {
 	}
 
 	/**
-	* Adds additional gifting specific settings into Subscriptions settings
-	*
-	* @param array $settings Subscription's current set of settings.
-	* @return array $settings new settings with appended wcsg specific settings.
-	*/
-	public static function register_gifting_settings( $settings ) {
+	 * Adds additional gifting specific settings into Subscriptions settings
+	 *
+	 * @param array $settings Subscription's current set of settings.
+	 * @return array $settings new settings with appended wcsg specific settings.
+	 */
+	public static function register_download_settings( $settings ) {
 		$download_settings = array(
 		array(
-			'name'     => __( 'Gifting Subscriptions', 'woocommerce-subscriptions' ),
+			'name'     => __( 'Gifting Subscriptions', 'woocommerce-subscriptions-gifting' ),
 			'type'     => 'title',
 			'id'       => 'woocommerce_subscriptions_gifting',
 		),
