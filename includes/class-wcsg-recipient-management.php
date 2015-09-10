@@ -187,7 +187,7 @@ class WCSG_Recipient_Management {
 	 */
 	public static function gifting_information_after_customer_details( $subscription ) {
 		//check if the subscription is gifted
-		if ( ! empty( $subscription->recipient_user ) ) {
+		if ( ! empty( $subscription->recipient_user ) && 'deleted_recipient' != $subscription->recipient_user ) {
 			$customer_user  = get_user_by( 'id', $subscription->customer_user );
 			$recipient_user = get_user_by( 'id', $subscription->recipient_user );
 			$current_user   = wp_get_current_user();
@@ -229,7 +229,7 @@ class WCSG_Recipient_Management {
 		$gifted_subscriptions = WCSG_Recipient_Management::get_recipient_subscriptions( $user_id );
 		if ( 0 != count( $gifted_subscriptions ) ) {
 			foreach ( $gifted_subscriptions as $subscription_id ) {
-				delete_post_meta( $subscription_id, '_recipient_user' );
+				update_post_meta( $subscription_id, '_recipient_user', 'deleted_recipient' );
 			}
 		}
 	}
@@ -257,8 +257,7 @@ class WCSG_Recipient_Management {
 		$recipients_count = count( $recipient_users );
 		if ( 0 != $recipients_count ) {
 			echo '<p><strong>' . esc_html__( 'WARNING:', 'woocommerce-subscriptions-gifting' ) . ' </strong>';
-			// translators: %s is a placeholder for either user or users depending on the number.
-			echo esc_html( sprintf( __( 'The following %s will be will be removed from their gifted subscriptions:', 'woocommerce-subscriptions-gifting' ), _n( 'user', 'users', $recipients_count, 'woocommerce-subscriptions-gifting' ) ) );
+			echo esc_html( _n( 'The following recipient will be removed from their subscriptions:', 'The following recipients will be removed from their subscriptions:',$recipients_count, 'woocommerce-subscriptions-gifting' ) );
 			echo '<p><dl>';
 			foreach ( $recipient_users as $recipient_id => $subscriptions ) {
 				$recipient = get_userdata( $recipient_id );
