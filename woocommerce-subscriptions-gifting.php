@@ -39,6 +39,8 @@ require_once( 'includes/class-wcsg-recipient-details.php' );
 
 require_once( 'includes/class-wcsg-email.php' );
 
+require_once( 'includes/class-wcsg-memberships-integration.php' );
+
 class WCS_Gifting {
 
 	public static $plugin_file = __FILE__;
