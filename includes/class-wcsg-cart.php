@@ -17,6 +17,10 @@ class WCSG_Cart {
 
 	/**
 	 * Adds gifting ui elements to subscription cart items.
+	 *
+	 * @param string $title The product title displayed in the cart table.
+	 * @param array $cart_item Details of an item in WC_Cart
+	 * @param string $cart_item_key The key of the cart item being displayed in the cart table.
 	 */
 	public static function add_gifting_option_cart( $title, $cart_item, $cart_item_key ) {
 		if ( is_page( wc_get_page_id( 'cart' ) ) && WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) && ! isset( $cart_item['subscription_renewal'] ) && ! isset( $cart_item['subscription_switch'] ) ) {
@@ -30,6 +34,10 @@ class WCSG_Cart {
 
 	/**
 	 * Adds gifting ui elements to subscription items in the mini cart.
+	 *
+	 * @param int $quantity The quantity of the cart item
+	 * @param array $cart_item Details of an item in WC_Cart
+	 * @param string $cart_item_key key of the cart item being displayed in the mini cart.
 	 */
 	public static function add_gifting_option_minicart( $quantity, $cart_item, $cart_item_key ) {
 		if ( ! empty( $cart_item['wcsg_gift_recipients_email'] ) ) {
@@ -40,6 +48,8 @@ class WCSG_Cart {
 
 	/**
 	 * Updates the cart items for changes made to recipient infomation on the cart page.
+	 *
+	 * @param bool $cart_updated whether the cart has been updated.
 	 */
 	public static function cart_update( $cart_updated ) {
 		if ( ! empty( $_POST['recipient_email'] ) ) {
@@ -60,7 +70,10 @@ class WCSG_Cart {
 	}
 
 	/**
-	 * Returns gifting ui html elements displaying the email of the recipient
+	 * Returns gifting ui html elements displaying the email of the recipient.
+	 *
+	 * @param string $cart_item_key The key of the cart item being displayed in the mini cart.
+	 * @param string $email The email of the gift recipient.
 	 */
 	public static function generate_minicart_gifting_html( $cart_item_key, $email ) {
 
@@ -71,15 +84,19 @@ class WCSG_Cart {
 
 	/**
 	 * Prevent products being added to the cart if the cart contains a gifted subscription renewal.
+	 *
+	 * @param bool $passed Whether adding to cart is valid
 	 */
 	public static function prevent_products_in_gifted_renewal_orders( $passed ) {
-		foreach ( WC()->cart->cart_contents as $key => $item ) {
-			if ( isset( $item['subscription_renewal'] ) ) {
-				$subscription = wcs_get_subscription( $item['subscription_renewal']['subscription_id'] );
-				if ( isset( $subscription->recipient_user ) ) {
-					$passed = false;
-					wc_add_notice( __( 'You can not purchase additional products in subscription renewal orders.', 'woocommerce-subscriptions-gifting' ), 'error' );
-					break;
+		if ( $passed ) {
+			foreach ( WC()->cart->cart_contents as $key => $item ) {
+				if ( isset( $item['subscription_renewal'] ) ) {
+					$subscription = wcs_get_subscription( $item['subscription_renewal']['subscription_id'] );
+					if ( isset( $subscription->recipient_user ) ) {
+						$passed = false;
+						wc_add_notice( __( 'You can not purchase additional products in gifted subscription renewal orders.', 'woocommerce-subscriptions-gifting' ), 'error' );
+						break;
+					}
 				}
 			}
 		}
