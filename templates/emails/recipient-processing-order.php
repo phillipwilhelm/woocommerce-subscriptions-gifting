@@ -25,7 +25,7 @@ if ( 'true' == $new_recipient ) : ?>
 
 <p><?php esc_html_e( 'We noticed you didn\'t have an account so we created one for you. Your account login details will have been sent to you in a separate email.' ); ?></p>
 
-<?php else: ?>
+<?php else : ?>
 
 <p><?php printf( esc_html__( 'You may access your account area to view your new ' . _n( 'subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' here: %1$sMy Account%2$s.', 'woocommerce-subscriptions-gifting' ),
 	'<a href="' . esc_url( wc_get_page_permalink( 'myaccount' ) )  . '">',

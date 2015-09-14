@@ -20,9 +20,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 <p><?php printf( esc_html__( 'Your password has been automatically generated: %s', 'woocommerce-subscriptions-gifting' ), '<strong>' . esc_html( $user_password ) . '</strong>' ); ?></p>
 
 <p><?php printf( esc_html__( 'To complete your account we just need you to fill in your shipping address and you to change your password here: %s.', 'woocommerce-subscriptions-gifting' ),
-'<a href="' . esc_url( wc_get_endpoint_url( 'new-recipient-account', '', wc_get_page_permalink( 'myaccount' ) ) ) . '">' . __( 'My Account Details', 'woocommerce-subscriptions-gifting' ) . '</a>' ); ?></p>
+'<a href="' . esc_url( wc_get_endpoint_url( 'new-recipient-account', '', wc_get_page_permalink( 'myaccount' ) ) ) . '">' . esc_html__( 'My Account Details', 'woocommerce-subscriptions-gifting' ) . '</a>' ); ?></p>
 
 <p><?php printf( esc_html__( 'Once completed you may access your account area to view your subscription here: %s.', 'woocommerce-subscriptions-gifting' ),
-'<a href="' . esc_url( wc_get_page_permalink( 'myaccount' ) ) . '">' . __( 'My Account', 'woocommerce-subscriptions-gifting' ) . '</a>' ); ?></p>
+'<a href="' . esc_url( wc_get_page_permalink( 'myaccount' ) ) . '">' . esc_html__( 'My Account', 'woocommerce-subscriptions-gifting' ) . '</a>' ); ?></p>
 
 <?php do_action( 'woocommerce_email_footer' ); ?>
