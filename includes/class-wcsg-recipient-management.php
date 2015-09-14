@@ -226,10 +226,15 @@ class WCSG_Recipient_Management {
 	 * @param int $user_id The id of the user being deleted.
 	 */
 	public static function maybe_remove_recipient( $user_id ) {
+
 		$gifted_subscriptions = WCSG_Recipient_Management::get_recipient_subscriptions( $user_id );
+
 		if ( 0 != count( $gifted_subscriptions ) ) {
+
 			foreach ( $gifted_subscriptions as $subscription_id ) {
+
 				update_post_meta( $subscription_id, '_recipient_user', 'deleted_recipient' );
+
 			}
 		}
 	}
@@ -247,26 +252,40 @@ class WCSG_Recipient_Management {
 			$user_ids = $_REQUEST['users'];
 		}
 
-		foreach ( $user_ids as $user_id ) {
-			$gifted_subscriptions = WCSG_Recipient_Management::get_recipient_subscriptions( $user_id );
-			if ( 0 != count( $gifted_subscriptions ) ) {
-				$recipient_users[ $user_id ] = $gifted_subscriptions;
-			}
-		}
+		if ( ! empty( $user_ids ) ) {
 
-		$recipients_count = count( $recipient_users );
-		if ( 0 != $recipients_count ) {
-			echo '<p><strong>' . esc_html__( 'WARNING:', 'woocommerce-subscriptions-gifting' ) . ' </strong>';
-			echo esc_html( _n( 'The following recipient will be removed from their subscriptions:', 'The following recipients will be removed from their subscriptions:',$recipients_count, 'woocommerce-subscriptions-gifting' ) );
-			echo '<p><dl>';
-			foreach ( $recipient_users as $recipient_id => $subscriptions ) {
-				$recipient = get_userdata( $recipient_id );
-				echo '<dt>ID #' . esc_attr( $recipient_id ) . ': ' . esc_attr( $recipient->user_login ) . '</dt>';
-				foreach ( $subscriptions as $subscription ) {
-					echo '<dd>' . esc_html__( 'Subscription' , 'woocommerce-subscriptions-gifting' ) . ' <a href="'. esc_url( wcs_get_edit_post_link( $subscription ) ) . '">#' . esc_html( $subscription ) . '</a></dd>';
+			foreach ( $user_ids as $user_id ) {
+				$gifted_subscriptions = WCSG_Recipient_Management::get_recipient_subscriptions( $user_id );
+				if ( 0 != count( $gifted_subscriptions ) ) {
+					$recipient_users[ $user_id ] = $gifted_subscriptions;
 				}
 			}
-			echo '</dl>';
+
+			$recipients_count = count( $recipient_users );
+
+			if ( 0 != $recipients_count ) {
+
+				echo '<p><strong>' . esc_html__( 'WARNING:', 'woocommerce-subscriptions-gifting' ) . ' </strong>';
+				echo esc_html( _n( 'The following recipient will be removed from their subscriptions:', 'The following recipients will be removed from their subscriptions:',$recipients_count, 'woocommerce-subscriptions-gifting' ) );
+
+				echo '<p><dl>';
+
+				foreach ( $recipient_users as $recipient_id => $subscriptions ) {
+
+					$recipient = get_userdata( $recipient_id );
+
+					echo '<dt>ID #' . esc_attr( $recipient_id ) . ': ' . esc_attr( $recipient->user_login ) . '</dt>';
+
+					foreach ( $subscriptions as $subscription ) {
+
+						echo '<dd>' . esc_html__( 'Subscription' , 'woocommerce-subscriptions-gifting' ) . ' <a href="'. esc_url( wcs_get_edit_post_link( $subscription ) ) . '">#' . esc_html( $subscription ) . '</a></dd>';
+
+					}
+				}
+
+				echo '</dl>';
+
+			}
 		}
 	}
 }
