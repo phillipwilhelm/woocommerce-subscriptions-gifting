@@ -51,6 +51,7 @@ class WCSG_Email_Recipient_Processing_Order extends WC_Email {
 		wc_get_template( $this->template_html, array(
 			'email_heading'          => $this->get_heading(),
 			'blogname'               => $this->get_blogname(),
+			'recipient_user'         => $this->object,
 			'subscription_purchaser' => $this->subscription_owner,
 			'subscriptions'          => $this->subscriptions,
 			'sent_to_admin'          => false,
@@ -70,6 +71,7 @@ class WCSG_Email_Recipient_Processing_Order extends WC_Email {
 		wc_get_template( $this->template_plain, array(
 			'email_heading'          => $this->get_heading(),
 			'blogname'               => $this->get_blogname(),
+			'recipient_user'         => $this->object,
 			'subscription_purchaser' => $this->subscription_owner,
 			'subscriptions'          => $this->subscriptions,
 			'sent_to_admin'          => false,

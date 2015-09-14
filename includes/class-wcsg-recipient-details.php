@@ -37,7 +37,7 @@ class WCSG_Recipient_Details {
 		$current_user = wp_get_current_user();
 		if ( is_account_page() && ! isset( $wp->query_vars['customer-logout'] ) ) {
 			if ( 'true' === get_user_meta( $current_user->ID, 'wcsg_update_account', true )  && ! isset( $wp->query_vars['new-recipient-account'] ) ) {
-				wp_redirect( wc_get_page_permalink( 'myaccount' ) . 'new-recipient-account/' );
+				wp_redirect( wc_get_endpoint_url( 'new-recipient-account', '', wc_get_page_permalink( 'myaccount' ) ) );
 				exit();
 			} else if ( 'true' !== get_user_meta( $current_user->ID, 'wcsg_update_account', true ) && isset( $wp->query_vars['new-recipient-account'] ) ) {
 				wp_redirect( wc_get_page_permalink( 'myaccount' ) );

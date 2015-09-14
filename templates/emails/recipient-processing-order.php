@@ -15,13 +15,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <p><?php printf( esc_html__( 'Hi there,', 'woocommerce-subscriptions-gifting' ) ); ?></p>
 <p><?php printf( esc_html__( '%s just purchased ' .  _n( 'a subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' for you at %s.', 'woocommerce-subscriptions-gifting' ), esc_html( $subscription_purchaser ), esc_html( $blogname ) ); ?>
-<?php printf( esc_html__( ' The order has been received and is being processed. Details of the ' . _n( 'subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' are shown below:', 'woocommerce-subscriptions-gifting' ) ); ?>
+<?php printf( esc_html__( ' The order has been received and is being processed. Details of the ' . _n( 'subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' are shown below.', 'woocommerce-subscriptions-gifting' ) ); ?>
 </p>
+<?php
+
+$new_recipient = get_user_meta( $recipient_user->ID, 'wcsg_update_account', true );
+
+if ( 'true' == $new_recipient ) : ?>
+
+<p><?php esc_html_e( 'We noticed you didn\'t have an account so we created one for you. Your account login details will have been sent to you in a separate email.' ); ?></p>
+
+<?php else: ?>
+
 <p><?php printf( esc_html__( 'You may access your account area to view your new ' . _n( 'subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' here: %1$sMy Account%2$s.', 'woocommerce-subscriptions-gifting' ),
 	'<a href="' . esc_url( wc_get_page_permalink( 'myaccount' ) )  . '">',
 	'</a>'
 ); ?></p>
-<?php
+
+<?php endif;
+
 foreach ( $subscriptions as $subscription_id ) {
 	$subscription = wcs_get_subscription( $subscription_id );
 	$items        = $subscription->get_items();
