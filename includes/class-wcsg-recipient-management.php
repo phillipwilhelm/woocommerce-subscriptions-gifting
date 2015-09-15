@@ -187,7 +187,7 @@ class WCSG_Recipient_Management {
 	 */
 	public static function gifting_information_after_customer_details( $subscription ) {
 		//check if the subscription is gifted
-		if ( ! empty( $subscription->recipient_user ) && 'deleted_recipient' != $subscription->recipient_user ) {
+		if ( ! empty( $subscription->recipient_user ) && is_numeric( $subscription->recipient_user ) ) {
 			$customer_user  = get_user_by( 'id', $subscription->customer_user );
 			$recipient_user = get_user_by( 'id', $subscription->recipient_user );
 			$current_user   = wp_get_current_user();
