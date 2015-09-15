@@ -92,7 +92,7 @@ Once a subscription has been purchased for a recipient, they are given access to
 | View Renewal Orders        |       ✔      |      ✔      |
 
 #### View Subscription Page
-When visiting the View Subscription Page, both recipient and purchaser are given a couple of extra details to assist in the managing of their subscription. 
+When visiting the View Subscription Page, both recipient and purchaser are given a couple of extra details to assist in managing their subscription. 
 
 * **Recipient/Purchaser Details -** Details of the other participating person in the gifted subscription are displayed alongside their role in the customer details table on the view subscription page. *For example:*
 <img src="https://cldup.com/6fQ8Lw7s8h-3000x3000.jpeg" height="192" width="555">
@@ -160,7 +160,7 @@ When an order is placed which contains gifted subscription products, the gift re
 ### WooCommerce Memberships Integration
 If your store makes use of the WooCommerce Subscriptions and [WooCommerce Memberships](http://www.woothemes.com/products/woocommerce-memberships/) plugins the ability to purchase membership subscriptions is important. Which is why we have made sure we integrate with WooCommerce Memberships. 
 
-In a nutshell, gift recipients who are purchased a subscription product tied to a membership plan will receive the benefits of the membership rather than the purchaser. All the features of managing the memberships granted through gifted subscriptions remain intact, you can pause, edit, cancel and delete memberships granted to recipients just as normal though the **WooCommerce > Memberships** page.  
+In a nutshell, gift recipients who are purchased a subscription product tied to a membership plan will receive the benefits of the membership rather than the purchaser. All the features of managing the memberships granted through gifted subscriptions remain intact, you can pause, edit, cancel and delete memberships granted to recipients just as normal through the **WooCommerce > Memberships** page.  
 
 ## Notes
 ### Topics Not Yet Documented
