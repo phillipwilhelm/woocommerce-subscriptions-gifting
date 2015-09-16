@@ -138,7 +138,15 @@ class WCS_Gifting {
 					unset( WC()->cart->cart_contents[ $key ] );
 				} else { // there is no item in the cart with the same new key
 					WC()->cart->cart_contents[ $new_key ] = WC()->cart->cart_contents[ $key ];
-					WC()->cart->cart_contents[ $new_key ]['wcsg_gift_recipients_email'] = $new_recipient_data;
+
+					if ( empty( $new_recipient_data ) ) {
+
+						unset( WC()->cart->cart_contents[ $new_key ]['wcsg_gift_recipients_email'] );
+					} else {
+
+						WC()->cart->cart_contents[ $new_key ]['wcsg_gift_recipients_email'] = $new_recipient_data;
+					}
+
 					unset( WC()->cart->cart_contents[ $key ] );
 				}
 			}

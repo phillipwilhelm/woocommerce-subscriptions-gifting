@@ -93,7 +93,7 @@ class WCSG_Checkout {
 	 * @return string|cart_key The cart_key with a recipient's email appended
 	 */
 	public static function add_recipient_email_recurring_cart_key( $cart_key, $cart_item ) {
-		if ( isset( $cart_item['wcsg_gift_recipients_email'] ) ) {
+		if ( ! empty( $cart_item['wcsg_gift_recipients_email'] ) ) {
 			$cart_key .= '_' . $cart_item['wcsg_gift_recipients_email'];
 		}
 		return $cart_key;
