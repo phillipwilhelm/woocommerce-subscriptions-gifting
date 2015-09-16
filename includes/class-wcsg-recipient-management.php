@@ -220,6 +220,10 @@ class WCSG_Recipient_Management {
 
 	/**
 	 * Filter the WC_Subscription::get_related_orders() method removing parent orders for recipients.
+	 *
+	 * @param array $related_orders an array of order ids related to the $subscription
+	 * @param WC_Subscription Object $subscription
+	 * @return array $related_orders an array of order ids related to the $subscription
 	 */
 	public static function maybe_remove_parent_order( $related_orders, $subscription ) {
 		if ( wp_get_current_user()->ID == $subscription->recipient_user ) {
