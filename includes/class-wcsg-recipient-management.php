@@ -9,7 +9,7 @@ class WCSG_Recipient_Management {
 
 		add_action( 'woocommerce_order_details_after_customer_details', __CLASS__ . '::gifting_information_after_customer_details', 1 );
 
-		add_filter( 'wcs_view_subscription_actions', __CLASS__ . '::add_recipient_actions', 1, 2 );
+		add_filter( 'wcs_view_subscription_actions', __CLASS__ . '::add_recipient_actions', 11, 2 );
 
 		//we want to handle the changing of subscription status before Subscriptions core
 		add_action( 'init', __CLASS__ . '::change_user_recipient_subscription', 99 );
@@ -75,31 +75,31 @@ class WCSG_Recipient_Management {
 
 		if ( $subscription->recipient_user == wp_get_current_user()->ID ) {
 
+			$recipient_actions = array();
+
 			if ( $subscription->can_be_updated_to( 'on-hold' ) ) {
-				$actions['suspend'] = array(
+				$recipient_actions['suspend'] = array(
 					'url'  => self::get_recipient_change_status_link( $subscription->id, 'on-hold', $subscription->recipient_user ),
 					'name' => __( 'Suspend', 'woocommerce-subscriptions-gifting' ),
 				);
 			} else if ( $subscription->can_be_updated_to( 'active' ) && ! $subscription->needs_payment() ) {
-				$actions['reactivate'] = array(
+				$recipient_actions['reactivate'] = array(
 					'url'  => self::get_recipient_change_status_link( $subscription->id, 'active', $subscription->recipient_user ),
 					'name' => __( 'Reactivate', 'woocommerce-subscriptions-gifting' ),
 				);
 			}
 
 			if ( $subscription->can_be_updated_to( 'cancelled' ) ) {
-				$actions['cancel'] = array(
+				$recipient_actions['cancel'] = array(
 					'url'  => self::get_recipient_change_status_link( $subscription->id, 'cancelled', $subscription->recipient_user ),
 					'name' => __( 'Cancel', 'woocommerce-subscriptions-gifting' ),
 				);
 			}
 
-			if ( $subscription->can_be_updated_to( 'new-payment-method' ) ) {
-				$actions['change_payment_method'] = array(
-					'url'  => wp_nonce_url( add_query_arg( array( 'change_payment_method' => $subscription->id ), $subscription->get_checkout_payment_url() ) ),
-					'name' => __( 'Change Payment', 'woocommerce-subscriptions-gifting' ),
-				);
-			}
+			$actions = array_merge( $recipient_actions, $actions );
+
+			//remove the ability for recipients to change the payment method.
+			unset( $actions['change_payment_method'] );
 		}
 		return $actions;
 	}
