@@ -1,6 +1,6 @@
 <?php
 
-class WCSG_Download_handler {
+class WCSG_Download_Handler {
 
 	/**
 	* Setup hooks & filters, when the class is initialised.
@@ -102,4 +102,4 @@ class WCSG_Download_handler {
 		return array_merge( $settings, $download_settings );
 	}
 }
-WCSG_Download_handler::init();
+WCSG_Download_Handler::init();
