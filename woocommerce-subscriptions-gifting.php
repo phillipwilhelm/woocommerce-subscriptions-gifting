@@ -126,7 +126,6 @@ class WCS_Gifting {
 	 * @param new_recipient_data The new recipient information for the item
 	 */
 	public static function update_cart_item_key( $item, $key, $new_recipient_data ) {
-
 		if ( empty( $item['wcsg_gift_recipients_email'] ) || $item['wcsg_gift_recipients_email'] != $new_recipient_data ) {
 
 			$cart_item_data = ( empty( $new_recipient_data ) ) ? null : array( 'wcsg_gift_recipients_email' => $new_recipient_data );
@@ -136,12 +135,9 @@ class WCS_Gifting {
 			if ( $new_key != $key ) {
 
 				if ( ! empty( $cart_item ) ) {
-
 					$combined_quantity = $item['quantity'] + $cart_item['quantity'];
-
 					WC()->cart->cart_contents[ $new_key ]['quantity'] = $combined_quantity;
 					unset( WC()->cart->cart_contents[ $key ] );
-
 				} else { // there is no item in the cart with the same new key
 
 					WC()->cart->cart_contents[ $new_key ] = WC()->cart->cart_contents[ $key ];
