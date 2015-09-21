@@ -19,7 +19,7 @@ class WCSG_Test_Cart_Functions extends WC_Unit_Test_Case {
 
 		WCSG_Helper_Test_Cart::add_to_test_cart( $this->wcsg_test_product_one, 1 );
 
-		/****************************************************************************/
+		/*************************One Product, One Recipient*************************/
 
 		$cart_item_keys = array_keys( WC()->cart->cart_contents );
 		$cart_item_key  = reset( $cart_item_keys );
@@ -35,7 +35,7 @@ class WCSG_Test_Cart_Functions extends WC_Unit_Test_Case {
 		$this->assertNotEquals( $new_cart_item_key, $cart_item_key );
 		$this->assertTrue( WC()->cart->cart_contents[ $new_cart_item_key ]['wcsg_gift_recipients_email'] == 'email@example.com' );
 
-		/****************************************************************************/
+		/****************One Product, Remove Recipient From Last Test****************/
 
 		$cart_item_keys = array_keys( WC()->cart->cart_contents );
 		$cart_item_key  = reset( $cart_item_keys );
@@ -51,7 +51,7 @@ class WCSG_Test_Cart_Functions extends WC_Unit_Test_Case {
 		$this->assertNotEquals( $new_cart_item_key, $cart_item_key );
 		$this->assertTrue( empty( WC()->cart->cart_contents[ $new_cart_item_key ]['wcsg_gift_recipients_email'] ) );
 
-		/****************************************************************************/
+		/***************Add Additional Products - No Recipients in Cart***************/
 
 		WCSG_Helper_Test_Cart::add_to_test_cart( $this->wcsg_test_product_one, 1 );
 
@@ -67,7 +67,7 @@ class WCSG_Test_Cart_Functions extends WC_Unit_Test_Case {
 		$this->assertTrue( 1 == count( WC()->cart->cart_contents ) );
 		$this->assertTrue( 5 == $cart_item['quantity'] );
 
-		/****************************************************************************/
+		/**************Add Additional Products - One Recipient in Cart**************/
 
 		$cart_item_keys = array_keys( WC()->cart->cart_contents );
 		$cart_item_key  = reset( $cart_item_keys );
@@ -79,7 +79,7 @@ class WCSG_Test_Cart_Functions extends WC_Unit_Test_Case {
 
 		$this->assertTrue( 2 == count( WC()->cart->cart_contents ) );
 
-		/****************************************************************************/
+		/*************************Two Products, One Recipient*************************/
 
 		//clear the cart
 		WC()->cart->empty_cart();
