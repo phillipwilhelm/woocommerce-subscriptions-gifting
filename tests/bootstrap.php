@@ -155,7 +155,7 @@ class WCS_Unit_Tests_Bootstrap {
 		// require_once( 'framework/class-wcsg-unit-test-factory.php' );
 
 		// Load WCSG Helper Functions
-		// require_once( 'framework/helpers/class-wcsg-helper-product.php' );
+		require_once( 'framework/helpers/class-wcsg-helper-test-cart.php' );
 	}
 
 	/**
@@ -179,7 +179,7 @@ WCS_Unit_Tests_Bootstrap::instance();
 /**
  * Override woothemes_queue_update() and is_active_woocommerce() so that the woocommerce_subscriptions.php
  * will import most of the necessary files without exiting early.
- * 
+ *
  * @since 2.0
  */
 function is_woocommerce_active() {
