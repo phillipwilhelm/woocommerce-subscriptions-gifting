@@ -50,15 +50,6 @@ class WCSG_Recipient_Management {
 						}
 					}
 					break;
-				case 'edit_shop_subscription_payment_method' :
-
-					$user_id      = $args[1];
-					$subscription = wcs_get_subscription( $args[2] );
-
-					if ( $user_id == $subscription->recipient_user ) {
-						$allcaps['edit_shop_subscription_payment_method'] = true;
-					}
-					break;
 			}
 		}
 		return $allcaps;
