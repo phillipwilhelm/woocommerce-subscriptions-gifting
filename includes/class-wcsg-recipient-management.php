@@ -219,14 +219,28 @@ class WCSG_Recipient_Management {
 	}
 
 	/**
-	 * Maybe displays a gifting icon in the My Subscriptions table for gifted subscriptions.
+	 * Maybe display a gifting icon and recipient/purchaser details in the My Subscriptions table for gifted subscriptions.
 	 *
 	 * @param WC_Subscription $subscription
 	 */
 	public static function display_my_subscription_gifing_icon( $subscription ) {
 
 		if ( ! empty( $subscription->recipient_user ) && is_numeric( $subscription->recipient_user ) ) {
-			echo '&#127873;';
+
+			echo '<br>&#127873;';
+
+			$current_user        = get_current_user_id();
+			$user_id             = ( $subscription->recipient_user == $current_user ) ? $subscription->customer_user : $subscription->recipient_user;
+			$user_information    = get_userdata( $user_id );
+			$string_to_display   = ( $subscription->recipient_user == $current_user ) ? esc_html__( ' from ', 'woocommerce-subscriptions-gifting' ) : esc_html__( ' for ', 'woocommerce-subscriptions-gifting' );
+
+			if ( empty( $user_information->first_name ) ) {
+				$string_to_display .= $user_information->nickname;
+			} else {
+				$string_to_display .= ( empty( $user_information->last_name ) ) ? $user_information->first_name : $user_information->first_name . ' ' . $user_information->last_name;
+			}
+
+			echo '<small>' . esc_html( $string_to_display ) . '.</small>';
 		}
 	}
 }
