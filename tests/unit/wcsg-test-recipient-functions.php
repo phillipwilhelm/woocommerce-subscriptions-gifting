@@ -252,4 +252,79 @@ class WCSG_Test_Recipient_Functions extends WC_Unit_Test_Case {
 		);
 	}
 
+	public function test_grant_recipient_capabilities() {
+
+		$recipient_user = wp_create_user( 'recipient_user', 'password', 'recipient@example.com' );
+		$purchaser_user = wp_create_user( 'purchaser_user', 'password', 'purchaser@example.com' );
+		$user           = wp_create_user( 'random_user', 'password', 'user@example.com' );
+
+		$parent_order   = wc_create_order();
+		$subscription   = WCS_Helper_Subscription::create_subscription( array( 'customer_id' => $purchaser_user ), array( 'recipient_user' => $recipient_user ) );
+		error_log( 'creating renewal order for ' . $subscription->id );
+		$renewal_order  = wcs_create_renewal_order( $subscription );
+
+
+		$order                     = wc_create_order();
+		$non_gifted_subscription   = WCS_Helper_Subscription::create_subscription();
+
+		$subscription->update_parent( $parent_order->id );
+
+		$tests = array(
+			/*recipient tests*/
+			//parent order of gifted subscription
+			//array( 'current_user' => $recipient_user, 'capability' => 'view_order', 'post_id' => $parent_order->id, 'expected' => true ),
+			//gifted subscription
+			array( 'current_user' => $recipient_user, 'capability' => 'view_order', 'post_id' => $subscription->id, 'expected' => true ),
+			//renewal order for gifted subscription
+			//array( 'current_user' => $recipient_user, 'capability' => 'view_order', 'post_id' => $renewal_order->id, 'expected' => true ),
+			//unrelated order
+			array( 'current_user' => $recipient_user, 'capability' => 'view_order', 'post_id' => $order->id, 'expected' => false ),
+			//non gifted subscription
+			array( 'current_user' => $recipient_user, 'capability' => 'view_order', 'post_id' => $non_gifted_subscription->id, 'expected' => false ),
+
+			/*purchaser tests - all tests should expect unchanged result (false)*/
+			//parent order of gifted subscription
+			array( 'current_user' => $purchaser_user, 'capability' => 'view_order', 'post_id' => $parent_order->id, 'expected' => false ),
+			//gifted subscription
+			array( 'current_user' => $purchaser_user, 'capability' => 'view_order', 'post_id' => $subscription->id, 'expected' => false ),
+			//unrelated order
+			array( 'current_user' => $purchaser_user, 'capability' => 'view_order', 'post_id' => $order->id, 'expected' => false ),
+			//non gifted subscription
+			array( 'current_user' => $purchaser_user, 'capability' => 'view_order', 'post_id' => $non_gifted_subscription->id, 'expected' => false ),
+
+			/*unrelated user tests - all tests should expect false, this user has no ties to the orders or subscriptions*/
+			//parent order of gifted subscription
+			array( 'current_user' => $user, 'capability' => 'view_order', 'post_id' => $parent_order->id, 'expected' => false ),
+			//gifted subscription
+			array( 'current_user' => $user, 'capability' => 'view_order', 'post_id' => $subscription->id, 'expected' => false ),
+			//unrelated order
+			array( 'current_user' => $user, 'capability' => 'view_order', 'post_id' => $order->id, 'expected' => false ),
+			//non gifted subscription
+			array( 'current_user' => $user, 'capability' => 'view_order', 'post_id' => $non_gifted_subscription->id, 'expected' => false ),
+		);
+
+		foreach( $tests as $key => $test ) {
+			//reset to default
+			$user_caps          = array( $test['capability'] => false );
+			$args               = array( $test['capability'], $test['current_user'], $test['post_id'] );
+			$capability_request = array( $test['capability'] );
+
+			$user_caps = WCSG_Recipient_Management::grant_recipient_capabilities( $user_caps, $capability_request, $args );
+
+			$this->assertEquals( $test['expected'], $user_caps[ $test['capability'] ] , 'Test ' . $key . ' Failed with data: ' . http_build_query( $test, '' , ', ') );
+		}
+
+		//clean-up
+		wp_delete_post( $subscription->id, true );
+		wp_delete_post( $parent_order->id, true );
+		wp_delete_post( $order->id, true );
+		wp_delete_post( $non_gifted_subscription->id, true );
+		wp_delete_post( $renewal_order->id, true );
+
+		wp_delete_user( $recipient_user );
+		wp_delete_user( $purchaser_user );
+		wp_delete_user( $user );
+
+	}
+
 }
