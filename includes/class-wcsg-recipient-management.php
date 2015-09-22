@@ -18,6 +18,7 @@ class WCSG_Recipient_Management {
 
 		add_filter( 'user_has_cap', __CLASS__ . '::grant_recipient_capabilities', 11, 3 );
 
+		add_action( 'woocommerce_my_subscriptions_after_subscription_id', __CLASS__ . '::display_my_subscription_gifing_icon', 10, 1 );
 	}
 
 	/**
@@ -215,6 +216,18 @@ class WCSG_Recipient_Management {
 			'meta_compare'   => '=',
 			'fields'         => 'ids',
 		) );
+	}
+
+	/**
+	 * Maybe displays a gifting icon in the My Subscriptions table for gifted subscriptions.
+	 *
+	 * @param WC_Subscription $subscription
+	 */
+	public static function display_my_subscription_gifing_icon( $subscription ) {
+
+		if ( ! empty( $subscription->recipient_user ) && is_numeric( $subscription->recipient_user ) ) {
+			echo '&#127873;';
+		}
 	}
 }
 WCSG_Recipient_Management::init();
