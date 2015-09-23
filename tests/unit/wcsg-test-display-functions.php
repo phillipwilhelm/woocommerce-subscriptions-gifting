@@ -38,7 +38,7 @@ class WCSG_Test_Display_Functions extends WC_Unit_Test_Case {
 	 * @param bool $expected_is_display_none Whether the field is expected to be flagged to display none.
 	 */
 	public function test_get_recipient_email_field_args( $current_user_email, $email, $expected_invalid, $expected_is_display_none ) {
-
+		$user_id = 0;
 		if ( ! empty( $current_user_email ) ) {
 			$user_id = wp_create_user( 'user', 'password', $current_user_email );
 			wp_set_current_user( $user_id );
@@ -51,7 +51,7 @@ class WCSG_Test_Display_Functions extends WC_Unit_Test_Case {
 		$this->assertEquals( $invalid_result, $expected_invalid );
 		$this->assertEquals( $result_is_display_none, $expected_is_display_none );
 
-		if ( ! empty( $current_user_email ) ) {
+		if ( 0 !== $user_id ) {
 			//clean up
 			wp_delete_user( $user_id );
 		}
@@ -85,11 +85,11 @@ class WCSG_Test_Display_Functions extends WC_Unit_Test_Case {
 	 */
 	public function test_email_belongs_to_current_user() {
 
-		$user_id = wp_create_user( 'user', 'password', 'email@example.com' );
+		$user_id = wp_create_user( 'user', 'password', 'user_email@example.com' );
 
 		wp_set_current_user( $user_id );
 
-		$this->assertTrue( WCS_Gifting::email_belongs_to_current_user( 'email@example.com' ) );
+		$this->assertTrue( WCS_Gifting::email_belongs_to_current_user( 'user_email@example.com' ) );
 		$this->assertTrue( false == WCS_Gifting::email_belongs_to_current_user( '' ) );
 		$this->assertTrue( false == WCS_Gifting::email_belongs_to_current_user( 'email1@example.com' ) );
 

@@ -158,7 +158,7 @@ class WCSG_Test_Recipient_Functions extends WC_Unit_Test_Case {
 			$subscription_meta[ 'recipient_user' ] = $recipient_user;
 		}
 
-		$purchaser_user = wp_create_user( 'purchaser_user', 'password', 'email@example.com' );
+		$purchaser_user = wp_create_user( 'purchaser_user', 'password', 'purchaser_user_email@example.com' );
 		$post_meta      = array( 'customer_id' => $purchaser_user );
 
 		if ( 'recipient' == $current_user ) {
@@ -252,6 +252,9 @@ class WCSG_Test_Recipient_Functions extends WC_Unit_Test_Case {
 		);
 	}
 
+	/**
+	 * Tests for WCSG_Recipient_Management::grant_recipient_capabilities
+	 */
 	public function test_grant_recipient_capabilities() {
 
 		$recipient_user = wp_create_user( 'recipient_user', 'password', 'recipient@example.com' );
@@ -260,9 +263,7 @@ class WCSG_Test_Recipient_Functions extends WC_Unit_Test_Case {
 
 		$parent_order   = wc_create_order();
 		$subscription   = WCS_Helper_Subscription::create_subscription( array( 'customer_id' => $purchaser_user ), array( 'recipient_user' => $recipient_user ) );
-		error_log( 'creating renewal order for ' . $subscription->id );
 		$renewal_order  = wcs_create_renewal_order( $subscription );
-
 
 		$order                     = wc_create_order();
 		$non_gifted_subscription   = WCS_Helper_Subscription::create_subscription();
@@ -315,11 +316,11 @@ class WCSG_Test_Recipient_Functions extends WC_Unit_Test_Case {
 		}
 
 		//clean-up
-		wp_delete_post( $subscription->id, true );
-		wp_delete_post( $parent_order->id, true );
-		wp_delete_post( $order->id, true );
-		wp_delete_post( $non_gifted_subscription->id, true );
-		wp_delete_post( $renewal_order->id, true );
+		wp_delete_post( $subscription->id );
+		wp_delete_post( $parent_order->id );
+		wp_delete_post( $order->id );
+		wp_delete_post( $non_gifted_subscription->id );
+		wp_delete_post( $renewal_order->id );
 
 		wp_delete_user( $recipient_user );
 		wp_delete_user( $purchaser_user );
@@ -327,4 +328,98 @@ class WCSG_Test_Recipient_Functions extends WC_Unit_Test_Case {
 
 	}
 
+	/**
+	 * Tests for WCSG_Recipient_Management::add_recipient_actions
+	 *
+	 * @dataProvider recipient_actions_test_setup
+	 */
+	public function test_recipient_actions( $subscription, $user, $subscription_status, $expected_actions ) {
+
+		//set current user to recipient
+		$actions = array();
+
+		if ( ! empty( $user ) ) {
+			wp_set_current_user( $user );
+		} else {
+			wp_set_current_user( 0 );
+		}
+
+		$current_subscription_status = $subscription->get_status();
+
+		if ( $subscription_status == 'pending-cancel' && $subscription->get_status() != 'active' ) {
+			//activate before trying to set the pending-cancel status
+			$subscription->update_status( 'active' );
+			$subscription->update_status( $subscription_status );
+		} else if ( $subscription_status != $current_subscription_status ) {
+			$subscription->update_status( $subscription_status );
+		}
+
+		$result = WCSG_Recipient_Management::add_recipient_actions( $actions, $subscription );
+
+		if ( is_array( $expected_actions ) ) {
+			foreach( $expected_actions as $action ){
+				$this->assertTrue( isset( $result[ $action ] ) );
+			}
+		} else if ( $expected_actions == 'empty' ) {
+			$this->assertTrue( empty( $result ) );
+		}
+	}
+
+	/**
+	 * DataProvider for @see $this->test_recipient_actions
+	 *
+	 * @return array Returns inputs and the expected values in the format:
+	 * array(
+	 * 		subscription_object,
+	 * 		current_user_id,
+	 * 		subscription_status,
+	 * 		expected_actions_returned );
+	 */
+	public static function recipient_actions_test_setup() {
+
+		$recipient_user        = wp_create_user( 'recipient', 'password', 'email@example.com' );
+		$purchaser_user        = wp_create_user( 'purchaser', 'password', 'purchaser_user@example.com' );
+		$subscription          = WCS_Helper_Subscription::create_subscription( array( 'customer_id' => $purchaser_user ), array( 'recipient_user' => $recipient_user ) );
+		$second_subscription   = WCS_Helper_Subscription::create_subscription( array( 'customer_id' => $purchaser_user ) );
+
+		//set the start date to test cancelled status
+		$subscription->update_dates( array( 'start' => '2015-03-08 12:45:32' ) );
+
+		return array(
+			//Active subscription status
+			array( 'subscription' => $subscription, 'current_user' => $purchaser_user, 'subscription_status' => 'active', 'expected_actions' => 'empty' ),
+			array( 'subscription' => $subscription, 'current_user' => '', 'subscription_status' => 'active', 'expected_actions' => 'empty' ),
+			array( 'subscription' => $subscription, 'current_user' => $recipient_user, 'subscription_status' => 'active', 'expected_actions' => array( 'suspend', 'cancel' ) ),
+			//On-Hold subscription status
+			array( 'subscription' => $subscription, 'current_user' => $purchaser_user, 'subscription_status' => 'on-hold', 'expected_actions' => 'empty' ),
+			array( 'subscription' => $subscription, 'current_user' => '', 'subscription_status' => 'on-hold', 'expected_actions' => 'empty' ),
+			array( 'subscription' => $subscription, 'current_user' => $recipient_user, 'subscription_status' => 'on-hold', 'expected_actions' => array( 'reactivate', 'cancel' ) ),
+			//Pending cancellation subscription status
+			array( 'subscription' => $subscription, 'current_user' => $purchaser_user, 'subscription_status' => 'pending-cancel', 'expected_actions' => 'empty' ),
+			array( 'subscription' => $subscription, 'current_user' => '', 'subscription_status' => 'pending-cancel', 'expected_actions' => 'empty' ),
+			array( 'subscription' => $subscription, 'current_user' => $recipient_user, 'subscription_status' => 'pending-cancel', 'expected_actions' => array( 'cancel' ) ),
+			//Cancelled
+			array( 'subscription' => $subscription, 'current_user' => $purchaser_user, 'subscription_status' => 'cancelled', 'expected_actions' => 'empty' ),
+			array( 'subscription' => $subscription, 'current_user' => '', 'subscription_status' => 'cancelled', 'expected_actions' => 'empty' ),
+			array( 'subscription' => $subscription, 'current_user' => $recipient_user, 'subscription_status' => 'cancelled', 'expected_actions' => 'empty' ),
+			//Second Subscription - not gifted. Expects all to be empty
+			array( 'subscription' => $second_subscription, 'current_user' => $recipient_user, 'subscription_status' => 'active', 'expected_actions' => 'empty' ),
+			array( 'subscription' => $second_subscription, 'current_user' => $recipient_user, 'subscription_status' => 'on-hold', 'expected_actions' => 'empty' ),
+			array( 'subscription' => $second_subscription, 'current_user' => $recipient_user, 'subscription_status' => 'pending-cancel', 'expected_actions' => 'empty' ),
+		);
+
+		//clean-up
+		wp_delete_post( $subscription->id, true );
+		wp_delete_post( $second_subscription->id, true );
+		wp_delete_user( $recipient_user );
+		wp_delete_user( $purchaser_user );
+	}
+}
+
+// mock methods
+function wc_next_scheduled_action( $hook, $args = null, $group = '' ) {
+	return true;
+}
+function wc_unschedule_action( $hook, $args = array(), $group = '' ) {
+	return;
 }
