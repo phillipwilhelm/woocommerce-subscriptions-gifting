@@ -6,6 +6,10 @@
  */
 class WCSG_Test_Download_Permission_Functions extends WC_Unit_Test_Case {
 
+	/**
+	 * Tests for WCSG_Download_Handler::grant_recipient_download_permissions
+	 * Basic tests for granting recipients download permissions
+	 */
 	public function test_grant_recipient_download_permissions() {
 
 		$recipient_user        = wp_create_user( 'recipient', 'password', 'email@example.com' );
@@ -13,7 +17,7 @@ class WCSG_Test_Download_Permission_Functions extends WC_Unit_Test_Case {
 		$gifted_subscription   = WCS_Helper_Subscription::create_subscription( array( 'customer_id' => $purchaser_user ), array( 'recipient_user' => $recipient_user ) );
 		$subscription          = WCS_Helper_Subscription::create_subscription( array( 'customer_id' => $purchaser_user ) );
 		$subscription_product  = WCS_Helper_Product::create_simple_subscription_product( array( 'downloadable' => 'yes', 'virtual' => 'yes' ) );
-		update_post_meta($subscription_product->id, '_downloadable_files',array('file1','file2'));//:2:{s:32:"c253421a7d8fd0bf50dd9251baa4044f";a:2:{s:4:"name";s:4:"Pear";s:4:"file";s:58:"http://localhost/trial/wp-content/uploads/2015/05/Pear.jpg";}s:32:"cc92b963101a96835e1b15d367aedfc6";a:2:{s:4:"name";s:5:"Apple";s:4:"file";s:60:"http://localhost/trial/wp-content/uploads/2015/05/apple.jpeg";}}
+
 		//don't grant purchaser access.
 		update_option( 'woocommerce_subscriptions_gifting_downloadable_products', 'no' );
 
@@ -41,40 +45,31 @@ class WCSG_Test_Download_Permission_Functions extends WC_Unit_Test_Case {
 		$this->assertEquals( $result['user_id'], $recipient_user );
 		$this->assertTrue( ! empty( $purchaser_downloads ) );
 
+		foreach( $purchaser_downloads as $download ) {
+			$this->assertEquals( $download->order_id, $gifted_subscription->id );
+			$this->assertEquals( $download->product_id, $subscription_product->id );
+		}
+
 		//Clean-up
 		wp_delete_post( $gifted_subscription->id );
 		wp_delete_post( $subscription->id );
 
-
 		wp_delete_user( $purchaser_user );
 		wp_delete_user( $recipient_user );
-
 	}
 
+	/**
+	 * Returns an array of user download permissions.
+	 *
+	 * @param int $user_id The id of the user to return download permissions for.
+	 * @return array of download permissions for the user.
+	 */
 	public static function get_download_permissions( $user_id ){
-
 		global $wpdb;
 
 		return $wpdb->get_results( $wpdb->prepare( "
-			SELECT permissions.*
-			FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions as permissions
-			WHERE user_id = %d
-			AND permissions.order_id > 0
-			AND
-				(
-					permissions.downloads_remaining > 0
-					OR
-					permissions.downloads_remaining = ''
-				)
-			AND
-				(
-					permissions.access_expires IS NULL
-					OR
-					permissions.access_expires >= %s
-					OR
-					permissions.access_expires = '0000-00-00 00:00:00'
-				)
-			ORDER BY permissions.order_id, permissions.product_id, permissions.permission_id;
-			", $user_id, date( 'Y-m-d', current_time( 'timestamp' ) ) ) );
+			SELECT *
+			FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions
+			WHERE user_id = %d;", $user_id ) );
 	}
 }
