@@ -4,7 +4,7 @@ jQuery(document).ready(function($){
 			$(this).siblings('.woocommerce_subscriptions_gifting_recipient_email').slideDown( 250 );
 		} else {
 			$(this).siblings('.woocommerce_subscriptions_gifting_recipient_email').slideUp( 250 );
-			$(this).parents().children().children('.recipient_email').val('');
+			$(this).parent().find('.recipient_email').val('');
 		}
 	});
 });
