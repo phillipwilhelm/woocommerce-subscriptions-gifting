@@ -252,9 +252,9 @@ class WCSG_Recipient_Management {
 				$username  = explode( '@', $recipient_email );
 				$username  = sanitize_user( $username[0] );
 				$counter   = 1;
-				$_username = $username;
+				$original_username = $username;
 				while ( username_exists( $username ) ) {
-					$username = $_username . $counter;
+					$username = $original_username . $counter;
 					$counter++;
 				}
 				$password = wp_generate_password();
