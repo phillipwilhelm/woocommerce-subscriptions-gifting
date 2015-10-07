@@ -16,6 +16,8 @@ class WCSG_Recipient_Management {
 
 		add_filter( 'wcs_can_user_put_subscription_on_hold' , __CLASS__ . '::recipient_can_suspend', 1, 2 );
 
+		add_filter( 'woocommerce_subscription_related_orders', __CLASS__ . '::maybe_remove_parent_order', 11, 4 );
+
 		add_filter( 'user_has_cap', __CLASS__ . '::grant_recipient_capabilities', 11, 3 );
 
 	}
@@ -32,15 +34,14 @@ class WCSG_Recipient_Management {
 		if ( isset( $caps[0] ) ) {
 			switch ( $caps[0] ) {
 				case 'view_order' :
-
 					$user_id = $args[1];
 					$order   = wc_get_order( $args[2] );
 
 					if ( $order ) {
 						if ( 'shop_subscription' == get_post_type( $args[2] ) && $user_id == $order->recipient_user ) {
 							$allcaps['view_order'] = true;
-						} else if ( wcs_order_contains_subscription( $order ) ) {
-							$subscriptions = wcs_get_subscriptions_for_order( $order );
+						} else if ( wcs_order_contains_renewal( $order ) ) {
+							$subscriptions = wcs_get_subscriptions_for_renewal_order( $order );
 							foreach ( $subscriptions as $subscription ) {
 								if ( $user_id == $subscription->recipient_user ) {
 									$allcaps['view_order'] = true;
@@ -221,6 +222,23 @@ class WCSG_Recipient_Management {
 			$args['post_parent'] = $order_id;
 		}
 		return get_posts( $args );
+	}
+
+	/**
+	 * Filter the WC_Subscription::get_related_orders() method removing parent orders for recipients.
+	 *
+	 * @param array $related_orders an array of order ids related to the $subscription
+	 * @param WC_Subscription Object $subscription
+	 * @return array $related_orders an array of order ids related to the $subscription
+	 */
+	public static function maybe_remove_parent_order( $related_orders, $subscription ) {
+		if ( wp_get_current_user()->ID == $subscription->recipient_user ) {
+			$related_order_ids = array_keys( $related_orders );
+			if ( in_array( $subscription->order->id, $related_order_ids ) ) {
+				unset( $related_orders[ $subscription->order->id ] );
+			}
+		}
+		return $related_orders;
 	}
 }
 WCSG_Recipient_Management::init();
