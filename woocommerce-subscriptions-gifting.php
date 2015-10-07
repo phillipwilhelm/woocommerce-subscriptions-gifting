@@ -139,7 +139,11 @@ class WCS_Gifting {
 					WC()->cart->cart_contents[ $new_key ]['quantity'] = $combined_quantity;
 					unset( WC()->cart->cart_contents[ $key ] );
 				} else { // there is no item in the cart with the same new key
-					WC()->cart->cart_contents[ $new_key ] = WC()->cart->cart_contents[ $key ];
+					$item_cart_position = array_search( $key, array_keys( WC()->cart->cart_contents ) );
+					WC()->cart->cart_contents = array_merge( array_slice( WC()->cart->cart_contents, 0, $item_cart_position, true ),
+						array( $new_key => WC()->cart->cart_contents[ $key ] ),
+						array_slice( WC()->cart->cart_contents, $item_cart_position, count( WC()->cart->cart_contents ), true )
+					);
 					WC()->cart->cart_contents[ $new_key ]['wcsg_gift_recipients_email'] = $new_recipient_data;
 					unset( WC()->cart->cart_contents[ $key ] );
 				}
