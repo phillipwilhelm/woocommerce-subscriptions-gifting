@@ -34,7 +34,7 @@ class WCSG_Email_Recipient_Processing_Order extends WC_Email {
 			$this->object             = get_user_by( 'id', $recipient_user );
 			$this->recipient          = stripslashes( $this->object->user_email );
 			$subscription             = wcs_get_subscription( $recipient_subscriptions[0] );
-			$this->subscription_owner = WCSG_Email::get_purchaser_name_for_email( $subscription->customer_user );
+			$this->subscription_owner = WCS_Gifting::get_user_display_name( $subscription->customer_user );
 			$this->subscriptions      = $recipient_subscriptions;
 		}
 		if ( ! $this->is_enabled() || ! $this->get_recipient() ) {
