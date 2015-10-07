@@ -326,7 +326,7 @@ class WCSG_Recipient_Management {
 			if ( empty( $recipient_shipping_address ) ) {
 				$recipient_shipping_address = 'N/A';
 			}
-			echo '<br>';
+			echo '<br />';
 			echo '<b>Recipient:</b> ' . wp_kses( WCS_Gifting::get_user_display_name( $recipient_id ), wp_kses_allowed_html( 'user_description' ) );
 			echo '<img class="help_tip" data-tip="Shipping: ' . esc_attr( $recipient_shipping_address ) . '" src="' . esc_url( WC()->plugin_url() ) . '/assets/images/help.png" height="16" width="16" />';
 
