@@ -52,7 +52,9 @@ class WCSG_Recipient_Details {
 	 */
 	public static function update_recipient_details() {
 		if ( isset( $_POST['wcsg_new_recipient_customer'] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_new_recipient_data' ) ) {
-			$form_fields = self::get_new_recipient_account_form_fields();
+
+			$country     = ( ! empty( $_POST['shipping_country'] ) ) ? wc_clean( $_POST['shipping_country'] ) : '';
+			$form_fields = self::get_new_recipient_account_form_fields( $country );
 
 			$seperate_validation_fields = array( 'shipping_first_name','shipping_last_name','new_password','repeat_password' );
 
@@ -78,7 +80,7 @@ class WCSG_Recipient_Details {
 
 			if ( 0 == wc_notice_count( 'error' ) ) {
 				//update the user meta first name and last name and password.
-				$user = get_user_by( 'id' , $_POST['wcsg_new_recipient_customer'] );
+				$user = wp_get_current_user();
 				$address = array();
 				foreach ( $form_fields as $key => $field ) {
 					if ( false == strpos( $key, 'password' ) && 'set_billing' != $key ) {
@@ -120,8 +122,9 @@ class WCSG_Recipient_Details {
 	 * Creates an array of form fields for the new recipient user details form
 	 * @return array Form elements for recipient details page
 	 */
-	public static function get_new_recipient_account_form_fields() {
-		$form_fields = WC()->countries->get_address_fields( '', 'shipping_', true );
+	public static function get_new_recipient_account_form_fields( $country ) {
+
+		$form_fields = WC()->countries->get_address_fields( $country, 'shipping_', true );
 
 		$name_fields = array( 'shipping_first_name', 'shipping_last_name' );
 		$personal_fields = array();
