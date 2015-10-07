@@ -16,11 +16,11 @@ class WCSG_Cart {
 	 * Adds gifting ui elements to subscription cart items.
 	 */
 	public static function add_gifting_option_cart( $title, $cart_item, $cart_item_key ) {
-		if ( is_page( wc_get_page_id( 'cart' ) ) && WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) && ! isset( $cart_item['subscription_renewal'] ) && ! isset( $cart_item['subscription_switch'] ) ) {
+		if ( is_cart() && ! in_array( 'get_refreshed_fragments', $_GET ) && self::is_giftable_item( $cart_item ) ) {
 			ob_start();
 			$email = ( empty( $cart_item['wcsg_gift_recipients_email'] ) ) ? '' : $cart_item['wcsg_gift_recipients_email'];
 			wc_get_template( 'html-add-recipient.php', array( 'email_field_args' => WCS_Gifting::get_recipient_email_field_args( $email ), 'id' => $cart_item_key, 'email' => $email ),'' , plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
-			return  $title . ob_get_clean();
+			return $title . ob_get_clean();
 		}
 		return $title;
 	}
@@ -64,6 +64,16 @@ class WCSG_Cart {
 		return '<fieldset id="woocommerce_subscriptions_gifting_field">'
 		     . '<label class="woocommerce_subscriptions_gifting_recipient_email">' . esc_html__( 'Recipient: ', 'woocommerce-subscriptions-gifting' ) . '</label>' . esc_html( $email )
 		     . '</fieldset>';
+	}
+
+	/**
+	 * Determines if a cart item is able to be gifted.
+	 * Only subscriptions that are not a renewal or switch subscription are giftable.
+	 *
+	 * @return bool | whether the cart item is giftable.
+	 */
+	public static function is_giftable_item( $cart_item ) {
+		return WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) && ! isset( $cart_item['subscription_renewal'] ) && ! isset( $cart_item['subscription_switch'] );
 	}
 }
 WCSG_Cart::init();
