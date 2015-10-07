@@ -20,6 +20,15 @@ class WCSG_Recipient_Management {
 
 		add_filter( 'user_has_cap', __CLASS__ . '::grant_recipient_capabilities', 11, 3 );
 
+		add_action( 'woocommerce_add_order_item_meta', __CLASS__ . '::maybe_add_recipient_order_item_meta', 10, 2 );
+
+		add_filter( 'woocommerce_attribute_label', __CLASS__ . '::format_recipient_meta_label', 10, 2 );
+
+		add_filter( 'woocommerce_order_item_display_meta_value', __CLASS__ . '::format_recipient_meta_value', 10 );
+
+		add_filter( 'woocommerce_hidden_order_itemmeta', __CLASS__ . '::hide_recipient_order_item_meta', 10, 1 );
+
+		add_action( 'woocommerce_before_order_itemmeta', __CLASS__ . '::display_recipient_meta_admin', 10, 1 );
 	}
 
 	/**
@@ -239,6 +248,113 @@ class WCSG_Recipient_Management {
 			}
 		}
 		return $related_orders;
+	}
+
+	/**
+	 * Maybe add recipient information to order item meta for displaying in order item tables.
+	 *
+	 * @param int $item_id
+	 * @param array $cart_item
+	 */
+	public static function maybe_add_recipient_order_item_meta( $item_id, $cart_item ) {
+		$recipient_email = '';
+
+		if ( isset( $cart_item['subscription_renewal'] ) ) {
+			$recipient_id    = get_post_meta( $cart_item['subscription_renewal']['subscription_id'], '_recipient_user', true );
+			$recipient       = get_user_by( 'id', $recipient_id );
+			$recipient_email = $recipient->user_email;
+		} else if ( isset( $cart_item['wcsg_gift_recipients_email'] ) ) {
+			$recipient_email = $cart_item['wcsg_gift_recipients_email'];
+		}
+
+		if ( ! empty( $recipient_email ) ) {
+
+			$recipient_user_id = email_exists( $recipient_email );
+
+			if ( empty( $recipient_user_id ) ) {
+				// create a username for the new customer
+				$username  = explode( '@', $recipient_email );
+				$username  = sanitize_user( $username[0] );
+				$counter   = 1;
+				$original_username = $username;
+				while ( username_exists( $username ) ) {
+					$username = $original_username . $counter;
+					$counter++;
+				}
+				$password = wp_generate_password();
+				$recipient_user_id = wc_create_new_customer( $recipient_email, $username, $password );
+				update_user_meta( $recipient_user_id, 'wcsg_update_account', 'true' );
+			}
+
+			wc_update_order_item_meta( $item_id, 'wcsg_recipient', 'wcsg_recipient_id_' . $recipient_user_id );
+		}
+	}
+
+	/**
+	 * Format the order item meta label to be displayed.
+	 *
+	 * @param string $label The item meta label displayed
+	 * @param string $name The name of the order item meta (key)
+	 */
+	public static function format_recipient_meta_label( $label, $name ) {
+		if ( 'wcsg_recipient' == $name ) {
+			$label = 'Recipient';
+		}
+		return $label;
+	}
+
+	/**
+	 * Format recipient order item meta value by extracting the recipient user id.
+	 *
+	 * @param mixed $value Order item meta value
+	 */
+	public static function format_recipient_meta_value( $value ) {
+		if ( false !== strpos( $value, 'wcsg_recipient_id' ) ) {
+			$recipient_id = substr( $value, strlen( 'wcsg_recipient_id_' ) );
+			$value        = WCS_Gifting::get_user_display_name( $recipient_id );
+		}
+		return $value;
+	}
+
+	/**
+	 * Prevents default display of recipient meta in admin panel.
+	 *
+	 * @param array $ignored_meta_keys An array of order item meta keys which are skipped when displaying meta.
+	 */
+	public static function hide_recipient_order_item_meta( $ignored_meta_keys ) {
+		array_push( $ignored_meta_keys,'wcsg_recipient' );
+		return $ignored_meta_keys;
+	}
+
+	/**
+	 * Displays recipient order item meta for admin panel.
+	 *
+	 * @param int $item_id The id of the order item.
+	 */
+	public static function display_recipient_meta_admin( $item_id ) {
+		$recipient_meta = wc_get_order_item_meta( $item_id, 'wcsg_recipient' );
+		if ( ! empty( $recipient_meta ) ) {
+			$recipient_id = substr( $recipient_meta, strlen( 'wcsg_recipient_id_' ) );
+			$recipient_shipping_address = WC()->countries->get_formatted_address( array(
+				'first_name' => get_user_meta( $recipient_id, 'shipping_first_name', true ),
+				'last_name' => get_user_meta( $recipient_id, 'shipping_last_name', true ),
+				'company' => get_user_meta( $recipient_id, 'shipping_company', true ),
+				'address_1' => get_user_meta( $recipient_id, 'shipping_address_1', true ),
+				'address_2' => get_user_meta( $recipient_id, 'shipping_address_2', true ),
+				'city' => get_user_meta( $recipient_id, 'shipping_city', true ),
+				'state' => get_user_meta( $recipient_id, 'shipping_state', true ),
+				'postcode' => get_user_meta( $recipient_id, 'shipping_postcode', true ),
+				'country' => get_user_meta( $recipient_id, 'shipping_country', true ),
+			) );
+
+			if ( empty( $recipient_shipping_address ) ) {
+				$recipient_shipping_address = 'N/A';
+			}
+			echo '<br />';
+			echo '<b>Recipient:</b> ' . wp_kses( WCS_Gifting::get_user_display_name( $recipient_id ), wp_kses_allowed_html( 'user_description' ) );
+			echo '<img class="help_tip" data-tip="Shipping: ' . esc_attr( $recipient_shipping_address ) . '" src="' . esc_url( WC()->plugin_url() ) . '/assets/images/help.png" height="16" width="16" />';
+
+		}
 	}
 }
 WCSG_Recipient_Management::init();

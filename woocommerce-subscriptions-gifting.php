@@ -208,9 +208,9 @@ class WCS_Gifting {
 		$user = get_user_by( 'id', $user_id );
 		$name = '';
 		if ( ! empty( $user->first_name ) ) {
-			$name = $user->first_name . ( ( ! empty( $user->last_name ) ) ? ' ' . $user->last_name : '' ) . ' (' . $user->user_email . ')';
+			$name = $user->first_name . ( ( ! empty( $user->last_name ) ) ? ' ' . $user->last_name : '' ) . ' (' . make_clickable( $user->user_email ) . ')';
 		} else {
-			$name = $user->user_email;
+			$name = make_clickable( $user->user_email );
 		}
 		return $name;
 	}
