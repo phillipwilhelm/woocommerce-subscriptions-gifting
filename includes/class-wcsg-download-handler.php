@@ -31,7 +31,7 @@ class WCSG_Download_Handler {
 				foreach ( $downloads as $download ) {
 					$product_id = wcs_get_canonical_product_id( $item );
 
-					if ( $product_id == $download['product_id'] && $order->id = $download['order_id'] ) {
+					if ( $product_id == $download['product_id'] && $order->id == $download['order_id'] ) {
 						$files[ $download['download_id'] ] = array(
 							'name'         => $download['file']['name'],
 							'file'         => $download['file']['file'],
