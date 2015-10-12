@@ -13,7 +13,7 @@ class WCSG_Checkout {
 
 		add_action( 'woocommerce_checkout_process', __CLASS__ . '::update_cart_before_checkout' );
 
-		add_filter( 'woocommerce_ship_to_different_address_checked', __CLASS__ . '::maybe_ship_to_recipient', 10, 1 );
+		add_filter( 'woocommerce_ship_to_different_address_checked', __CLASS__ . '::maybe_ship_to_recipient', 100, 1 );
 
 		add_filter( 'woocommerce_checkout_get_value', __CLASS__ . '::maybe_get_recipient_shipping', 10, 2 );
 	}
@@ -28,18 +28,9 @@ class WCSG_Checkout {
 	 * @return int|quantity The quantity of the cart item with ui elements appended on
 	 */
 	public static function add_gifting_option_checkout( $quantity, $cart_item, $cart_item_key ) {
-		if ( WCSG_Cart::is_giftable_item( $cart_item ) ) {
-			$email = '';
-			if ( ! empty( $_POST['recipient_email'][ $cart_item_key ] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
-				$email = $_POST['recipient_email'][ $cart_item_key ];
-			} else if ( ! empty( $cart_item['wcsg_gift_recipients_email'] ) ) {
-				$email = $cart_item['wcsg_gift_recipients_email'];
-			}
-			ob_start();
-			wc_get_template( 'html-add-recipient.php', array( 'email_field_args' => WCS_Gifting::get_recipient_email_field_args( $email ), 'id' => $cart_item_key, 'email' => $email ),'' , plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
-			return $quantity . ob_get_clean();
-		}
-		return $quantity;
+
+		return $quantity . WCSG_Cart::maybe_display_gifting_information( $cart_item, $cart_item_key );
+
 	}
 
 	/**
@@ -122,13 +113,17 @@ class WCSG_Checkout {
 	 * @return bool $ship_to_different_address
 	 */
 	public static function maybe_ship_to_recipient( $ship_to_different_address ) {
+
 		if ( wcs_cart_contains_renewal() ) {
-			$item = wcs_cart_contains_renewal();
+			$item         = wcs_cart_contains_renewal();
 			$subscription = wcs_get_subscription( $item['subscription_renewal']['subscription_id'] );
+
 			if ( isset( $subscription->recipient_user ) ) {
+				wc_print_notice( esc_html__( 'Shipping to the gift recipient.', 'woocommerce-subscriptions-gifting' ), 'notice' );
 				$ship_to_different_address = true;
 			}
 		}
+
 		return $ship_to_different_address;
 	}
 
