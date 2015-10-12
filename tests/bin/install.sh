@@ -53,7 +53,7 @@ install_test_suite() {
 	# set up testing suite in wordpress test libary directory
 	mkdir -p $WP_TESTS_DIR
 	cd $WP_TESTS_DIR
-	svn co --quiet http://develop.svn.wordpress.org/trunk/tests/phpunit/includes/
+	svn co --quiet http://develop.svn.wordpress.org/tags/4.3.1/tests/phpunit/includes/
 
 	curl http://develop.svn.wordpress.org/trunk/wp-tests-config-sample.php --output wp-tests-config.php --silent
 
