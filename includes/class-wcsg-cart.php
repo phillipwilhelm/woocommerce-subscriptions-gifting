@@ -38,9 +38,21 @@ class WCSG_Cart {
 	 * @param string $cart_item_key key of the cart item being displayed in the mini cart.
 	 */
 	public static function add_gifting_option_minicart( $quantity, $cart_item, $cart_item_key ) {
-		if ( ! empty( $cart_item['wcsg_gift_recipients_email'] ) ) {
+
+		if ( wcs_cart_contains_renewal() ) {
+
+			$cart_item    = wcs_cart_contains_renewal();
+			$subscription = wcs_get_subscription( $cart_item['subscription_renewal']['subscription_id'] );
+
+			if ( isset( $subscription->recipient_user ) ) {
+				$recipient_user = get_userdata( $subscription->recipient_user );
+
+				$quantity .= self::generate_static_gifting_html( $cart_item_key, $recipient_user->user_email );
+			}
+		} else if ( ! empty( $cart_item['wcsg_gift_recipients_email'] ) ) {
 			$quantity .= self::generate_static_gifting_html( $cart_item_key, $cart_item['wcsg_gift_recipients_email'] );
 		}
+
 		return $quantity;
 	}
 
