@@ -8,7 +8,7 @@ class WCSG_Download_Handler {
 	public static function init() {
 		add_filter( 'woocommerce_subscription_settings', __CLASS__ . '::register_download_settings' );
 		add_filter( 'woocommerce_downloadable_file_permission_data', __CLASS__ . '::grant_recipient_download_permissions', 11 );
-		add_filter( 'woocommerce_get_item_downloads', __CLASS__ . '::get_item_download_links', 10, 3 );
+		add_filter( 'woocommerce_get_item_downloads', __CLASS__ . '::get_item_download_links', 15, 3 );
 	}
 
 	/**
@@ -20,28 +20,10 @@ class WCSG_Download_Handler {
 	 * @return array $files
 	 */
 	public static function get_item_download_links( $files, $item, $order ) {
-		global $wp_query;
 
-		if ( wcs_is_subscription( $order ) && wcs_is_view_subscription_page() ) {
-			$subscription = wcs_get_subscription( $wp_query->query['view-subscription'] );
+		$user_id = ( wcs_is_subscription( $order ) && wcs_is_view_subscription_page() ) ? get_current_user_id() : $order->customer_user;
 
-			if ( isset( $subscription->recipient_user ) ) {
-				$downloads = wc_get_customer_available_downloads( get_current_user_id() );
-
-				foreach ( $downloads as $download ) {
-					$product_id = wcs_get_canonical_product_id( $item );
-
-					if ( $product_id == $download['product_id'] && $order->id == $download['order_id'] ) {
-						$files[ $download['download_id'] ] = array(
-							'name'         => $download['file']['name'],
-							'file'         => $download['file']['file'],
-							'download_url' => $download['download_url'],
-						);
-					}
-				}
-			}
-		}
-		return $files;
+		return self::get_user_downloads_for_order( $order, $user_id );
 	}
 
 	/**
@@ -100,6 +82,36 @@ class WCSG_Download_Handler {
 		);
 
 		return array_merge( $settings, $download_settings );
+	}
+
+	/**
+	 * Retrieves a user's download permissions for an order.
+	 *
+	 * @param  WC_Order $order
+	 * @param  int $user_id
+	 *
+	 * @return array
+	 */
+	public static function get_user_downloads_for_order( $order, $user_id ) {
+		global $wpdb;
+
+		$downloads = $wpdb->get_results( $wpdb->prepare("
+			SELECT product_id, download_id
+			FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions
+			WHERE user_id = %s
+			AND order_id = %s
+		", $user_id, $order->id ) );
+
+		$files = array();
+
+		foreach ( $downloads as $download ) {
+			$product = wc_get_product( $download->product_id );
+			if ( $product->has_file( $download->download_id ) ) {
+				$files[ $download->download_id ]                 = $product->get_file( $download->download_id );
+				$files[ $download->download_id ]['download_url'] = $order->get_download_url( $download->product_id, $download->download_id );
+			}
+		}
+		return $files;
 	}
 }
 WCSG_Download_Handler::init();
