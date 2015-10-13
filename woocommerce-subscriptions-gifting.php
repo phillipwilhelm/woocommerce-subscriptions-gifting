@@ -193,7 +193,7 @@ class WCS_Gifting {
 	public static function get_recent_orders_template( $located, $template_name, $args ) {
 		if ( 'myaccount/related-orders.php' == $template_name ) {
 			$subscription = $args['subscription'];
-			if ( ! empty( $subscription->recipient_user ) ) {
+			if ( WCS_Gifting::is_gifted_subscription( $subscription ) ) {
 				$located = wc_locate_template( 'related-orders.php', '', plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
 			}
 		}
@@ -214,6 +214,21 @@ class WCS_Gifting {
 			$name = make_clickable( $user->user_email );
 		}
 		return $name;
+	}
+
+	/**
+	 * Checks whether a subscription is a gifted subscription.
+	 *
+	 * @param int|WC_Subscription $subscription either a subscription object or subscription's ID.
+	 * @return bool
+	 */
+	public static function is_gifted_subscription( $subscription ) {
+
+		if ( ! is_object( $subscription ) ) {
+			$subscription = wcs_get_subscription( $subscription );
+		}
+
+		return wcs_is_subscription( $subscription ) && ! empty( $subscription->recipient_user ) && is_numeric( $subscription->recipient_user );
 	}
 }
 WCS_Gifting::init();

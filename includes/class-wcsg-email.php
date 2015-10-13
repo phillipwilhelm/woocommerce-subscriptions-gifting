@@ -64,7 +64,7 @@ class WCSG_Email {
 		if ( ! empty( $subscriptions ) ) {
 			WC()->mailer();
 			foreach ( $subscriptions as $subscription ) {
-				if ( isset( $subscription->recipient_user ) ) {
+				if ( WCS_Gifting::is_gifted_subscription( $subscription ) ) {
 					if ( ! in_array( $subscription->recipient_user, $processed_recipients ) ) {
 						$recipient_subscriptions = WCSG_Recipient_Management::get_recipient_subscriptions( $subscription->recipient_user, $order_id );
 						do_action( 'wcsg_processing_order_recipient_notification', $subscription->recipient_user, $recipient_subscriptions );
@@ -141,14 +141,14 @@ class WCSG_Email {
 	public static function maybe_send_recipient_renewal_notification( $order_id ) {
 
 		$subscriptions = wcs_get_subscriptions_for_renewal_order( $order_id );
-		$subscription  = reset( $subscriptions );
-		$recipient_id  = get_post_meta( $subscription->id, '_recipient_user', true );
 
-		if ( ! empty( $recipient_id ) && is_numeric( $subscription->recipient_user ) ) {
+		if ( ! empty( $subscriptions ) && is_array( $subscriptions ) ) {
+			$subscription = reset( $subscriptions );
 
-			WC()->mailer();
-			do_action( current_filter() . '_recipient', $order_id );
-
+			if ( WCS_Gifting::is_gifted_subscription( $subscription ) ) {
+				WC()->mailer();
+				do_action( current_filter() . '_recipient', $order_id );
+			}
 		}
 	}
 

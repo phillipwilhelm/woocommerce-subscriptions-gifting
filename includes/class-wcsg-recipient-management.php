@@ -87,7 +87,7 @@ class WCSG_Recipient_Management {
 	 */
 	public static function add_recipient_actions( $actions, $subscription ) {
 
-		if ( $subscription->recipient_user == wp_get_current_user()->ID ) {
+		if ( WCS_Gifting::is_gifted_subscription( $subscription ) && $subscription->recipient_user == wp_get_current_user()->ID ) {
 
 			if ( $subscription->can_be_updated_to( 'on-hold' ) ) {
 				$actions['suspend'] = array(
@@ -162,7 +162,7 @@ class WCSG_Recipient_Management {
 	 */
 	public static function recipient_can_suspend( $user_can_suspend, $subscription ) {
 
-		if ( $subscription->recipient_user == wp_get_current_user()->ID ) {
+		if ( WCS_Gifting::is_gifted_subscription( $subscription ) && $subscription->recipient_user == wp_get_current_user()->ID ) {
 
 			// Make sure subscription suspension count hasn't been reached
 			$suspension_count    = $subscription->suspension_count;
@@ -198,7 +198,7 @@ class WCSG_Recipient_Management {
 	 */
 	public static function gifting_information_after_customer_details( $subscription ) {
 		//check if the subscription is gifted
-		if ( ! empty( $subscription->recipient_user ) && is_numeric( $subscription->recipient_user ) ) {
+		if ( WCS_Gifting::is_gifted_subscription( $subscription ) ) {
 			$customer_user  = get_user_by( 'id', $subscription->customer_user );
 			$recipient_user = get_user_by( 'id', $subscription->recipient_user );
 			$current_user   = wp_get_current_user();
@@ -245,7 +245,7 @@ class WCSG_Recipient_Management {
 	 * @return array $related_orders an array of order ids related to the $subscription
 	 */
 	public static function maybe_remove_parent_order( $related_orders, $subscription ) {
-		if ( wp_get_current_user()->ID == $subscription->recipient_user ) {
+		if ( WCS_Gifting::is_gifted_subscription( $subscription ) && wp_get_current_user()->ID == $subscription->recipient_user ) {
 			$related_order_ids = array_keys( $related_orders );
 			if ( in_array( $subscription->order->id, $related_order_ids ) ) {
 				unset( $related_orders[ $subscription->order->id ] );
@@ -263,7 +263,7 @@ class WCSG_Recipient_Management {
 	public static function maybe_add_recipient_order_item_meta( $item_id, $cart_item ) {
 		$recipient_email = '';
 
-		if ( isset( $cart_item['subscription_renewal'] ) ) {
+		if ( isset( $cart_item['subscription_renewal'] ) && WCS_Gifting::is_gifted_subscription( $cart_item['subscription_renewal']['subscription_id'] ) ) {
 			$recipient_id    = get_post_meta( $cart_item['subscription_renewal']['subscription_id'], '_recipient_user', true );
 			$recipient       = get_user_by( 'id', $recipient_id );
 			$recipient_email = $recipient->user_email;
