@@ -20,12 +20,12 @@ class WCSG_Email {
 		require_once( 'emails/class-wcsg-email-customer-new-account.php' );
 		require_once( 'emails/class-wcsg-email-completed-renewal-order.php' );
 		require_once( 'emails/class-wcsg-email-processing-renewal-order.php' );
-		require_once( 'emails/class-wcsg-email-recipient-processing-order.php' );
+		require_once( 'emails/class-wcsg-email-recipient-completed-order.php' );
 
 		$email_classes['WCSG_Email_Customer_New_Account'] = new WCSG_Email_Customer_New_Account();
 		$email_classes['WCSG_Email_Completed_Renewal_Order'] = new WCSG_Email_Completed_Renewal_Order();
 		$email_classes['WCSG_Email_Processing_Renewal_Order'] = new WCSG_Email_Processing_Renewal_Order();
-		$email_classes['WCSG_Email_Recipient_Processing_Order'] = new WCSG_Email_Recipient_Processing_Order();
+		$email_classes['WCSG_Email_Recipient_Completed_Order'] = new WCSG_Email_Recipient_Completed_Order();
 
 		return $email_classes;
 	}
@@ -39,8 +39,7 @@ class WCSG_Email {
 		add_action( 'woocommerce_created_customer', __CLASS__ . '::send_new_recient_user_email', 10, 3 );
 		add_action( 'woocommerce_created_customer', __CLASS__ . '::maybe_reattach_wc_new_customer_email', 11, 2 );
 
-		add_action( 'woocommerce_order_status_pending_to_processing', __CLASS__ . '::maybe_send_recipient_order_emails', 9, 1 );
-		add_action( 'woocommerce_order_status_pending_to_on-hold', __CLASS__ . '::maybe_send_recipient_order_emails', 9, 1 );
+		add_action( 'woocommerce_order_status_completed', __CLASS__ . '::maybe_send_recipient_order_emails', 9, 1 );
 
 		$renewal_notification_actions = array(
 			'woocommerce_order_status_pending_to_processing_renewal_notification',
@@ -67,7 +66,7 @@ class WCSG_Email {
 				if ( isset( $subscription->recipient_user ) ) {
 					if ( ! in_array( $subscription->recipient_user, $processed_recipients ) ) {
 						$recipient_subscriptions = WCSG_Recipient_Management::get_recipient_subscriptions( $subscription->recipient_user, $order_id );
-						do_action( 'wcsg_processing_order_recipient_notification', $subscription->recipient_user, $recipient_subscriptions );
+						do_action( 'wcsg_completed_order_recipient_notification', $subscription->recipient_user, $recipient_subscriptions );
 						array_push( $processed_recipients, $subscription->recipient_user );
 					}
 				}
