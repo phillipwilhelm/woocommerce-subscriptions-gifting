@@ -22,7 +22,7 @@ class WCSG_Download_Handler {
 	public static function get_item_download_links( $files, $item, $order ) {
 		global $wp_query;
 
-		if ( wcs_is_subscription( $order ) && is_account_page() && isset( $wp_query->query['view-subscription'] ) ) {
+		if ( wcs_is_subscription( $order ) && wcs_is_view_subscription_page() ) {
 			$subscription = wcs_get_subscription( $wp_query->query['view-subscription'] );
 
 			if ( isset( $subscription->recipient_user ) ) {
