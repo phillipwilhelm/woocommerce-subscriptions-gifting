@@ -50,6 +50,18 @@ class WCSG_Email {
 		foreach ( $renewal_notification_actions as $action ) {
 			add_action( $action , __CLASS__ . '::maybe_send_recipient_renewal_notification', 10, 1 );
 		}
+
+		$mailer = WC()->mailer();
+
+		foreach ( $mailer->emails as $email ) {
+			if ( isset( $email->heading_downloadable ) ) {
+				add_filter( 'woocommerce_email_subject_' . $email->id, __CLASS__ . '::maybe_change_download_email_subject', 10, 2 );
+			}
+
+			if ( isset( $email->subject_downloadable ) ) {
+				add_filter( 'woocommerce_email_heading_' . $email->id, __CLASS__ . '::maybe_change_download_email_heading', 10, 2 );
+			}
+		}
 	}
 
 	/**
@@ -148,5 +160,80 @@ class WCSG_Email {
 		}
 	}
 
+	/**
+	 * If an order purchaser doesn't receive download permissions revert the email subject back to it's default subject.
+	 *
+	 * @param string $subject The email subject.
+	 * @param object $order
+	 * @return string $subject
+	 */
+	public static function maybe_change_download_email_subject( $subject, $order ) {
+
+		if ( $order instanceof WC_Order ) {
+
+			$email_id        = substr( current_filter(), strlen( 'woocommerce_email_subject_' ) );
+			$email           = self::get_email_from_id( $email_id );
+			$order_downloads = array();
+
+			if ( $email && $subject != $email->format_string( $email->subject ) ) {
+
+				foreach ( $order->get_items() as $item ) {
+					$order_downloads = array_merge( $order_downloads, WCSG_Download_Handler::get_user_downloads_for_order_item( $order, $order->customer_user, $item ) );
+				}
+
+				if ( empty( $order_downloads ) && isset( $email->subject ) ) {
+					$subject = $email->format_string( $email->subject );
+				}
+			}
+		}
+		return $subject;
+	}
+
+	/**
+	 * If an order purchaser doesn't receive download permissions revert the email heading back to it's default heading.
+	 *
+	 * @param string $heading The email heading.
+	 * @param object $order
+	 * @return string $heading
+	 */
+	public static function maybe_change_download_email_heading( $heading, $order ) {
+
+		if ( $order instanceof WC_Order ) {
+
+			$email_id        = substr( current_filter(), strlen( 'woocommerce_email_heading_' ) );
+			$email           = self::get_email_from_id( $email_id );
+			$order_downloads = array();
+
+			if ( $email && $heading != $email->format_string( $email->heading ) ) {
+
+				foreach ( $order->get_items() as $item ) {
+					$order_downloads = array_merge( $order_downloads, WCSG_Download_Handler::get_user_downloads_for_order_item( $order, $order->customer_user, $item ) );
+				}
+
+				if ( empty( $order_downloads ) && isset( $email->heading ) ) {
+					$heading = $email->format_string( $email->heading );
+				}
+			}
+		}
+		return $heading;
+	}
+
+	/**
+	 * Retrieves an email object from its id, otherwise returns false.
+	 *
+	 * @param int $email_id
+	 * @param object $email
+	 */
+	public static function get_email_from_id( $email_id ) {
+		$mailer = WC()->mailer();
+
+		foreach ( $mailer->emails as $email ) {
+			if ( $email_id == $email->id ) {
+				return $email;
+			}
+		}
+
+		return false;
+	}
 }
 WCSG_Email::init();
