@@ -301,7 +301,7 @@ class WCSG_Recipient_Management {
 	 * @param string $name The name of the order item meta (key)
 	 */
 	public static function format_recipient_meta_label( $label, $name ) {
-		if ( 'wcsg_recipient' == $name ) {
+		if ( 'wcsg_recipient' == $name || 'wcsg_deleted_recipient_data' == $name ) {
 			$label = 'Recipient';
 		}
 		return $label;
@@ -314,8 +314,14 @@ class WCSG_Recipient_Management {
 	 */
 	public static function format_recipient_meta_value( $value ) {
 		if ( false !== strpos( $value, 'wcsg_recipient_id' ) ) {
+
 			$recipient_id = substr( $value, strlen( 'wcsg_recipient_id_' ) );
-			$value        = WCS_Gifting::get_user_display_name( $recipient_id );
+			return WCS_Gifting::get_user_display_name( $recipient_id );
+
+		} else if ( false !== strpos( $value, 'wcsg_deleted_recipient_data' ) ) {
+
+			$recipient_data = json_decode( substr( $value, strlen( 'wcsg_deleted_recipient_data_' ) ), true );
+			return $recipient_data['display_name'];
 		}
 		return $value;
 	}
@@ -326,7 +332,7 @@ class WCSG_Recipient_Management {
 	 * @param array $ignored_meta_keys An array of order item meta keys which are skipped when displaying meta.
 	 */
 	public static function hide_recipient_order_item_meta( $ignored_meta_keys ) {
-		array_push( $ignored_meta_keys,'wcsg_recipient' );
+		array_push( $ignored_meta_keys, 'wcsg_recipient', 'wcsg_deleted_recipient_data' );
 		return $ignored_meta_keys;
 	}
 
@@ -336,28 +342,37 @@ class WCSG_Recipient_Management {
 	 * @param int $item_id The id of the order item.
 	 */
 	public static function display_recipient_meta_admin( $item_id ) {
-		$recipient_meta = wc_get_order_item_meta( $item_id, 'wcsg_recipient' );
+
+		$recipient_meta             = wc_get_order_item_meta( $item_id, 'wcsg_recipient' );
+		$deleted_recipient_meta     = wc_get_order_item_meta( $item_id, 'wcsg_deleted_recipient_data' );
+		$recipient_shipping_address = '';
+		$recipient_display_name     = '';
+
 		if ( ! empty( $recipient_meta ) ) {
-			$recipient_id = substr( $recipient_meta, strlen( 'wcsg_recipient_id_' ) );
-			$recipient_shipping_address = WC()->countries->get_formatted_address( array(
-				'first_name' => get_user_meta( $recipient_id, 'shipping_first_name', true ),
-				'last_name' => get_user_meta( $recipient_id, 'shipping_last_name', true ),
-				'company' => get_user_meta( $recipient_id, 'shipping_company', true ),
-				'address_1' => get_user_meta( $recipient_id, 'shipping_address_1', true ),
-				'address_2' => get_user_meta( $recipient_id, 'shipping_address_2', true ),
-				'city' => get_user_meta( $recipient_id, 'shipping_city', true ),
-				'state' => get_user_meta( $recipient_id, 'shipping_state', true ),
-				'postcode' => get_user_meta( $recipient_id, 'shipping_postcode', true ),
-				'country' => get_user_meta( $recipient_id, 'shipping_country', true ),
-			) );
+
+			$recipient_id               = substr( $recipient_meta, strlen( 'wcsg_recipient_id_' ) );
+			$recipient_shipping_address = WC()->countries->get_formatted_address( WCS_Gifting::get_users_shipping_address( $recipient_id ) );
+			$recipient_display_name     = WCS_Gifting::get_user_display_name( $recipient_id );
+
+		} else if ( ! empty( $deleted_recipient_meta ) ) {
+
+			$recipient_data         = json_decode( substr( $deleted_recipient_meta, strlen( 'wcsg_deleted_recipient_data_' ) ), true );
+			$recipient_display_name = $recipient_data['display_name'];
+
+			unset( $recipient_data['display_name'] );
+
+			$recipient_shipping_address = WC()->countries->get_formatted_address( $recipient_data );
+		}
+
+		if ( ! empty( $recipient_meta ) || ! empty( $deleted_recipient_meta ) ) {
 
 			if ( empty( $recipient_shipping_address ) ) {
 				$recipient_shipping_address = 'N/A';
 			}
-			echo '<br />';
-			echo '<b>Recipient:</b> ' . wp_kses( WCS_Gifting::get_user_display_name( $recipient_id ), wp_kses_allowed_html( 'user_description' ) );
-			echo '<img class="help_tip" data-tip="Shipping: ' . esc_attr( $recipient_shipping_address ) . '" src="' . esc_url( WC()->plugin_url() ) . '/assets/images/help.png" height="16" width="16" />';
 
+			echo '<br />';
+			echo '<b>Recipient:</b> ' . wp_kses( $recipient_display_name , wp_kses_allowed_html( 'user_description' ) );
+			echo '<img class="help_tip" data-tip="Shipping: ' . esc_attr( $recipient_shipping_address ) . '" src="' . esc_url( WC()->plugin_url() ) . '/assets/images/help.png" height="16" width="16" />';
 		}
 	}
 
@@ -369,13 +384,26 @@ class WCSG_Recipient_Management {
 	public static function maybe_remove_recipient( $user_id ) {
 
 		$gifted_subscriptions = WCSG_Recipient_Management::get_recipient_subscriptions( $user_id );
+		$gifted_items         = WCS_Gifting::get_recipient_order_items( $user_id );
 
-		if ( 0 != count( $gifted_subscriptions ) ) {
-
+		if ( ! empty( $gifted_subscriptions ) ) {
 			foreach ( $gifted_subscriptions as $subscription_id ) {
-
 				update_post_meta( $subscription_id, '_recipient_user', 'deleted_recipient' );
+			}
 
+			$recipient      = get_user_by( 'id', $user_id );
+			$recipient_data = json_encode(
+				array_merge(
+					array( 'display_name' => addslashes( WCS_Gifting::get_user_display_name( $user_id ) ) ),
+					WCS_Gifting::get_users_shipping_address( $user_id )
+				)
+			);
+
+			foreach ( $gifted_items as $gifted_item ) {
+				if ( ! wcs_is_subscription( $gifted_item['order_id'] ) ) {
+					wc_update_order_item_meta( $gifted_item['order_item_id'], 'wcsg_deleted_recipient_data', 'wcsg_deleted_recipient_data_' . $recipient_data );
+				}
+				wc_delete_order_item_meta( $gifted_item['order_item_id'], 'wcsg_recipient', 'wcsg_recipient_id_' . $user_id );
 			}
 		}
 	}

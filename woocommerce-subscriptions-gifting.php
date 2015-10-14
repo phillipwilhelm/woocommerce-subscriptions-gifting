@@ -230,5 +230,47 @@ class WCS_Gifting {
 
 		return wcs_is_subscription( $subscription ) && ! empty( $subscription->recipient_user ) && is_numeric( $subscription->recipient_user );
 	}
+
+	/**
+	 * Returns a list of all order item ids and thier containing order ids that have been purchased for a recipient.
+	 *
+	 * @param int $recipient_user_id
+	 * @return array
+	 */
+	public static function get_recipient_order_items( $recipient_user_id ) {
+		global $wpdb;
+
+			return $wpdb->get_results(
+				$wpdb->prepare( "
+					SELECT o.order_id, i.order_item_id
+					FROM {$wpdb->prefix}woocommerce_order_itemmeta AS i
+					INNER JOIN {$wpdb->prefix}woocommerce_order_items as o
+					ON i.order_item_id=o.order_item_id
+					WHERE meta_key = 'wcsg_recipient'
+					AND meta_value = %s",
+				'wcsg_recipient_id_' . $recipient_user_id ),
+				ARRAY_A
+			);
+	}
+
+	/**
+	 * Returns the user's shipping address.
+	 *
+	 * @param int $user_id
+	 * @return array
+	 */
+	public static function get_users_shipping_address( $user_id ) {
+		return array(
+			'first_name' => get_user_meta( $user_id, 'shipping_first_name', true ),
+			'last_name'  => get_user_meta( $user_id, 'shipping_last_name', true ),
+			'company'    => get_user_meta( $user_id, 'shipping_company', true ),
+			'address_1'  => get_user_meta( $user_id, 'shipping_address_1', true ),
+			'address_2'  => get_user_meta( $user_id, 'shipping_address_2', true ),
+			'city'       => get_user_meta( $user_id, 'shipping_city', true ),
+			'state'      => get_user_meta( $user_id, 'shipping_state', true ),
+			'postcode'   => get_user_meta( $user_id, 'shipping_postcode', true ),
+			'country'    => get_user_meta( $user_id, 'shipping_country', true ),
+		);
+	}
 }
 WCS_Gifting::init();
