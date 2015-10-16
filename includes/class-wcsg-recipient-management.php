@@ -171,12 +171,26 @@ class WCSG_Recipient_Management {
 	 * @return array|subscriptions An updated array of subscriptions with any subscriptions gifted to the user added.
 	 */
 	public static function add_recipient_subscriptions( $subscriptions, $user_id ) {
+		global $wp;
+
+		//We dont want to update the shipping address of gifted subscriptions the user isn't the recipient of.
+		if ( ! empty( $_POST['_wcsnonce'] ) && wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_edit_address' ) && isset( $_POST['update_all_subscriptions_addresses'] ) && 'shipping' == $wp->query_vars['edit-address'] ) {
+
+			foreach ( $subscriptions as $key => $subscription ) {
+
+				if ( ! empty( $subscription->recipient_user ) && $subscription->recipient_user != $user_id ) {
+					unset( $subscriptions[ $key ] );
+				}
+			}
+		}
+
 		//get the subscription posts that have been gifted to this user
 		$recipient_subs = self::get_recipient_subscriptions( $user_id );
 
 		foreach ( $recipient_subs as $subscription_id ) {
 			$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
 		}
+
 		return $subscriptions;
 	}
 
