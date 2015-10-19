@@ -32,12 +32,12 @@ include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 /**
  * Check if WooCommerce and Subscriptions are active.
  */
-if ( ! is_woocommerce_active() || version_compare( get_option( 'woocommerce_db_version' ), WCS_Gifting::$woocommerce_required_version, '<' ) ) {
+if ( ! is_woocommerce_active() || version_compare( get_option( 'woocommerce_db_version' ), WCS_Gifting::$woocommerce_minimum_supported_version, '<' ) ) {
 	add_action( 'admin_notices', 'WCS_Gifting::plugin_dependency_notices' );
 	return;
 }
 
-if ( ! is_plugin_active( 'woocommerce-subscriptions/woocommerce-subscriptions.php' ) || version_compare( get_option( 'woocommerce_subscriptions_active_version' ), WCS_Gifting::$wc_subscriptions_required_version, '<' ) ) {
+if ( ! is_plugin_active( 'woocommerce-subscriptions/woocommerce-subscriptions.php' ) || version_compare( get_option( 'woocommerce_subscriptions_active_version' ), WCS_Gifting::$wc_subscriptions_minimum_supported_version, '<' ) ) {
 	add_action( 'admin_notices', 'WCS_Gifting::plugin_dependency_notices' );
 	return;
 }
@@ -60,8 +60,8 @@ class WCS_Gifting {
 
 	public static $plugin_file = __FILE__;
 
-	public static $woocommerce_required_version      = '2.3';
-	public static $wc_subscriptions_required_version = '2.0';
+	public static $woocommerce_minimum_supported_version      = '2.3';
+	public static $wc_subscriptions_minimum_supported_version = '2.0';
 
 	/**
 	 * Setup hooks & filters, when the class is initialised.
@@ -248,14 +248,14 @@ class WCS_Gifting {
 
 		if ( ! is_woocommerce_active() ) {
 			self::output_plugin_dependency_notice( 'WooCommerce' );
-		} else if ( version_compare( get_option( 'woocommerce_db_version' ), WCS_Gifting::$woocommerce_required_version, '<' ) ) {
-			self::output_plugin_dependency_notice( 'WooCommerce', WCS_Gifting::$woocommerce_required_version );
+		} else if ( version_compare( get_option( 'woocommerce_db_version' ), WCS_Gifting::$woocommerce_minimum_supported_version, '<' ) ) {
+			self::output_plugin_dependency_notice( 'WooCommerce', WCS_Gifting::$woocommerce_minimum_supported_version );
 		}
 
 		if ( ! is_plugin_active( 'woocommerce-subscriptions/woocommerce-subscriptions.php' ) ) {
 			self::output_plugin_dependency_notice( 'WooCommerce Subscriptions' );
-		} else if ( version_compare( get_option( 'woocommerce_subscriptions_active_version' ), WCS_Gifting::$wc_subscriptions_required_version, '<' ) ) {
-			self::output_plugin_dependency_notice( 'WooCommerce Subscriptions', WCS_Gifting::$wc_subscriptions_required_version );
+		} else if ( version_compare( get_option( 'woocommerce_subscriptions_active_version' ), WCS_Gifting::$wc_subscriptions_minimum_supported_version, '<' ) ) {
+			self::output_plugin_dependency_notice( 'WooCommerce Subscriptions', WCS_Gifting::$wc_subscriptions_minimum_supported_version );
 		}
 	}
 
