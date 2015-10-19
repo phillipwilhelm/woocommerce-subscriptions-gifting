@@ -261,7 +261,7 @@ class WCS_Gifting {
 	}
 
 	/**
-	 * Prints a plugin dependency admin notice. If a required version is supplied a invalid version notice is printed,
+	 * Prints a plugin dependency admin notice. If a required version is supplied an invalid version notice is printed,
 	 * otherwise an inactive plugin notice is printed.
 	 *
 	 * @param string $plugin_name The plugin name.
