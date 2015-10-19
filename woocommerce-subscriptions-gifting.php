@@ -256,7 +256,6 @@ class WCS_Gifting {
 			self::output_plugin_dependency_notice( 'WooCommerce Subscriptions' );
 		} else if ( version_compare( get_option( 'woocommerce_subscriptions_active_version' ), WCS_Gifting::$wc_subscriptions_required_version, '<' ) ) {
 			self::output_plugin_dependency_notice( 'WooCommerce Subscriptions', WCS_Gifting::$wc_subscriptions_required_version );
-
 		}
 	}
 
