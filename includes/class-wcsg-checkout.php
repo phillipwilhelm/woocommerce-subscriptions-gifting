@@ -42,7 +42,7 @@ class WCSG_Checkout {
 	 */
 	public static function subscription_created( $subscription, $order, $recurring_cart ) {
 
-		$cart_item = array_pop( $recurring_cart->cart_contents );
+		$cart_item = reset( $recurring_cart->cart_contents );
 
 		if ( ! empty( $cart_item['wcsg_gift_recipients_email'] ) ) {
 
