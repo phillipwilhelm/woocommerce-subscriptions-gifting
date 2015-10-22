@@ -48,7 +48,7 @@ class WCSG_Email {
 			'woocommerce_order_status_completed_renewal_notification',
 		);
 		foreach ( $renewal_notification_actions as $action ) {
-			add_action( $action , __CLASS__ . '::maybe_send_recipient_renewal_notification', 10, 1 );
+			add_action( $action , __CLASS__ . '::maybe_send_recipient_renewal_notification', 12, 1 );
 		}
 
 		$mailer = WC()->mailer();

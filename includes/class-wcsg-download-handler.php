@@ -12,7 +12,10 @@ class WCSG_Download_Handler {
 	}
 
 	/**
-	 * Gets the current user's download links for a downloadable order item.
+	 * Gets the correct user's download links for a downloadable order item.
+	 * If the request is from within an email, the links belonging to the email recipient are returned otherwise
+	 * if the request is from the view subscription page use the current user id,
+	 * otherwise the links for order's customer user are returned.
 	 *
 	 * @param array $files Downloadable files for the order item
 	 * @param array $item Order line item.
@@ -21,9 +24,20 @@ class WCSG_Download_Handler {
 	 */
 	public static function get_item_download_links( $files, $item, $order ) {
 
-		$user_id = ( wcs_is_subscription( $order ) && wcs_is_view_subscription_page() ) ? get_current_user_id() : $order->customer_user;
+		if ( ! empty( $order->recipient_user ) ) {
+			$subscription_recipient = get_user_by( 'id', $order->recipient_user );
+			$user_id                = ( wcs_is_subscription( $order ) && wcs_is_view_subscription_page() ) ? get_current_user_id() : $order->customer_user;
+			$mailer                 = WC()->mailer();
 
-		return self::get_user_downloads_for_order_item( $order, $user_id, $item );
+			foreach ( $mailer->emails as $email ) {
+				if ( true == $email->sending && $email->get_recipient() == $subscription_recipient->user_email ) {
+					$user_id = $order->recipient_user;
+					break;
+				}
+			}
+			$files = self::get_user_downloads_for_order_item( $order, $user_id, $item );
+		}
+		return $files;
 	}
 
 	/**
@@ -98,7 +112,7 @@ class WCSG_Download_Handler {
 		$product_id = wcs_get_canonical_product_id( $item );
 
 		$downloads = $wpdb->get_results( $wpdb->prepare("
-			SELECT download_id
+			SELECT *
 			FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions
 			WHERE user_id = %s
 			AND order_id = %s
@@ -111,7 +125,15 @@ class WCSG_Download_Handler {
 			$product = wc_get_product( $product_id );
 			if ( $product->has_file( $download->download_id ) ) {
 				$files[ $download->download_id ]                 = $product->get_file( $download->download_id );
-				$files[ $download->download_id ]['download_url'] = $order->get_download_url( $product_id, $download->download_id );
+				$files[ $download->download_id ]['download_url'] = add_query_arg(
+					array(
+						'download_file' => $product_id,
+						'order'         => $download->order_key,
+						'email'         => $download->user_email,
+						'key'           => $download->download_id
+					),
+					home_url( '/' )
+				);
 			}
 		}
 		return $files;
