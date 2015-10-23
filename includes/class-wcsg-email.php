@@ -51,15 +51,23 @@ class WCSG_Email {
 			add_action( $action , __CLASS__ . '::maybe_send_recipient_renewal_notification', 12, 1 );
 		}
 
-		$mailer = WC()->mailer();
+		$mailer              = WC()->mailer();
+		$subscription_emails = WC_Subscriptions_Email::add_emails( array() );
+
+		foreach( $subscription_emails as $key => $email ) {
+			$subscription_emails[ $key ] = $email->id;
+		}
 
 		foreach ( $mailer->emails as $email ) {
-			if ( isset( $email->heading_downloadable ) ) {
-				add_filter( 'woocommerce_email_subject_' . $email->id, __CLASS__ . '::maybe_change_download_email_subject', 10, 2 );
-			}
+
+			$filter_prefix = ( in_array( $email->id , $subscription_emails ) ) ? 'woocommerce_subscriptions' : 'woocommerce';
 
 			if ( isset( $email->subject_downloadable ) ) {
-				add_filter( 'woocommerce_email_heading_' . $email->id, __CLASS__ . '::maybe_change_download_email_heading', 10, 2 );
+				add_filter( $filter_prefix . '_email_subject_' . $email->id, __CLASS__ . '::maybe_change_download_email_subject', 10, 2 );
+			}
+
+			if ( isset( $email->heading_downloadable ) ) {
+				add_filter( $filter_prefix . '_email_heading_' . $email->id, __CLASS__ . '::maybe_change_download_email_heading', 10, 2 );
 			}
 		}
 	}
@@ -169,21 +177,14 @@ class WCSG_Email {
 	 */
 	public static function maybe_change_download_email_subject( $subject, $order ) {
 
-		if ( $order instanceof WC_Order ) {
-
-			$email_id        = substr( current_filter(), strlen( 'woocommerce_email_subject_' ) );
+		if ( $order instanceof WC_Order && wcs_order_contains_subscription( $order->id, 'any' ) ) {
+			$filter_prefix   = ( false === strpos( current_filter(), 'woocommerce_subscriptions_email' ) ) ? 'woocommerce' : 'woocommerce_subscriptions';
+			$email_id        = substr( current_filter(), strlen( $filter_prefix . '_email_subject_' ) );
 			$email           = self::get_email_from_id( $email_id );
-			$order_downloads = array();
+			$order_downloads = WCSG_Download_Handler::get_user_downloads_for_order( $order, $order->customer_user );
 
-			if ( $email && $subject != $email->format_string( $email->subject ) ) {
-
-				foreach ( $order->get_items() as $item ) {
-					$order_downloads = array_merge( $order_downloads, WCSG_Download_Handler::get_user_downloads_for_order_item( $order, $order->customer_user, $item ) );
-				}
-
-				if ( empty( $order_downloads ) && isset( $email->subject ) ) {
-					$subject = $email->format_string( $email->subject );
-				}
+			if ( $email && empty( $order_downloads ) && isset( $email->subject ) ) {
+				$subject = $email->format_string( $email->subject );
 			}
 		}
 		return $subject;
@@ -198,23 +199,18 @@ class WCSG_Email {
 	 */
 	public static function maybe_change_download_email_heading( $heading, $order ) {
 
-		if ( $order instanceof WC_Order ) {
+		if ( $order instanceof WC_Order && wcs_order_contains_subscription( $order->id, 'any' ) ) {
 
-			$email_id        = substr( current_filter(), strlen( 'woocommerce_email_heading_' ) );
+			$filter_prefix   = ( false === strpos( current_filter(), 'woocommerce_subscriptions_email' ) ) ? 'woocommerce' : 'woocommerce_subscriptions';
+			$email_id        = substr( current_filter(), strlen( $filter_prefix . '_email_heading_' ) );
 			$email           = self::get_email_from_id( $email_id );
-			$order_downloads = array();
+			$order_downloads = WCSG_Download_Handler::get_user_downloads_for_order( $order, $order->customer_user );
 
-			if ( $email && $heading != $email->format_string( $email->heading ) ) {
-
-				foreach ( $order->get_items() as $item ) {
-					$order_downloads = array_merge( $order_downloads, WCSG_Download_Handler::get_user_downloads_for_order_item( $order, $order->customer_user, $item ) );
-				}
-
-				if ( empty( $order_downloads ) && isset( $email->heading ) ) {
-					$heading = $email->format_string( $email->heading );
-				}
+			if ( $email && empty( $order_downloads ) && isset( $email->heading ) ) {
+				$heading = $email->format_string( $email->heading );
 			}
 		}
+
 		return $heading;
 	}
 

@@ -103,6 +103,7 @@ class WCSG_Download_Handler {
 	 *
 	 * @param  WC_Order $order
 	 * @param  int $user_id
+	 * @param  array $item
 	 *
 	 * @return array
 	 */
@@ -137,6 +138,35 @@ class WCSG_Download_Handler {
 			}
 		}
 		return $files;
+	}
+
+	/**
+	 * Retrieves all the user's download permissions for an order by checking
+	 * for downloads stored on the subscriptions in the order.
+	 *
+	 * @param  WC_Order $order
+	 * @param  int $user_id
+	 *
+	 * @return array
+	 */
+	public static function get_user_downloads_for_order( $order, $user_id ) {
+
+		$subscriptions   = wcs_get_subscriptions_for_order( $order, array( 'order_type' => array( 'any' ) ) );
+		$order_downloads = array();
+
+		foreach ( $order->get_items() as $item ) {
+			$product_id = wcs_get_canonical_product_id( $item );
+
+			foreach ( $subscriptions as $subscription ) {
+				foreach ( $subscription->get_items() as $subscription_item ) {
+					if ( wcs_get_canonical_product_id( $subscription_item ) === $product_id ) {
+						$order_downloads = array_merge( $order_downloads, self::get_user_downloads_for_order_item( $subscription, $order->customer_user, $subscription_item ) );
+					}
+				}
+			}
+		}
+
+		return $order_downloads;
 	}
 }
 WCSG_Download_Handler::init();
