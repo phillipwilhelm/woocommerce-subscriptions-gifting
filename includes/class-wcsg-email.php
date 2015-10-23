@@ -178,9 +178,27 @@ class WCSG_Email {
 	public static function maybe_change_download_email_subject( $subject, $order ) {
 
 		if ( $order instanceof WC_Order && wcs_order_contains_subscription( $order->id, 'any' ) ) {
+
+			$user_id         = $order->customer_user;
 			$filter_prefix   = ( false === strpos( current_filter(), 'woocommerce_subscriptions_email' ) ) ? 'woocommerce' : 'woocommerce_subscriptions';
 			$email_id        = substr( current_filter(), strlen( $filter_prefix . '_email_subject_' ) );
 			$email           = self::get_email_from_id( $email_id );
+
+			if ( $order->billing_email != $email->get_recipient() ) {
+
+				$subscriptions = wcs_get_subscriptions_for_order( $order->id );
+				$subscription  = reset( $subscriptions );
+
+				if ( ! empty( $subscription->recipient_user ) ) {
+
+					$subscription_recipient = get_user_by( 'id', $subscription->recipient_user );
+
+					if ( $email->get_recipient() == $subscription_recipient->user_email ) {
+						$user_id = $subscription->recipient_user;
+					}
+				}
+			}
+
 			$order_downloads = WCSG_Download_Handler::get_user_downloads_for_order( $order, $order->customer_user );
 
 			if ( $email && empty( $order_downloads ) && isset( $email->subject ) ) {
@@ -201,10 +219,27 @@ class WCSG_Email {
 
 		if ( $order instanceof WC_Order && wcs_order_contains_subscription( $order->id, 'any' ) ) {
 
-			$filter_prefix   = ( false === strpos( current_filter(), 'woocommerce_subscriptions_email' ) ) ? 'woocommerce' : 'woocommerce_subscriptions';
-			$email_id        = substr( current_filter(), strlen( $filter_prefix . '_email_heading_' ) );
-			$email           = self::get_email_from_id( $email_id );
-			$order_downloads = WCSG_Download_Handler::get_user_downloads_for_order( $order, $order->customer_user );
+			$user_id       = $order->customer_user;
+			$filter_prefix = ( false === strpos( current_filter(), 'woocommerce_subscriptions_email' ) ) ? 'woocommerce' : 'woocommerce_subscriptions';
+			$email_id      = substr( current_filter(), strlen( $filter_prefix . '_email_heading_' ) );
+			$email         = self::get_email_from_id( $email_id );
+
+			if ( $order->billing_email != $email->get_recipient() ) {
+
+				$subscriptions = wcs_get_subscriptions_for_order( $order->id );
+				$subscription  = reset( $subscriptions );
+
+				if ( ! empty( $subscription->recipient_user ) ) {
+
+					$subscription_recipient = get_user_by( 'id', $subscription->recipient_user );
+
+					if ( $email->get_recipient() == $subscription_recipient->user_email ) {
+						$user_id = $subscription->recipient_user;
+					}
+				}
+			}
+
+			$order_downloads = WCSG_Download_Handler::get_user_downloads_for_order( $order, $user_id );
 
 			if ( $email && empty( $order_downloads ) && isset( $email->heading ) ) {
 				$heading = $email->format_string( $email->heading );
