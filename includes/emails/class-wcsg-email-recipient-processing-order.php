@@ -21,7 +21,7 @@ class WCSG_Email_Recipient_Processing_Order extends WC_Email {
 		$this->template_base  = plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/';
 
 		// Trigger for this email
-		add_action( 'wcsg_processing_order_recipient_notification', array( $this, 'trigger' ),10 , 2 );
+		add_action( 'wcsg_processing_order_recipient_notification', array( $this, 'trigger' ), 12, 2 );
 
 		WC_Email::__construct();
 	}
