@@ -4,6 +4,8 @@ class WCSG_Email_Recipient_Processing_Order extends WC_Email {
 
 	public $subscription_owner;
 	public $subscriptions;
+	public $wcsg_sending_recipient_email;
+
 	/**
 	 * Create an instance of the class.
 	 */
@@ -30,6 +32,7 @@ class WCSG_Email_Recipient_Processing_Order extends WC_Email {
 	 * trigger function.
 	 */
 	function trigger( $recipient_user, $recipient_subscriptions ) {
+
 		if ( $recipient_user ) {
 			$this->object             = get_user_by( 'id', $recipient_user );
 			$this->recipient          = stripslashes( $this->object->user_email );
@@ -37,10 +40,15 @@ class WCSG_Email_Recipient_Processing_Order extends WC_Email {
 			$this->subscription_owner = WCS_Gifting::get_user_display_name( $subscription->customer_user );
 			$this->subscriptions      = $recipient_subscriptions;
 		}
+
 		if ( ! $this->is_enabled() || ! $this->get_recipient() ) {
 			return;
 		}
+
+		$this->wcsg_sending_recipient_email = $recipient_user;
 		$this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
+
+		unset( $this->wcsg_sending_recipient_email );
 	}
 
 	/**

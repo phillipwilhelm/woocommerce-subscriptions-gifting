@@ -39,8 +39,8 @@ class WCSG_Email {
 		add_action( 'woocommerce_created_customer', __CLASS__ . '::send_new_recient_user_email', 10, 3 );
 		add_action( 'woocommerce_created_customer', __CLASS__ . '::maybe_reattach_wc_new_customer_email', 11, 2 );
 
-		add_action( 'woocommerce_order_status_pending_to_processing', __CLASS__ . '::maybe_send_recipient_order_emails', 12, 1 );
-		add_action( 'woocommerce_order_status_pending_to_on-hold', __CLASS__ . '::maybe_send_recipient_order_emails', 12, 1 );
+		add_action( 'woocommerce_order_status_pending_to_processing', __CLASS__ . '::maybe_send_recipient_order_emails', 9, 1 );
+		add_action( 'woocommerce_order_status_pending_to_on-hold', __CLASS__ . '::maybe_send_recipient_order_emails', 9, 1 );
 
 		$renewal_notification_actions = array(
 			'woocommerce_order_status_pending_to_processing_renewal_notification',
@@ -52,11 +52,17 @@ class WCSG_Email {
 		}
 
 		$mailer              = WC()->mailer();
-		$subscription_emails = WC_Subscriptions_Email::add_emails( array() );
+		$subscription_emails = array(
+			'new_renewal_order',
+			'new_switch_order',
+			'customer_processing_renewal_order',
+			'customer_completed_renewal_order',
+			'customer_completed_switch_order',
+			'customer_renewal_invoice',
+			'cancelled_subscription',
+		);
 
-		foreach( $subscription_emails as $key => $email ) {
-			$subscription_emails[ $key ] = $email->id;
-		}
+		add_filter( 'woocommerce_email_heading_customer_renewal_order' , __CLASS__ . '::maybe_change_download_email_heading', 10, 2 );
 
 		foreach ( $mailer->emails as $email ) {
 
@@ -67,7 +73,7 @@ class WCSG_Email {
 			}
 
 			if ( isset( $email->heading_downloadable ) ) {
-				add_filter( $filter_prefix . '_email_heading_' . $email->id, __CLASS__ . '::maybe_change_download_email_heading', 10, 2 );
+				add_filter( 'woocommerce_email_heading_' . $email->id, __CLASS__ . '::maybe_change_download_email_heading', 10, 2 );
 			}
 		}
 	}
@@ -177,34 +183,37 @@ class WCSG_Email {
 	 */
 	public static function maybe_change_download_email_subject( $subject, $order ) {
 
-		if ( $order instanceof WC_Order && wcs_order_contains_subscription( $order->id, 'any' ) ) {
+		$user_id = $order->customer_user;
+		$mailer  = WC()->mailer();
+		$sending_email;
 
-			$user_id         = $order->customer_user;
-			$filter_prefix   = ( false === strpos( current_filter(), 'woocommerce_subscriptions_email' ) ) ? 'woocommerce' : 'woocommerce_subscriptions';
-			$email_id        = substr( current_filter(), strlen( $filter_prefix . '_email_subject_' ) );
-			$email           = self::get_email_from_id( $email_id );
-
-			if ( $order->billing_email != $email->get_recipient() ) {
-
-				$subscriptions = wcs_get_subscriptions_for_order( $order->id );
-				$subscription  = reset( $subscriptions );
-
-				if ( ! empty( $subscription->recipient_user ) ) {
-
-					$subscription_recipient = get_user_by( 'id', $subscription->recipient_user );
-
-					if ( $email->get_recipient() == $subscription_recipient->user_email ) {
-						$user_id = $subscription->recipient_user;
-					}
-				}
-			}
-
-			$order_downloads = WCSG_Download_Handler::get_user_downloads_for_order( $order, $order->customer_user );
-
-			if ( $email && empty( $order_downloads ) && isset( $email->subject ) ) {
-				$subject = $email->format_string( $email->subject );
+		foreach ( $mailer->emails as $email ) {
+			if ( isset( $email->wcsg_sending_recipient_email ) ) {
+				error_log( 'sending recipient email getting downloads for ' . $email->wcsg_sending_recipient_email );
+				$user_id       = $email->wcsg_sending_recipient_email;
+				$sending_email = $email;
+				break;
 			}
 		}
+
+		if ( ! isset( $sending_email ) ) {
+			$filter_prefix = ( false === strpos( current_filter(), 'woocommerce_subscriptions_email' ) ) ? 'woocommerce' : 'woocommerce_subscriptions';
+			$email_id      = substr( current_filter(), strlen( $filter_prefix . '_email_subject_' ) );
+
+			foreach ( $mailer->emails as $email ) {
+				if ( $email->id == $email_id ) {
+					$sending_email = $email;
+					break;
+				}
+			}
+		}
+
+		$order_downloads = WCSG_Download_Handler::get_user_downloads_for_order( $order, $user_id );
+
+		if ( isset( $sending_email ) && empty( $order_downloads ) && isset( $sending_email->subject ) ) {
+			$subject = $sending_email->format_string( $sending_email->subject );
+		}
+
 		return $subject;
 	}
 
@@ -217,54 +226,35 @@ class WCSG_Email {
 	 */
 	public static function maybe_change_download_email_heading( $heading, $order ) {
 
-		if ( $order instanceof WC_Order && wcs_order_contains_subscription( $order->id, 'any' ) ) {
+		$user_id = $order->customer_user;
+		$mailer  = WC()->mailer();
+		$sending_email;
 
-			$user_id       = $order->customer_user;
-			$filter_prefix = ( false === strpos( current_filter(), 'woocommerce_subscriptions_email' ) ) ? 'woocommerce' : 'woocommerce_subscriptions';
-			$email_id      = substr( current_filter(), strlen( $filter_prefix . '_email_heading_' ) );
-			$email         = self::get_email_from_id( $email_id );
+		foreach ( $mailer->emails as $email ) {
+			if ( isset( $email->wcsg_sending_recipient_email ) ) {
 
-			if ( $order->billing_email != $email->get_recipient() ) {
+				$user_id       = $email->wcsg_sending_recipient_email;
+				$sending_email = $email;
+				break;
+			}
+		}
 
-				$subscriptions = wcs_get_subscriptions_for_order( $order->id );
-				$subscription  = reset( $subscriptions );
-
-				if ( ! empty( $subscription->recipient_user ) ) {
-
-					$subscription_recipient = get_user_by( 'id', $subscription->recipient_user );
-
-					if ( $email->get_recipient() == $subscription_recipient->user_email ) {
-						$user_id = $subscription->recipient_user;
-					}
+		if ( ! isset( $sending_email ) ) {
+			foreach ( $mailer->emails as $email ) {
+				if ( true == $email->sending && isset( $email->heading_downloadable ) && $heading == $email->format_string( $email->heading_downloadable ) ) {
+					$sending_email = $email;
+					break;
 				}
 			}
+		}
 
-			$order_downloads = WCSG_Download_Handler::get_user_downloads_for_order( $order, $user_id );
+		$order_downloads = WCSG_Download_Handler::get_user_downloads_for_order( $order, $user_id );
 
-			if ( $email && empty( $order_downloads ) && isset( $email->heading ) ) {
-				$heading = $email->format_string( $email->heading );
-			}
+		if ( isset( $sending_email ) && empty( $order_downloads ) && isset( $sending_email->heading ) ) {
+			$heading = $sending_email->format_string( $sending_email->heading );
 		}
 
 		return $heading;
-	}
-
-	/**
-	 * Retrieves an email object from its id, otherwise returns false.
-	 *
-	 * @param int $email_id
-	 * @param object $email
-	 */
-	public static function get_email_from_id( $email_id ) {
-		$mailer = WC()->mailer();
-
-		foreach ( $mailer->emails as $email ) {
-			if ( $email_id == $email->id ) {
-				return $email;
-			}
-		}
-
-		return false;
 	}
 }
 WCSG_Email::init();

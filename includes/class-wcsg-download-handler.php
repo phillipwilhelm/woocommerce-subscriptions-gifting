@@ -30,11 +30,12 @@ class WCSG_Download_Handler {
 			$mailer                 = WC()->mailer();
 
 			foreach ( $mailer->emails as $email ) {
-				if ( true == $email->sending && $email->get_recipient() == $subscription_recipient->user_email ) {
+				if ( isset( $email->wcsg_sending_recipient_email ) ) {
 					$user_id = $order->recipient_user;
 					break;
 				}
 			}
+
 			$files = self::get_user_downloads_for_order_item( $order, $user_id, $item );
 		}
 		return $files;
@@ -131,7 +132,7 @@ class WCSG_Download_Handler {
 						'download_file' => $product_id,
 						'order'         => $download->order_key,
 						'email'         => $download->user_email,
-						'key'           => $download->download_id
+						'key'           => $download->download_id,
 					),
 					home_url( '/' )
 				);
@@ -154,15 +155,9 @@ class WCSG_Download_Handler {
 		$subscriptions   = wcs_get_subscriptions_for_order( $order, array( 'order_type' => array( 'any' ) ) );
 		$order_downloads = array();
 
-		foreach ( $order->get_items() as $item ) {
-			$product_id = wcs_get_canonical_product_id( $item );
-
-			foreach ( $subscriptions as $subscription ) {
-				foreach ( $subscription->get_items() as $subscription_item ) {
-					if ( wcs_get_canonical_product_id( $subscription_item ) === $product_id ) {
-						$order_downloads = array_merge( $order_downloads, self::get_user_downloads_for_order_item( $subscription, $order->customer_user, $subscription_item ) );
-					}
-				}
+		foreach ( $subscriptions as $subscription ) {
+			foreach ( $subscription->get_items() as $subscription_item ) {
+				$order_downloads = array_merge( $order_downloads, self::get_user_downloads_for_order_item( $subscription, $user_id, $subscription_item ) );
 			}
 		}
 
