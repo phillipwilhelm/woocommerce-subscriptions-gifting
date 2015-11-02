@@ -41,6 +41,8 @@ require_once( 'includes/class-wcsg-email.php' );
 
 require_once( 'includes/class-wcsg-download-handler.php' );
 
+require_once( 'includes/class-wcsg-meta-box-downloads-permissions.php' );
+
 class WCS_Gifting {
 
 	public static $plugin_file = __FILE__;
