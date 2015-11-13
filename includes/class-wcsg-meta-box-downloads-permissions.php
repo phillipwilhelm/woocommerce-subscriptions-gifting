@@ -36,14 +36,55 @@ class WCSG_Meta_Box_Download_Permissions {
 	 * @param int $subscription_id
 	 */
 	public static function save_download_permission_meta( $subscription_id ) {
+		global $wpdb;
 
 		if ( wcs_is_subscription( $subscription_id ) ) {
 
 			$subscription = wcs_get_subscription( $subscription_id );
 
-			if ( isset( $subscription->recipient_user ) ) {
+			if ( isset( $subscription->recipient_user ) && ! empty( $_POST['download_id'] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_save_download_permissions' ) ) {
 				remove_action( 'woocommerce_process_shop_order_meta', 'WC_Meta_Box_Order_Downloads::save', 30 );
-				//do my own saving
+
+				$downloads           = $_POST['download_id'];
+				$product_ids         = $_POST['product_id'];
+				$downloads_remaining = $_POST['downloads_remaining'];
+				$access_expires      = $_POST['access_expires'];
+
+				foreach ( $downloads as $index => $download ) {
+
+					$download_data = unserialize( stripslashes( $download ) );
+
+					if ( is_array( $download_data ) && isset( $download_data['download_id'] ) && isset( $download_data['wcsg_user_id'] ) ) {
+
+						$download_id = $download_data['download_id'];
+						$user_id     = $download_data['wcsg_user_id'];
+						$expiry      = ( ( isset( $access_expires[ $index ] ) ) && '' != $access_expires[ $index ] ) ? date_i18n( 'Y-m-d', strtotime( wc_clean( $access_expires[ $index ] ) ) ) : null;
+						$data        = array(
+							'downloads_remaining' => wc_clean( $downloads_remaining[ $index ] ),
+							'access_expires'      => $expiry,
+						);
+						$format      = array( '%s', '%s' );
+
+						//update purchaser information (billing email and user id)
+						if ( $user_id == $subscription->customer_user && isset( $_POST['customer_user'] ) && isset( $_POST['user_email'] ) ) {
+							$data['user_id']    = absint( $_POST['customer_user'] );
+							$data['user_email'] = wc_clean( $_POST['_billing_email'] );
+
+							array_push( $format, '%d', '%s' );
+						}
+
+						$wpdb->update( $wpdb->prefix . 'woocommerce_downloadable_product_permissions',
+							$data,
+							array(
+								'order_id' 		=> $subscription_id,
+								'product_id' 	=> absint( $product_ids[ $index ] ),
+								'download_id'	=> wc_clean( $download_id ),
+								'user_id'       => $user_id,
+							),
+							$format, array( '%d', '%d', '%s', '%d' )
+						);
+					}
+				}
 			}
 		}
 	}
@@ -136,6 +177,7 @@ class WCSG_Meta_Box_Download_Permissions {
 			</div>
 		</div>
 		<?php
+		wp_nonce_field( 'wcsg_save_download_permissions', '_wcsgnonce' );
 	}
 
 	/**
