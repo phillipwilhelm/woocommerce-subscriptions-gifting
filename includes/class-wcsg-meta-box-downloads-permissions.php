@@ -78,13 +78,14 @@ class WCSG_Meta_Box_Download_Permissions {
 						continue;
 					}
 
-					if ( $download->user_id == $subscription->customer_user ) {
+					$download->download_id = serialize( array(
+						'download_id'  => $download->download_id,
+						'wcsg_user_id' => $download->user_id,
+					) );
 
-						$download->download_id   = 'download_id=' . $download->download_id . '&wcsg_user_id=' . $subscription->customer_user;
+					if ( $download->user_id == $subscription->customer_user ) {
 						$purchaser_permissions[] = $download;
 					} else if ( $download->user_id == $subscription->recipient_user ) {
-
-						$download->download_id   = 'download_id=' . $download->download_id . '&wcsg_user_id=' . $subscription->recipient_user;
 						$recipient_permissions[] = $download;
 					}
 				}
@@ -100,6 +101,8 @@ class WCSG_Meta_Box_Download_Permissions {
 
 					if ( $download->user_id == $subscription->recipient_user && ( 0 == $index || $downloads[ $index - 1 ]->user_id != $subscription->recipient_user ) ) {
 						echo sprintf( esc_html__( '%sRecipient\'s Download Permissions%s', 'woocommerce-subscriptions-gifting' ), '<h3><u>', '</u></h3>' );
+						// reset the file counter
+						$file_counter = 1;
 					}
 
 					$product    = wc_get_product( absint( $download->product_id ) );
@@ -150,12 +153,15 @@ class WCSG_Meta_Box_Download_Permissions {
 
 			if ( isset( $subscription->recipient_user ) ) {
 
-				parse_str( $download, $download_data );
+				$download_data = unserialize( stripslashes( $download ) );
 
-				$wpdb->query( $wpdb->prepare( "
-				DELETE FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions
-				WHERE order_id = %d AND product_id = %d AND download_id = %s AND user_id = %s;",
-				$order_id, $product_id, $download_data['download_id'], $download_data['wcsg_user_id'] ) );
+				if ( is_array( $download_data ) && isset( $download_data['download_id'] ) && isset( $download_data['wcsg_user_id'] ) ) {
+
+					$wpdb->query( $wpdb->prepare( "
+					DELETE FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions
+					WHERE order_id = %d AND product_id = %d AND download_id = %s AND user_id = %s;",
+					$order_id, $product_id, $download_data['download_id'], $download_data['wcsg_user_id'] ) );
+				}
 			}
 		}
 	}
