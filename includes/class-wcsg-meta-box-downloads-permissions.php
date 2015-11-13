@@ -119,11 +119,6 @@ class WCSG_Meta_Box_Download_Permissions {
 						continue;
 					}
 
-					$download->download_id = serialize( array(
-						'download_id'  => $download->download_id,
-						'wcsg_user_id' => $download->user_id,
-					) );
-
 					if ( $download->user_id == $subscription->customer_user ) {
 						$purchaser_permissions[] = $download;
 					} else if ( $download->user_id == $subscription->recipient_user ) {
@@ -151,6 +146,11 @@ class WCSG_Meta_Box_Download_Permissions {
 					$loop       = $index;
 					$file_count = 1;
 
+					$download->download_id = serialize( array(
+						'download_id'  => $download->download_id,
+						'wcsg_user_id' => $download->user_id,
+					) );
+
 					if ( isset( $file['name'] ) ) {
 						$file_count = $file['name'];
 					} else {
@@ -161,19 +161,6 @@ class WCSG_Meta_Box_Download_Permissions {
 					$file_counter++;
 				}
 				?>
-			</div>
-
-			<div class="toolbar">
-				<p class="buttons">
-					<input type="hidden" id="grant_access_id" name="grant_access_id" data-multiple="true" class="wc-product-search" style="width: 400px;" data-placeholder="<?php esc_attr_e( 'Search for a downloadable product&hellip;', 'woocommerce' ); ?>" data-action="woocommerce_json_search_downloadable_products_and_variations" />
-					<select id="wcsg_customer" style="margin-right: 9px; vertical-align: top;">
-						<option value=""><?php esc_html_e( 'Customer', 'woocommerce-subscriptions-gifting' ); ?></option>
-						<option value="<?php echo esc_attr( $subscription->recipient_user ) ?>"><?php esc_html_e( 'Recipient' ); ?></option>
-						<option value="<?php echo esc_attr( $subscription->customer_user ) ?>"><?php esc_html_e( 'Purchaser' ); ?></option>
-					</select>
-					<button type="button" class="button grant_access"><?php esc_html_e( 'Grant Access', 'woocommerce-subscriptions-gifting' ); ?></button>
-				</p>
-				<div class="clear"></div>
 			</div>
 		</div>
 		<?php
