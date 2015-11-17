@@ -278,23 +278,33 @@ class WCS_Gifting {
 	public static function output_plugin_dependency_notice( $plugin_name, $required_version = false ) {
 
 		if ( current_user_can( 'activate_plugins' ) ) :
-			if ( $required_version ) : ?>
+			if ( $required_version ) { ?>
 
 				<div id="message" class="error">
 					<p><?php
 						// translators: 1$-2$: opening and closing <strong> tags, 3$ plugin name, 4$ required plugin version, 5$-6$: opening and closing link tags, leads to plugins.php in admin
-						printf( esc_html__( '%1$sWooCommerce Subscriptions Gifting is inactive.%2$s This version of Subscriptions Gifting requires %3$s %4$s or newer. %5$sPlease update &raquo;%6$s', 'woocommerce-subscriptions-gifting' ), '<strong>', '</strong>', esc_html( $plugin_name ), esc_html( $required_version ), '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">', '</a>' ); ?>
+						printf( esc_html__( '%1$sWooCommerce Subscriptions Gifting is inactive.%2$s This version of WooCommerce Subscriptions Gifting requires %3$s %4$s or newer. %5$sPlease update &raquo;%6$s', 'woocommerce-subscriptions-gifting' ), '<strong>', '</strong>', esc_html( $plugin_name ), esc_html( $required_version ), '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">', '</a>' ); ?>
 					</p>
 				</div>
-			<?php else : ?>
+			<?php } else {
 
+				switch ( $plugin_name ) {
+					case 'WooCommerce Subscriptions':
+						$plugin_url = 'http://www.woothemes.com/products/woocommerce-subscriptions/';
+						break;
+					case 'WooCommerce':
+						$plugin_url = 'http://wordpress.org/extend/plugins/woocommerce/';
+						break;
+					default:
+						$plugin_url = '';
+				} ?>
 				<div id="message" class="error">
 					<p><?php
 						// translators: 1$-2$: opening and closing <strong> tags, 3$ plugin name, 4$-5$: opening and closing link tags, leads to plugins.php in admin
-						printf( esc_html__( '%1$sWooCommerce Subscriptions Gifting is inactive.%2$s WooCommerce Subscriptions Gifting requires the %3$s plugin to be active to work correctly. Please %5$sinstall & activate %3$s &raquo;%6$s',  'woocommerce-subscriptions-gifting' ), '<strong>', '</strong>', esc_html( $plugin_name ) , '</a>', '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">', '</a>' ); ?>
+						printf( esc_html__( '%1$sWooCommerce Subscriptions Gifting is inactive.%2$s WooCommerce Subscriptions Gifting requires the %4$s%3$s%6$s plugin to be active to work correctly. Please %5$sinstall & activate %3$s &raquo;%6$s',  'woocommerce-subscriptions-gifting' ), '<strong>', '</strong>', esc_html( $plugin_name ) , '<a href="'. esc_url( $plugin_url ) . '">', '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">', '</a>' ); ?>
 					</p>
 				</div>
-			<?php endif;
+			<?php };
 		endif;
 	}
 
