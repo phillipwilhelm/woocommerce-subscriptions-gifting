@@ -5,7 +5,7 @@ class WCSG_Recipient_Management {
 	 * Setup hooks & filters, when the class is initialised.
 	 */
 	public static function init() {
-		add_filter( 'wcs_get_users_subscriptions', __CLASS__ . '::add_recipient_subscriptions', 1, 2 );
+		add_filter( 'wcs_get_users_subscriptions', __CLASS__ . '::get_users_subscriptions', 1, 2 );
 
 		add_action( 'woocommerce_order_details_after_customer_details', __CLASS__ . '::gifting_information_after_customer_details', 1 );
 
@@ -170,16 +170,20 @@ class WCSG_Recipient_Management {
 	 * @param array|subscriptions An array of subscriptions assigned to the user
 	 * @return array|subscriptions An updated array of subscriptions with any subscriptions gifted to the user added.
 	 */
-	public static function add_recipient_subscriptions( $subscriptions, $user_id ) {
+	public static function get_users_subscriptions( $subscriptions, $user_id ) {
 
-		//We dont want to update the shipping address of gifted subscriptions the user isn't the recipient of.
-		if ( ! empty( $_POST['_wcsnonce'] ) && wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_edit_address' ) && isset( $_POST['update_all_subscriptions_addresses'] ) && 'shipping' == get_query_var( 'edit-address' ) ) {
+		if ( ! empty( $_POST['_wcsnonce'] ) && wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_edit_address' ) && isset( $_POST['update_all_subscriptions_addresses'] ) ) {
+			// We dont want to update the shipping address of subscriptions the user isn't the recipient of.
+			if ( 'shipping' == get_query_var( 'edit-address' ) ) {
 
-			foreach ( $subscriptions as $key => $subscription ) {
+				foreach ( $subscriptions as $key => $subscription ) {
 
-				if ( ! empty( $subscription->recipient_user ) && $subscription->recipient_user != $user_id ) {
-					unset( $subscriptions[ $key ] );
+					if ( ! empty( $subscription->recipient_user ) && $subscription->recipient_user != $user_id ) {
+						unset( $subscriptions[ $key ] );
+					}
 				}
+			} else if ( 'billing' == get_query_var( 'edit-address' ) ) {
+				return $subscriptions;
 			}
 		}
 
