@@ -189,7 +189,6 @@ class WCSG_Email {
 
 		foreach ( $mailer->emails as $email ) {
 			if ( isset( $email->wcsg_sending_recipient_email ) ) {
-				error_log( 'sending recipient email getting downloads for ' . $email->wcsg_sending_recipient_email );
 				$user_id       = $email->wcsg_sending_recipient_email;
 				$sending_email = $email;
 				break;
