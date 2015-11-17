@@ -171,10 +171,9 @@ class WCSG_Recipient_Management {
 	 * @return array|subscriptions An updated array of subscriptions with any subscriptions gifted to the user added.
 	 */
 	public static function add_recipient_subscriptions( $subscriptions, $user_id ) {
-		global $wp;
 
 		//We dont want to update the shipping address of gifted subscriptions the user isn't the recipient of.
-		if ( ! empty( $_POST['_wcsnonce'] ) && wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_edit_address' ) && isset( $_POST['update_all_subscriptions_addresses'] ) && 'shipping' == $wp->query_vars['edit-address'] ) {
+		if ( ! empty( $_POST['_wcsnonce'] ) && wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_edit_address' ) && isset( $_POST['update_all_subscriptions_addresses'] ) && 'shipping' == get_query_var( 'edit-address' ) ) {
 
 			foreach ( $subscriptions as $key => $subscription ) {
 
