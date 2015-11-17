@@ -287,7 +287,6 @@ class WCS_Gifting {
 					</p>
 				</div>
 			<?php } else {
-
 				switch ( $plugin_name ) {
 					case 'WooCommerce Subscriptions':
 						$plugin_url = 'http://www.woothemes.com/products/woocommerce-subscriptions/';
@@ -300,7 +299,7 @@ class WCS_Gifting {
 				} ?>
 				<div id="message" class="error">
 					<p><?php
-						// translators: 1$-2$: opening and closing <strong> tags, 3$ plugin name, 4$-5$: opening and closing link tags, leads to plugins.php in admin
+						// translators: 1$-2$: opening and closing <strong> tags, 3$ plugin name, 4$:opening link tag, leads to plugin product page, 5$-6$: opening and closing link tags, leads to plugins.php in admin
 						printf( esc_html__( '%1$sWooCommerce Subscriptions Gifting is inactive.%2$s WooCommerce Subscriptions Gifting requires the %4$s%3$s%6$s plugin to be active to work correctly. Please %5$sinstall & activate %3$s &raquo;%6$s',  'woocommerce-subscriptions-gifting' ), '<strong>', '</strong>', esc_html( $plugin_name ) , '<a href="'. esc_url( $plugin_url ) . '">', '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">', '</a>' ); ?>
 					</p>
 				</div>
