@@ -303,7 +303,7 @@ class WCS_Gifting {
 						printf( esc_html__( '%1$sWooCommerce Subscriptions Gifting is inactive.%2$s WooCommerce Subscriptions Gifting requires the %4$s%3$s%6$s plugin to be active to work correctly. Please %5$sinstall & activate %3$s &raquo;%6$s',  'woocommerce-subscriptions-gifting' ), '<strong>', '</strong>', esc_html( $plugin_name ) , '<a href="'. esc_url( $plugin_url ) . '">', '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">', '</a>' ); ?>
 					</p>
 				</div>
-			<?php };
+			<?php }
 		endif;
 	}
 
