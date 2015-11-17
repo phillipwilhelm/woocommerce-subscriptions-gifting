@@ -39,6 +39,8 @@ require_once( 'includes/class-wcsg-recipient-details.php' );
 
 require_once( 'includes/class-wcsg-email.php' );
 
+require_once( 'includes/class-wcsg-download-handler.php' );
+
 class WCS_Gifting {
 
 	public static $plugin_file = __FILE__;
@@ -56,8 +58,9 @@ class WCS_Gifting {
 
 		add_action( 'init', __CLASS__ . '::maybe_flush_rewrite_rules' );
 
-		add_filter( 'wcs_renewal_order_meta_query', __CLASS__ . '::remove_renewal_order_meta_query', 11 );
+		add_action( 'wc_get_template', __CLASS__ . '::get_recent_orders_template', 1 , 3 );
 
+		add_filter( 'wcs_renewal_order_meta_query', __CLASS__ . '::remove_renewal_order_meta_query', 11 );
 	}
 
 	/**
@@ -116,6 +119,7 @@ class WCS_Gifting {
 				}
 			}
 		}
+		return ! ( $invalid_email_found || $self_gifting_found );
 	}
 
 	/**
@@ -140,7 +144,11 @@ class WCS_Gifting {
 					unset( WC()->cart->cart_contents[ $key ] );
 				} else { // there is no item in the cart with the same new key
 
-					WC()->cart->cart_contents[ $new_key ] = WC()->cart->cart_contents[ $key ];
+					$item_cart_position = array_search( $key, array_keys( WC()->cart->cart_contents ) );
+					WC()->cart->cart_contents = array_merge( array_slice( WC()->cart->cart_contents, 0, $item_cart_position, true ),
+						array( $new_key => WC()->cart->cart_contents[ $key ] ),
+						array_slice( WC()->cart->cart_contents, $item_cart_position, count( WC()->cart->cart_contents ), true )
+					);
 
 					if ( empty( $new_recipient_data ) ) {
 						unset( WC()->cart->cart_contents[ $new_key ]['wcsg_gift_recipients_email'] );
@@ -195,6 +203,19 @@ class WCS_Gifting {
 	}
 
 	/**
+	 * Overrides the default recent order template for gifted subscriptions
+	 */
+	public static function get_recent_orders_template( $located, $template_name, $args ) {
+		if ( 'myaccount/related-orders.php' == $template_name ) {
+			$subscription = $args['subscription'];
+			if ( WCS_Gifting::is_gifted_subscription( $subscription ) ) {
+				$located = wc_locate_template( 'related-orders.php', '', plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
+			}
+		}
+		return $located;
+	}
+
+	/**
 	 * Returns a combination of the customer's first name, last name and email depending on what the customer has set.
 	 *
 	 * @param int $user_id The ID of the customer user
@@ -203,11 +224,68 @@ class WCS_Gifting {
 		$user = get_user_by( 'id', $user_id );
 		$name = '';
 		if ( ! empty( $user->first_name ) ) {
-			$name = $user->first_name . ( ( ! empty( $user->last_name ) ) ? ' ' . $user->last_name : '' ) . ' (' . $user->user_email . ')';
+			$name = $user->first_name . ( ( ! empty( $user->last_name ) ) ? ' ' . $user->last_name : '' ) . ' (' . make_clickable( $user->user_email ) . ')';
 		} else {
-			$name = $user->user_email;
+			$name = make_clickable( $user->user_email );
 		}
 		return $name;
+	}
+
+	/**
+	 * Checks whether a subscription is a gifted subscription.
+	 *
+	 * @param int|WC_Subscription $subscription either a subscription object or subscription's ID.
+	 * @return bool
+	 */
+	public static function is_gifted_subscription( $subscription ) {
+
+		if ( ! is_object( $subscription ) ) {
+			$subscription = wcs_get_subscription( $subscription );
+		}
+
+		return wcs_is_subscription( $subscription ) && ! empty( $subscription->recipient_user ) && is_numeric( $subscription->recipient_user );
+	}
+
+	/**
+	 * Returns a list of all order item ids and thier containing order ids that have been purchased for a recipient.
+	 *
+	 * @param int $recipient_user_id
+	 * @return array
+	 */
+	public static function get_recipient_order_items( $recipient_user_id ) {
+		global $wpdb;
+
+			return $wpdb->get_results(
+				$wpdb->prepare( "
+					SELECT o.order_id, i.order_item_id
+					FROM {$wpdb->prefix}woocommerce_order_itemmeta AS i
+					INNER JOIN {$wpdb->prefix}woocommerce_order_items as o
+					ON i.order_item_id=o.order_item_id
+					WHERE meta_key = 'wcsg_recipient'
+					AND meta_value = %s",
+				'wcsg_recipient_id_' . $recipient_user_id ),
+				ARRAY_A
+			);
+	}
+
+	/**
+	 * Returns the user's shipping address.
+	 *
+	 * @param int $user_id
+	 * @return array
+	 */
+	public static function get_users_shipping_address( $user_id ) {
+		return array(
+			'first_name' => get_user_meta( $user_id, 'shipping_first_name', true ),
+			'last_name'  => get_user_meta( $user_id, 'shipping_last_name', true ),
+			'company'    => get_user_meta( $user_id, 'shipping_company', true ),
+			'address_1'  => get_user_meta( $user_id, 'shipping_address_1', true ),
+			'address_2'  => get_user_meta( $user_id, 'shipping_address_2', true ),
+			'city'       => get_user_meta( $user_id, 'shipping_city', true ),
+			'state'      => get_user_meta( $user_id, 'shipping_state', true ),
+			'postcode'   => get_user_meta( $user_id, 'shipping_postcode', true ),
+			'country'    => get_user_meta( $user_id, 'shipping_country', true ),
+		);
 	}
 }
 WCS_Gifting::init();

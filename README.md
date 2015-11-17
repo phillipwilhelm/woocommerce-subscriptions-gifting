@@ -98,11 +98,9 @@ When visiting the View Subscription Page, both recipient and purchaser are given
 <img src="https://cldup.com/6fQ8Lw7s8h-3000x3000.jpeg" height="192" width="555">
 <img src="https://cldup.com/hqPdbqpMWB-3000x3000.jpeg" height="195" width="555">
 
-* **Renewal Purchaser Details -** To give details about which renewal orders have been purchased by who, the renewal purchaser's details are outlined in the Related Orders table. 
+* **Renewal Purchaser Details -** Because both recipient and purchaser can pay manual or failed renewals, the renewal purchaser's details are outlined in the Related Orders table. 
 
-<!---
-Image 
--->
+<img src="https://cldup.com/OjB5qSWSIw-3000x3000.png" height="192" width="538">
 
 *Note: Purchaser details are only displayed if the current user did not purchase the renewal.* 
 
@@ -117,6 +115,8 @@ The first time the new recipient logs into their account they will be prompted t
 In addition to the differences between a typical subscription and a gifted subscription already discussed, when a gifted subscription is purchased, the shipping address of the subscription is set to the recipient's shipping address. This streamlines the process for customers proceeding through the checkout when purchasing subscription products for other users.
 
 *Additional Notes: In order to maintain a gifted subscription's shipping address when manually renewing, the recipient's shipping address will automatically be entered into the checkout shipping fields.*
+
+<img src="https://cldup.com/dMR6-BEByL-3000x3000.png" height="799" width="409">
 
 #### Recipient and Purchaser Privacy
 In order to provide a level of privacy between purchaser and recipient when managing a gifted subscription, some limitations are placed on viewing related orders and the manual renewal process. These include:
@@ -157,6 +157,8 @@ When an order is placed which contains gifted subscription products, the gift re
 
 <img src="https://cldup.com/pen2oWA7uk-3000x3000.png">
 
+**Note:** _If the recipient is consequently deleted, in addition to the behaviour already discussed [here](https://github.com/Prospress/woocommerce-subscriptions-gifting/blob/master/README.md#deleting-subscription-recipients), the original order and renewal orders will maintain this information once the recipient is deleted, however future renewal orders will no longer hold this information._
+
 ### WooCommerce Memberships Integration
 If your store makes use of the WooCommerce Subscriptions and [WooCommerce Memberships](http://www.woothemes.com/products/woocommerce-memberships/) plugins the ability to purchase membership subscriptions is important. Which is why we have made sure we integrate with WooCommerce Memberships. 
 
@@ -164,8 +166,8 @@ In a nutshell, gift recipients who are purchased a subscription product tied to 
 
 ## Notes
 ### Topics Not Yet Documented
-* Cannot gift a product while switching
-* Images for Deleting subscription recipients and View Subscription related order table.
+* Cannot gift a product while switching.
+* Images for Deleting subscription recipients.
 * ...
 
 ### Additional resources

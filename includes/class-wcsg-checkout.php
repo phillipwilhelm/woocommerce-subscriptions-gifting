@@ -13,6 +13,9 @@ class WCSG_Checkout {
 
 		add_action( 'woocommerce_checkout_process', __CLASS__ . '::update_cart_before_checkout' );
 
+		add_filter( 'woocommerce_ship_to_different_address_checked', __CLASS__ . '::maybe_ship_to_recipient', 100, 1 );
+
+		add_filter( 'woocommerce_checkout_get_value', __CLASS__ . '::maybe_get_recipient_shipping', 10, 2 );
 	}
 
 	/**
@@ -25,18 +28,9 @@ class WCSG_Checkout {
 	 * @return int|quantity The quantity of the cart item with ui elements appended on
 	 */
 	public static function add_gifting_option_checkout( $quantity, $cart_item, $cart_item_key ) {
-		if ( WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) && ! isset( $cart_item['subscription_renewal'] ) && ! isset( $cart_item['subscription_switch'] ) ) {
-			$email = '';
-			if ( ! empty( $_POST['recipient_email'][ $cart_item_key ] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
-				$email = $_POST['recipient_email'][ $cart_item_key ];
-			} else if ( ! empty( $cart_item['wcsg_gift_recipients_email'] ) ) {
-				$email = $cart_item['wcsg_gift_recipients_email'];
-			}
-			ob_start();
-			wc_get_template( 'html-add-recipient.php', array( 'email_field_args' => WCS_Gifting::get_recipient_email_field_args( $email ), 'id' => $cart_item_key, 'email' => $email ),'' , plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
-			return $quantity . ob_get_clean();
-		}
-		return $quantity;
+
+		return $quantity . WCSG_Cart::maybe_display_gifting_information( $cart_item, $cart_item_key );
+
 	}
 
 	/**
@@ -47,26 +41,14 @@ class WCSG_Checkout {
 	 * @param object|recurring_cart An array of subscription products that make up the subscription
 	 */
 	public static function subscription_created( $subscription, $order, $recurring_cart ) {
-		foreach ( $recurring_cart->cart_contents as $key => $item ) {
-			if ( ! empty( $item['wcsg_gift_recipients_email'] ) ) {
 
-				$recipient_email = $item['wcsg_gift_recipients_email'];
-				$recipient_user_id = email_exists( $recipient_email );
+		$cart_item = array_pop( $recurring_cart->cart_contents );
 
-				if ( empty( $recipient_user_id ) ) {
-					// create a username for the new customer
-					$username  = explode( '@', $recipient_email );
-					$username  = sanitize_user( $username[0] );
-					$counter   = 1;
-					$_username = $username;
-					while ( username_exists( $username ) ) {
-						$username = $_username . $counter;
-						$counter++;
-					}
-					$password = wp_generate_password();
-					$recipient_user_id = wc_create_new_customer( $recipient_email, $username, $password );
-					update_user_meta( $recipient_user_id, 'wcsg_update_account', 'true' );
-				}
+		if ( ! empty( $cart_item['wcsg_gift_recipients_email'] ) ) {
+
+			$recipient_user_id = email_exists( $cart_item['wcsg_gift_recipients_email'] );
+
+			if ( is_numeric( $recipient_user_id ) ) {
 				update_post_meta( $subscription->id, '_recipient_user', $recipient_user_id );
 
 				$subscription->set_address( array(
@@ -79,7 +61,7 @@ class WCSG_Checkout {
 					'city'       => get_user_meta( $recipient_user_id, 'shipping_city', true ),
 					'state'      => get_user_meta( $recipient_user_id, 'shipping_state', true ),
 					'postcode'   => get_user_meta( $recipient_user_id, 'shipping_postcode', true ),
-				), 'shipping' );
+					), 'shipping' );
 			}
 		}
 	}
@@ -121,6 +103,50 @@ class WCSG_Checkout {
 				wc_add_notice( __( 'There was an error with your request. Please try again..', 'woocommerce-subscriptions-gifting' ), 'error' );
 			}
 		}
+	}
+
+	/**
+	 * If the cart contains a gifted subscription renewal tell the checkout to ship to a different address.
+	 *
+	 * @param bool $ship_to_different_address Whether the order will ship to a different address
+	 *
+	 * @return bool $ship_to_different_address
+	 */
+	public static function maybe_ship_to_recipient( $ship_to_different_address ) {
+
+		if ( wcs_cart_contains_renewal() ) {
+			$item         = wcs_cart_contains_renewal();
+			$subscription = wcs_get_subscription( $item['subscription_renewal']['subscription_id'] );
+
+			if ( isset( $subscription->recipient_user ) ) {
+				wc_print_notice( esc_html__( 'Shipping to the gift recipient.', 'woocommerce-subscriptions-gifting' ), 'notice' );
+				$ship_to_different_address = true;
+			}
+		}
+
+		return $ship_to_different_address;
+	}
+
+	/**
+	 * Returns recipient's shipping address if the checkout is requesting
+	 * the shipping fields for a gifted subscription renewal.
+	 *
+	 * @param string $value Default checkout field value.
+	 * @param string $key The checkout form field name/key
+	 */
+	public static function maybe_get_recipient_shipping( $value, $key ) {
+		$shipping_fields = WC()->countries->get_address_fields( '', 'shipping_' );
+
+		if ( wcs_cart_contains_renewal() && array_key_exists( $key, $shipping_fields ) ) {
+
+			$item         = wcs_cart_contains_renewal();
+			$subscription = wcs_get_subscription( $item['subscription_renewal']['subscription_id'] );
+
+			if ( isset( $subscription->recipient_user ) ) {
+				return get_user_meta( $subscription->recipient_user, $key, true );
+			}
+		}
+		return $value;
 	}
 }
 WCSG_Checkout::init();
