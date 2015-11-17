@@ -102,7 +102,7 @@ class WCSG_Cart {
 			foreach ( WC()->cart->cart_contents as $key => $item ) {
 				if ( isset( $item['subscription_renewal'] ) ) {
 					$subscription = wcs_get_subscription( $item['subscription_renewal']['subscription_id'] );
-					if ( isset( $subscription->recipient_user ) ) {
+					if ( WCS_Gifting::is_gifted_subscription( $subscription ) ) {
 						$passed = false;
 						wc_add_notice( __( 'You can not purchase additional products in gifted subscription renewal orders.', 'woocommerce-subscriptions-gifting' ), 'error' );
 						break;
