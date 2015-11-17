@@ -27,6 +27,21 @@
  * @since		1.0
  */
 
+include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+
+/**
+ * Check if WooCommerce and Subscriptions are active.
+ */
+if ( ! is_woocommerce_active() || version_compare( get_option( 'woocommerce_db_version' ), WCS_Gifting::$wc_minimum_supported_version, '<' ) ) {
+	add_action( 'admin_notices', 'WCS_Gifting::plugin_dependency_notices' );
+	return;
+}
+
+if ( ! is_plugin_active( 'woocommerce-subscriptions/woocommerce-subscriptions.php' ) || version_compare( get_option( 'woocommerce_subscriptions_active_version' ), WCS_Gifting::$wcs_minimum_supported_version, '<' ) ) {
+	add_action( 'admin_notices', 'WCS_Gifting::plugin_dependency_notices' );
+	return;
+}
+
 require_once( 'includes/class-wcsg-product.php' );
 
 require_once( 'includes/class-wcsg-cart.php' );
@@ -44,6 +59,9 @@ require_once( 'includes/class-wcsg-download-handler.php' );
 class WCS_Gifting {
 
 	public static $plugin_file = __FILE__;
+
+	public static $wc_minimum_supported_version  = '2.3';
+	public static $wcs_minimum_supported_version = '2.0';
 
 	/**
 	 * Setup hooks & filters, when the class is initialised.
@@ -229,6 +247,64 @@ class WCS_Gifting {
 			$name = make_clickable( $user->user_email );
 		}
 		return $name;
+	}
+
+	/**
+	 * Displays plugin dependency notices if required plugins are inactive or the installed version is less than a
+	 * supported version.
+	 */
+	public static function plugin_dependency_notices() {
+
+		if ( ! is_woocommerce_active() ) {
+			self::output_plugin_dependency_notice( 'WooCommerce' );
+		} else if ( version_compare( get_option( 'woocommerce_db_version' ), WCS_Gifting::$wc_minimum_supported_version, '<' ) ) {
+			self::output_plugin_dependency_notice( 'WooCommerce', WCS_Gifting::$wc_minimum_supported_version );
+		}
+
+		if ( ! is_plugin_active( 'woocommerce-subscriptions/woocommerce-subscriptions.php' ) ) {
+			self::output_plugin_dependency_notice( 'WooCommerce Subscriptions' );
+		} else if ( version_compare( get_option( 'woocommerce_subscriptions_active_version' ), WCS_Gifting::$wcs_minimum_supported_version, '<' ) ) {
+			self::output_plugin_dependency_notice( 'WooCommerce Subscriptions', WCS_Gifting::$wcs_minimum_supported_version );
+		}
+	}
+
+	/**
+	 * Prints a plugin dependency admin notice. If a required version is supplied an invalid version notice is printed,
+	 * otherwise an inactive plugin notice is printed.
+	 *
+	 * @param string $plugin_name The plugin name.
+	 * @param string $required_version The minimum supported version of the plugin.
+	 */
+	public static function output_plugin_dependency_notice( $plugin_name, $required_version = false ) {
+
+		if ( current_user_can( 'activate_plugins' ) ) :
+			if ( $required_version ) { ?>
+
+				<div id="message" class="error">
+					<p><?php
+						// translators: 1$-2$: opening and closing <strong> tags, 3$ plugin name, 4$ required plugin version, 5$-6$: opening and closing link tags, leads to plugins.php in admin
+						printf( esc_html__( '%1$sWooCommerce Subscriptions Gifting is inactive.%2$s This version of WooCommerce Subscriptions Gifting requires %3$s %4$s or newer. %5$sPlease update &raquo;%6$s', 'woocommerce-subscriptions-gifting' ), '<strong>', '</strong>', esc_html( $plugin_name ), esc_html( $required_version ), '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">', '</a>' ); ?>
+					</p>
+				</div>
+			<?php } else {
+				switch ( $plugin_name ) {
+					case 'WooCommerce Subscriptions':
+						$plugin_url = 'http://www.woothemes.com/products/woocommerce-subscriptions/';
+						break;
+					case 'WooCommerce':
+						$plugin_url = 'http://wordpress.org/extend/plugins/woocommerce/';
+						break;
+					default:
+						$plugin_url = '';
+				} ?>
+				<div id="message" class="error">
+					<p><?php
+						// translators: 1$-2$: opening and closing <strong> tags, 3$ plugin name, 4$:opening link tag, leads to plugin product page, 5$-6$: opening and closing link tags, leads to plugins.php in admin
+						printf( esc_html__( '%1$sWooCommerce Subscriptions Gifting is inactive.%2$s WooCommerce Subscriptions Gifting requires the %4$s%3$s%6$s plugin to be active to work correctly. Please %5$sinstall & activate %3$s &raquo;%6$s',  'woocommerce-subscriptions-gifting' ), '<strong>', '</strong>', esc_html( $plugin_name ) , '<a href="'. esc_url( $plugin_url ) . '">', '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">', '</a>' ); ?>
+					</p>
+				</div>
+			<?php }
+		endif;
 	}
 
 	/**
