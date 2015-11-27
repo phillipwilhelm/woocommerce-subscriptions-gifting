@@ -2,6 +2,31 @@
 
 class WCSG_Email {
 
+	public static $downloadable_email_data = array(
+		'customer_completed_order' => array(
+			'trigger_action' => 'woocommerce_order_status_completed_notification',
+			'heading_filter' => 'woocommerce_email_heading_customer_completed_order',
+			'subject_hook'   => 'woocommerce_email_subject_customer_completed_order',
+		),
+		'customer_completed_renewal_order' => array(
+			'trigger_action' => 'woocommerce_order_status_completed_renewal_notification',
+			'heading_filter' => '', // shares woocommerce_email_heading_customer_completed_order
+			'subject_hook'   => 'woocommerce_subscriptions_email_subject_customer_completed_renewal_order',
+		),
+		'customer_completed_switch_order' => array(
+			'trigger_action' => 'woocommerce_order_status_completed_switch_notification',
+			'heading_filter' => 'woocommerce_email_heading_customer_switch_order',
+			'subject_hook'   => 'woocommerce_subscriptions_email_subject_customer_completed_switch_order',
+		),
+		'recipient_completed_renewal_order' => array(
+			'trigger_action' => 'woocommerce_order_status_completed_renewal_notification_recipient',
+			'heading_filter' => '', // shares woocommerce_email_heading_customer_completed_order
+			'subject_hook'   => '', // shares woocommerce_subscriptions_email_subject_customer_completed_renewal_order
+		),
+	);
+
+	public static $sending_downloadable_email;
+
 	/**
 	 * Setup hooks & filters, when the class is initialised.
 	 */
@@ -47,35 +72,30 @@ class WCSG_Email {
 			'woocommerce_order_status_pending_to_on-hold_renewal_notification',
 			'woocommerce_order_status_completed_renewal_notification',
 		);
+
 		foreach ( $renewal_notification_actions as $action ) {
-			add_action( $action , __CLASS__ . '::maybe_send_recipient_renewal_notification', 12, 1 );
+			add_action( $action, __CLASS__ . '::maybe_send_recipient_renewal_notification', 12, 1 );
 		}
 
-		$mailer              = WC()->mailer();
-		$subscription_emails = array(
-			'new_renewal_order',
-			'new_switch_order',
-			'customer_processing_renewal_order',
-			'customer_completed_renewal_order',
-			'customer_completed_switch_order',
-			'customer_renewal_invoice',
-			'cancelled_subscription',
-		);
+		foreach ( self::$downloadable_email_data as $email_id => $hook_data ) {
 
-		add_filter( 'woocommerce_email_heading_customer_renewal_order' , __CLASS__ . '::maybe_change_download_email_heading', 10, 2 );
+			// hook on just before default to store a flag of the email being sent.
+			add_action( $hook_data['trigger_action'], __CLASS__ . '::set_sending_downloadable_email_flag', 9 );
+			add_action( $hook_data['trigger_action'], __CLASS__ . '::remove_sending_downloadable_email_flag', 11 );
 
-		foreach ( $mailer->emails as $email ) {
-
-			$filter_prefix = ( in_array( $email->id , $subscription_emails ) ) ? 'woocommerce_subscriptions' : 'woocommerce';
-
-			if ( isset( $email->subject_downloadable ) ) {
-				add_filter( $filter_prefix . '_email_subject_' . $email->id, __CLASS__ . '::maybe_change_download_email_subject', 10, 2 );
+			// hook the subject and heading hooks
+			if ( ! empty( $hook_data['heading_filter'] ) ) {
+				add_filter( $hook_data['heading_filter'], __CLASS__ . '::maybe_change_download_email_heading', 10, 2 );
 			}
 
-			if ( isset( $email->heading_downloadable ) ) {
-				add_filter( 'woocommerce_email_heading_' . $email->id, __CLASS__ . '::maybe_change_download_email_heading', 10, 2 );
+			if ( ! empty( $hook_data['subject_hook'] ) ) {
+				add_filter( $hook_data['subject_hook'], __CLASS__ . '::maybe_change_download_email_heading', 10, 2 );
 			}
 		}
+
+		// hook onto emails sent via order actions
+		add_action( 'woocommerce_before_resend_order_emails', __CLASS__ . '::set_sending_downloadable_email_flag', 9 );
+		add_action( 'woocommerce_after_resend_order_email', __CLASS__ . '::remove_sending_downloadable_email_flag', 11 );
 	}
 
 	/**
@@ -175,85 +195,72 @@ class WCSG_Email {
 	}
 
 	/**
-	 * If an order purchaser doesn't receive download permissions revert the email subject back to it's default subject.
+	 * Formats an email's heading and subject so that the correct one is displayed.
+	 * If for instance the email recipient doesn't have downloads for this order fallback
+	 * to the normal heading and subject,
 	 *
-	 * @param string $subject The email subject.
-	 * @param object $order
-	 * @return string $subject
-	 */
-	public static function maybe_change_download_email_subject( $subject, $order ) {
-
-		$user_id = $order->customer_user;
-		$mailer  = WC()->mailer();
-		$sending_email;
-
-		foreach ( $mailer->emails as $email ) {
-			if ( isset( $email->wcsg_sending_recipient_email ) ) {
-				$user_id       = $email->wcsg_sending_recipient_email;
-				$sending_email = $email;
-				break;
-			}
-		}
-
-		if ( ! isset( $sending_email ) ) {
-			$filter_prefix = ( false === strpos( current_filter(), 'woocommerce_subscriptions_email' ) ) ? 'woocommerce' : 'woocommerce_subscriptions';
-			$email_id      = substr( current_filter(), strlen( $filter_prefix . '_email_subject_' ) );
-
-			foreach ( $mailer->emails as $email ) {
-				if ( $email->id == $email_id ) {
-					$sending_email = $email;
-					break;
-				}
-			}
-		}
-
-		$order_downloads = WCSG_Download_Handler::get_user_downloads_for_order( $order, $user_id );
-
-		if ( isset( $sending_email ) && empty( $order_downloads ) && isset( $sending_email->subject ) ) {
-			$subject = $sending_email->format_string( $sending_email->subject );
-		}
-
-		return $subject;
-	}
-
-	/**
-	 * If an order purchaser doesn't receive download permissions revert the email heading back to it's default heading.
-	 *
-	 * @param string $heading The email heading.
+	 * @param string $heading The email heading or subject.
 	 * @param object $order
 	 * @return string $heading
 	 */
 	public static function maybe_change_download_email_heading( $heading, $order ) {
 
+		if ( empty( self::$sending_downloadable_email ) ) {
+			return;
+		}
+
 		$user_id = $order->customer_user;
 		$mailer  = WC()->mailer();
 		$sending_email;
 
 		foreach ( $mailer->emails as $email ) {
-			if ( isset( $email->wcsg_sending_recipient_email ) ) {
-
-				$user_id       = $email->wcsg_sending_recipient_email;
+			if ( self::$sending_downloadable_email == $email->id ) {
 				$sending_email = $email;
-				break;
-			}
-		}
 
-		if ( ! isset( $sending_email ) ) {
-			foreach ( $mailer->emails as $email ) {
-				if ( true == $email->sending && isset( $email->heading_downloadable ) && $heading == $email->format_string( $email->heading_downloadable ) ) {
-					$sending_email = $email;
-					break;
+				if ( isset( $email->wcsg_sending_recipient_email ) ) {
+					$user_id = $email->wcsg_sending_recipient_email;
 				}
+
+				break;
 			}
 		}
 
 		$order_downloads = WCSG_Download_Handler::get_user_downloads_for_order( $order, $user_id );
 
-		if ( isset( $sending_email ) && empty( $order_downloads ) && isset( $sending_email->heading ) ) {
-			$heading = $sending_email->format_string( $sending_email->heading );
+		$string_to_format = strpos( current_filter(),'email_heading' ) ? 'heading' : 'subject';
+
+		if ( isset( $sending_email ) && empty( $order_downloads ) && isset( $sending_email->{$string_to_format} ) ) {
+			$heading = $sending_email->format_string( $sending_email->{$string_to_format} );
 		}
 
 		return $heading;
+	}
+
+	/**
+	 * Set a flag to indicate that an email with downloadable headings and subjects is being sent.
+	 * hooked just before the email's trigger function.
+	 */
+	public static function set_sending_downloadable_email_flag() {
+
+		$current_filter = current_filter();
+
+		if ( 'woocommerce_before_resend_order_emails' == $current_filter && ! empty( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) && ! empty( $_POST['wc_order_action'] ) ) {
+			$action = wc_clean( $_POST['wc_order_action'] );
+			self::$sending_downloadable_email = str_replace( 'send_email_', '', $action );
+		} else {
+			foreach ( self::$downloadable_email_data as $email_id => $hook_data ) {
+				if ( $current_filter == $hook_data['trigger_action'] ) {
+					self::$sending_downloadable_email = $email_id;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Removes the downloadable email being sent flag. Hooked just after the email's trigger function.
+	 */
+	public static function remove_sending_downloadable_email_flag() {
+		self::$sending_downloadable_email = '';
 	}
 }
 WCSG_Email::init();
