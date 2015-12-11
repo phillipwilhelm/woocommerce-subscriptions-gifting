@@ -56,6 +56,8 @@ require_once( 'includes/class-wcsg-email.php' );
 
 require_once( 'includes/class-wcsg-download-handler.php' );
 
+require_once( 'includes/class-wcsg-memberships-integration.php' );
+
 class WCS_Gifting {
 
 	public static $plugin_file = __FILE__;
@@ -363,5 +365,38 @@ class WCS_Gifting {
 			'country'    => get_user_meta( $user_id, 'shipping_country', true ),
 		);
 	}
+
+	/**
+	 *
+	 *
+	 * @param
+	 * @return
+	 */
+	public static function order_contains_gifted_subscription( $order ) {
+
+		if ( ! is_object( $order ) ) {
+			$order = wc_get_order( $order );
+		}
+
+		foreach ( $order->get_items() as $order_item ) {
+			if ( isset( $order_item['item_meta']['wcsg_recipient'] ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 *
+	 *
+	 * @param
+	 * @return
+	 */
+	public static function get_order_item_recipient_user_id( $order_item ) {
+		return ( isset( $order_item['item_meta']['wcsg_recipient'] ) ) ? substr( $order_item['item_meta']['wcsg_recipient'][0], strlen( 'wcsg_recipient_id_' ) ) : false;
+	}
+
+
 }
 WCS_Gifting::init();
