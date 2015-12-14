@@ -277,7 +277,7 @@ class WCS_Gifting {
 			self::output_plugin_dependency_notice( 'WooCommerce Subscriptions', WCS_Gifting::$wcs_minimum_supported_version );
 		}
 
-		if ( is_plugin_active( 'woocommerce-memberships/woocommerce-memberships.php' ) && ! version_compare( get_option( 'wc_memberships_version' ), WCS_Gifting::$wcs_minimum_supported_version, '<' ) ) {
+		if ( is_plugin_active( 'woocommerce-memberships/woocommerce-memberships.php' ) && version_compare( get_option( 'wc_memberships_version' ), WCS_Gifting::$wcm_minimum_supported_version, '<' ) ) {
 			self::output_plugin_dependency_notice( 'WooCommerce Memberships', WCS_Gifting::$wcm_minimum_supported_version );
 		}
 
