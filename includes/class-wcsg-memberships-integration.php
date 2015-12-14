@@ -128,6 +128,7 @@ class WCSG_Memberships_Integration {
 
 			add_filter( 'wc_memberships_access_granting_purchased_product_id', __METHOD__, 100, 3 );
 		}
+
 		return $product_ids;
 	}
 
