@@ -5,24 +5,36 @@ class WCSG_Memberships_Integration {
 
 	public static function init() {
 
-		// Store the order id being processed so it can later used
+		// Store the order id being processed so it can be used later
 		add_action( 'woocommerce_order_status_completed', __CLASS__ . '::set_processing_memberships_for_order_flag', 1 );
 		add_action( 'woocommerce_order_status_processing', __CLASS__ . '::set_processing_memberships_for_order_flag', 1 );
 		add_action( 'woocommerce_order_status_completed', __CLASS__ . '::remove_processing_memberships_for_order_flag', 20 );
 		add_action( 'woocommerce_order_status_processing', __CLASS__ . '::remove_processing_memberships_for_order_flag', 20 );
 
-		add_filter( 'wc_memberships_access_granting_purchased_product_id', __CLASS__ . '::get_user_unique_membership_access_granting_product_ids', 20, 3 );
+		// We need to hook late so other plugins don't override all our user unique order products
+		add_filter( 'wc_memberships_access_granting_purchased_product_id', __CLASS__ . '::get_user_unique_membership_access_granting_product_ids', 100, 3 );
 
-		// We want to hook late so we dont override other plugins preventing granting membership
+		// We want to hook late so we don't override other plugins preventing granting membership
 		add_filter( 'wc_memberships_grant_access_from_new_purchase', __CLASS__ . '::grant_membership_access', 100, 2 );
 
-		// Set the correct subscription stored on the membership. Called after Memberships has linked the subscription.
+		// Set the correct subscription id stored on the membership. Called after Memberships has linked the subscription.
 		add_action( 'wc_memberships_grant_membership_access_from_purchase', __CLASS__ . '::update_subscription_id', 11 , 2 );
 	}
 
+	/**
+	 * Grants memberships to recipients and returns false so the purchaser is not granted the membership
+	 * unless it is found that the purchaser also purchased the product for themselves.
+	 *
+	 * @param bool $grant_access whether the membership will be granted with the following membership data
+	 * @param array $membership_data {
+	 *      @type int|string $user_id user ID for order
+	 *      @type int|string $product_id product ID that grants access
+	 *      @type int|string $order_id order ID
+	 * }
+	 */
 	public static function grant_membership_access( $grant_access, $membership_data ) {
 
-		if ( $grant_access && WCS_Gifting::order_contains_gifted_subscription( $membership_data['order_id'] ) ) {
+		if ( $grant_access && WC_Subscriptions_Product::is_subscription( $membership_data['product_id'] ) && WCS_Gifting::order_contains_gifted_subscription( $membership_data['order_id'] ) ) {
 
 			// defaulted to false unless we find the purchaser has purchased the product for themselves
 			$grant_access = false;
@@ -59,14 +71,34 @@ class WCSG_Memberships_Integration {
 		return $grant_access;
 	}
 
+	/**
+	 * Sets a order id flag when processing an order so it can be later used inside
+	 * self::get_user_unique_membership_access_granting_product_ids().
+	 *
+	 * @param int $order_id
+	 */
 	public static function set_processing_memberships_for_order_flag( $order_id ) {
 		self::$processing_memberships_for_order = $order_id;
 	}
 
+	/**
+	 * Removes the order id flag after memberships has processed the order.
+	 *
+	 * @param int $order_id
+	 */
 	public static function remove_processing_memberships_for_order_flag( $order_id ) {
 		self::$processing_memberships_for_order = null;
 	}
 
+	/**
+	 * By default memberships will determine what the best product in this order is to grant the membership
+	 * (subscriptions with the longest end date take priority). However, because multiple subscriptions with
+	 * multiple recipients (purchaser or gift recipient) is possible we need to get the best product per user.
+	 *
+	 * @param array $product_ids The product id(s) which will grant membership in this order.
+	 * @param array $access_granting_product_ids Array of product IDs that can grant access to this plan.
+	 * @param WC_Memberships_Membership_Plan $plan Membership plan access will be granted to.
+	 */
 	public static function get_user_unique_membership_access_granting_product_ids( $product_ids, $all_access_granting_product_ids, $plan ) {
 		$order = wc_get_order( self::$processing_memberships_for_order );
 
@@ -75,18 +107,15 @@ class WCSG_Memberships_Integration {
 			$product_ids             = array();
 
 			foreach ( $order->get_items() as $order_item_id => $order_item ) {
-				$user_id = $order->customer_user;
 
 				if ( in_array( wcs_get_canonical_product_id( $order_item ), $all_access_granting_product_ids ) ) {
-					if ( isset( $order_item['item_meta']['wcsg_recipient'] ) ) {
-						$user_id = WCS_Gifting::get_order_item_recipient_user_id( $order_item );
-					}
+
+					$user_id = ( isset( $order_item['item_meta']['wcsg_recipient'] ) ) ? WCS_Gifting::get_order_item_recipient_user_id( $order_item ) : $order->customer_user;
 					$user_unique_product_ids[ $user_id ][] = wcs_get_canonical_product_id( $order_item );
 				}
 			}
 
-			//unhook my function
-			remove_filter( 'wc_memberships_access_granting_purchased_product_id', 'WCSG_Memberships_Integration::get_user_unique_membership_access_granting_product_ids', 20 );
+			remove_filter( 'wc_memberships_access_granting_purchased_product_id', __METHOD__, 100 );
 
 			foreach ( $user_unique_product_ids as $user_access_granting_product_ids ) {
 
@@ -96,18 +125,20 @@ class WCSG_Memberships_Integration {
 
 				$product_ids = array_unique( array_merge( $product_ids, (array) apply_filters( 'wc_memberships_access_granting_purchased_product_id', $user_granting_product, $user_access_granting_product_ids, $plan ) ) );
 			}
+
+			add_filter( 'wc_memberships_access_granting_purchased_product_id', __METHOD__, 100, 3 );
 		}
 		return $product_ids;
 	}
 
 	/**
-		 * Because an order can contain multiple subscriptions with the same product in the one order we need
-		 * to update the subscription linked to the membership.
-		 * Gets the subscription the membership user has access to via recipient link.
-		 *
-		 * @param WC_Memberships_Membership_Plan $membership_plan The plan that user was granted access to
-		 * @param array $args
-		 */
+	 * Because an order can contain multiple subscriptions with the same product in the one order we need
+	 * to update the subscription linked to the membership.
+	 * Gets the subscription the membership user has access to via recipient link.
+	 *
+	 * @param WC_Memberships_Membership_Plan $membership_plan The plan that user was granted access to
+	 * @param array $args
+	 */
 	public static function update_subscription_id( $membership_plan, $args ) {
 
 		$subscriptions_in_order = wcs_get_subscriptions( array(
@@ -119,7 +150,7 @@ class WCSG_Memberships_Integration {
 
 			$order = wc_get_order( $args['order_id'] );
 
-			//check if the member user is a recipient
+			// check if the member user is a recipient
 			if ( $order->user_id != $args['user_id'] ) {
 				$recipient_subscriptions         = WCSG_Recipient_Management::get_recipient_subscriptions( $args['user_id'] );
 				$recipient_subscription_in_order = array_intersect( array_keys( $subscriptions_in_order ), $recipient_subscriptions );
