@@ -11,6 +11,53 @@ class WCSG_Meta_Box_Download_Permissions {
 
 		//this needs to trigger before WooCommerce so we can unhook their function
 		add_action( 'woocommerce_ajax_revoke_access_to_product_download', __CLASS__ . '::revoke_download_access', 9, 3 );
+
+		add_action( 'admin_enqueue_scripts', __CLASS__ . '::enqueue_scripts', 12 );
+
+		add_action( 'wp_ajax_wcsg_revoke_access_to_download', __CLASS__ . '::revoke_access_to_download' );
+	}
+
+	/**
+	 * Delete download permissions via ajax function
+	 */
+	public static function revoke_access_to_download() {
+		check_ajax_referer( 'revoke-access', 'nonce' );
+
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			die( -1 );
+		}
+
+		global $wpdb;
+
+		$download_id = $_POST['download_id'];
+		$product_id  = intval( $_POST['product_id'] );
+		$order_id    = intval( $_POST['order_id'] );
+		$user_id     = intval( $_POST['user_id'] );
+
+		$wpdb->query( $wpdb->prepare("
+		DELETE FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions
+		WHERE order_id = %d AND product_id = %d AND download_id = %s AND user_id = %d;
+		",$order_id, $product_id, $download_id, $user_id ) );
+
+		die();
+
+	}
+
+	/**
+	 * Enqueue scripts
+	 */
+	public static function enqueue_scripts() {
+		global $post;
+
+		$screen = get_current_screen();
+
+		if ( 'shop_subscription' == $screen->id ) {
+			$subscription = wcs_get_subscription( $post->ID );
+
+			if ( isset( $subscription->recipient_user ) ) {
+				wp_enqueue_script( 'wcsg-admin-meta-boxes-subscription', plugin_dir_url( WCS_Gifting::$plugin_file ) . 'js/wcsg-meta-boxes-subscription.js', array( 'jquery' ), null );
+			}
+		}
 	}
 
 	/**
@@ -50,22 +97,15 @@ class WCSG_Meta_Box_Download_Permissions {
 				$downloads_remaining = $_POST['downloads_remaining'];
 				$access_expires      = $_POST['access_expires'];
 
-				foreach ( $downloads as $index => $download ) {
-
-					$download_data = unserialize( stripslashes( $download ) );
-
-					if ( is_array( $download_data ) && isset( $download_data['download_id'] ) && isset( $download_data['wcsg_user_id'] ) ) {
-
-						$download_id = $download_data['download_id'];
-						$user_id     = $download_data['wcsg_user_id'];
-						$expiry      = ( ( isset( $access_expires[ $index ] ) ) && '' != $access_expires[ $index ] ) ? date_i18n( 'Y-m-d', strtotime( wc_clean( $access_expires[ $index ] ) ) ) : null;
-						$data        = array(
-							'downloads_remaining' => wc_clean( $downloads_remaining[ $index ] ),
+				foreach ( $downloads as $user_id => $download_ids ) {
+					foreach ( $download_ids as $index => $download_id ) {
+						$expiry = ( ( isset( $access_expires[ $user_id ][ $index ] ) ) && '' != $access_expires[ $user_id ][ $index ] ) ? date_i18n( 'Y-m-d', strtotime( wc_clean( $access_expires[ $user_id ][ $index ] ) ) ) : null;
+						$data   = array(
+							'downloads_remaining' => wc_clean( $downloads_remaining[ $user_id ][ $index ] ),
 							'access_expires'      => $expiry,
 						);
 						$format      = array( '%s', '%s' );
 
-						//update purchaser information (billing email and user id)
 						if ( $user_id == $subscription->customer_user && isset( $_POST['customer_user'] ) && isset( $_POST['user_email'] ) ) {
 							$data['user_id']    = absint( $_POST['customer_user'] );
 							$data['user_email'] = wc_clean( $_POST['_billing_email'] );
@@ -77,7 +117,7 @@ class WCSG_Meta_Box_Download_Permissions {
 							$data,
 							array(
 								'order_id' 		=> $subscription_id,
-								'product_id' 	=> absint( $product_ids[ $index ] ),
+								'product_id' 	=> absint( $product_ids[ $user_id ][ $index ] ),
 								'download_id'	=> wc_clean( $download_id ),
 								'user_id'       => $user_id,
 							),
@@ -130,15 +170,24 @@ class WCSG_Meta_Box_Download_Permissions {
 				$file_counter = 1;
 
 				if ( ! empty( $purchaser_permissions ) ) {
-					echo sprintf( esc_html__( '%sPurchaser\'s Download Permissions%s', 'woocommerce-subscriptions-gifting' ), '<h3><u>', '</u></h3>' );
+					echo '<div id="wcsg_user_' . esc_attr( $subscription->customer_user ) .  '_downloads" class="wcsg_user_downloads_container">';
+					echo sprintf( esc_html__( '%sPurchaser\'s Download Permissions%s', 'woocommerce-subscriptions-gifting' ), '<h4 id="download_user_label_' . esc_attr( $subscription->customer_user ) . '" style="padding-left:1em;font-size: 1.1em" >', '</h4>' );
 				}
 
 				foreach ( $downloads as $index => $download ) {
 
 					if ( $download->user_id == $subscription->recipient_user && ( 0 == $index || $downloads[ $index - 1 ]->user_id != $subscription->recipient_user ) ) {
-						echo sprintf( esc_html__( '%sRecipient\'s Download Permissions%s', 'woocommerce-subscriptions-gifting' ), '<h3><u>', '</u></h3>' );
+
+						if ( ! empty( $purchaser_permissions ) ) {
+							// close the purchaser's download container
+							echo '</div>';
+						}
+
+						echo '<div id="wcsg_user_' . esc_attr( $subscription->recipient_user ) .  '_downloads" class="wcsg_user_downloads_container">';
+						echo sprintf( esc_html__( '%sRecipient\'s Download Permissions%s', 'woocommerce-subscriptions-gifting' ), '<h4 id="download_user_label_' . esc_attr( $subscription->recipient_user ) . '" style="padding-left:1em;font-size: 1.1em" >', '</h4>' );
 						// reset the file counter
 						$file_counter = 1;
+
 					}
 
 					$product    = wc_get_product( absint( $download->product_id ) );
@@ -146,53 +195,21 @@ class WCSG_Meta_Box_Download_Permissions {
 					$loop       = $index;
 					$file_count = 1;
 
-					$download->download_id = serialize( array(
-						'download_id'  => $download->download_id,
-						'wcsg_user_id' => $download->user_id,
-					) );
-
 					if ( isset( $file['name'] ) ) {
 						$file_count = $file['name'];
 					} else {
 						$file_count = sprintf( __( 'File %d', 'woocommerce-subscriptions-gifting' ), $file_counter );
 					}
 
-					include( plugin_dir_path( WC_PLUGIN_FILE ) . 'includes/admin/meta-boxes/views/html-order-download-permission.php' );
+					include( plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' . 'html-order-download-permission.php' );
 					$file_counter++;
 				}
 				?>
+				</div>
 			</div>
 		</div>
 		<?php
 		wp_nonce_field( 'wcsg_save_download_permissions', '_wcsgnonce' );
-	}
-
-	/**
-	 * Revokes download permissions for gifted subscriptions
-	 *
-	 * @param string $download download data - download and user id.
-	 * @param int $product_id the product id to revoke access to.
-	 * @param int $order_id the id of the order/subscription to revoke the access to.
-	 */
-	public static function revoke_download_access( $download, $product_id, $order_id ) {
-		global $wpdb;
-
-		if ( wcs_is_subscription( $order_id ) ) {
-			$subscription = wcs_get_subscription( $order_id );
-
-			if ( isset( $subscription->recipient_user ) ) {
-
-				$download_data = unserialize( stripslashes( $download ) );
-
-				if ( is_array( $download_data ) && isset( $download_data['download_id'] ) && isset( $download_data['wcsg_user_id'] ) ) {
-
-					$wpdb->query( $wpdb->prepare( "
-					DELETE FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions
-					WHERE order_id = %d AND product_id = %d AND download_id = %s AND user_id = %s;",
-					$order_id, $product_id, $download_data['download_id'], $download_data['wcsg_user_id'] ) );
-				}
-			}
-		}
 	}
 }
 WCSG_Meta_Box_Download_Permissions::init();
