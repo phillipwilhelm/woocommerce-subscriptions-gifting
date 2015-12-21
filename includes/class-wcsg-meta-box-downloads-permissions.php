@@ -40,7 +40,6 @@ class WCSG_Meta_Box_Download_Permissions {
 		",$order_id, $product_id, $download_id, $user_id ) );
 
 		die();
-
 	}
 
 	/**
@@ -176,18 +175,13 @@ class WCSG_Meta_Box_Download_Permissions {
 
 				foreach ( $downloads as $index => $download ) {
 
-					if ( $download->user_id == $subscription->recipient_user && ( 0 == $index || $downloads[ $index - 1 ]->user_id != $subscription->recipient_user ) ) {
-
-						if ( ! empty( $purchaser_permissions ) ) {
-							// close the purchaser's download container
-							echo '</div>';
-						}
+					if ( reset( $recipient_permissions ) === $download ) {
 
 						echo '<div id="wcsg_user_' . esc_attr( $subscription->recipient_user ) .  '_downloads" class="wcsg_user_downloads_container">';
 						echo sprintf( esc_html__( '%sRecipient\'s Download Permissions%s', 'woocommerce-subscriptions-gifting' ), '<h4 id="download_user_label_' . esc_attr( $subscription->recipient_user ) . '" style="padding-left:1em;font-size: 1.1em" >', '</h4>' );
+
 						// reset the file counter
 						$file_counter = 1;
-
 					}
 
 					$product    = wc_get_product( absint( $download->product_id ) );
@@ -203,9 +197,12 @@ class WCSG_Meta_Box_Download_Permissions {
 
 					include( plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' . 'html-order-download-permission.php' );
 					$file_counter++;
+
+					if ( end( $recipient_permissions ) === $download || end( $purchaser_permissions ) === $download ) {
+						echo '</div>';
+					}
 				}
 				?>
-				</div>
 			</div>
 		</div>
 		<?php
