@@ -269,7 +269,7 @@ class WCSG_Recipient_Management {
 			if ( empty( $recipient_user_id ) ) {
 				// create a username for the new customer
 				$username  = explode( '@', $recipient_email );
-				$username  = sanitize_user( $username[0] );
+				$username  = sanitize_user( $username[0], true );
 				$counter   = 1;
 				$original_username = $username;
 				while ( username_exists( $username ) ) {
