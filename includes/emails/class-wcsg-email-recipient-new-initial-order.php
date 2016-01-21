@@ -1,6 +1,6 @@
 <?php
 
-class WCSG_Email_Recipient_Completed_Order extends WC_Email {
+class WCSG_Email_Recipient_New_Initial_Order extends WC_Email {
 
 	public $subscription_owner;
 	public $subscriptions;
@@ -10,14 +10,14 @@ class WCSG_Email_Recipient_Completed_Order extends WC_Email {
 	function __construct() {
 
 		$this->id             = 'recipient_completed_order';
-		$this->title          = __( 'New Order - Recipient', 'woocommerce-subscriptions-gifting' );
+		$this->title          = __( 'New Initial Order - Recipient', 'woocommerce-subscriptions-gifting' );
 		$this->description    = __( 'This email is sent to recipients notifying them of subscriptions purchased for them.', 'woocommerce-subscriptions-gifting' );
 
 		$this->heading        = __( 'New Order', 'woocommerce-subscriptions-gifting' );
 		$this->subject        = __( 'Your new subscriptions at {site_title}', 'woocommerce-subscriptions-gifting' );
 
-		$this->template_html  = 'emails/recipient-completed-order.php';
-		$this->template_plain = 'emails/plain/recipient-completed-order.php';
+		$this->template_html  = 'emails/recipient-new-initial-order.php';
+		$this->template_plain = 'emails/plain/recipient-new-initial-order.php';
 		$this->template_base  = plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/';
 
 		// Trigger for this email

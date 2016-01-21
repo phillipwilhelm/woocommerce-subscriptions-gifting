@@ -20,12 +20,12 @@ class WCSG_Email {
 		require_once( 'emails/class-wcsg-email-customer-new-account.php' );
 		require_once( 'emails/class-wcsg-email-completed-renewal-order.php' );
 		require_once( 'emails/class-wcsg-email-processing-renewal-order.php' );
-		require_once( 'emails/class-wcsg-email-recipient-completed-order.php' );
+		require_once( 'emails/class-wcsg-email-recipient-new-initial-order.php' );
 
-		$email_classes['WCSG_Email_Customer_New_Account'] = new WCSG_Email_Customer_New_Account();
-		$email_classes['WCSG_Email_Completed_Renewal_Order'] = new WCSG_Email_Completed_Renewal_Order();
-		$email_classes['WCSG_Email_Processing_Renewal_Order'] = new WCSG_Email_Processing_Renewal_Order();
-		$email_classes['WCSG_Email_Recipient_Completed_Order'] = new WCSG_Email_Recipient_Completed_Order();
+		$email_classes['WCSG_Email_Customer_New_Account']        = new WCSG_Email_Customer_New_Account();
+		$email_classes['WCSG_Email_Completed_Renewal_Order']     = new WCSG_Email_Completed_Renewal_Order();
+		$email_classes['WCSG_Email_Processing_Renewal_Order']    = new WCSG_Email_Processing_Renewal_Order();
+		$email_classes['WCSG_Email_Recipient_New_Initial_Order'] = new WCSG_Email_Recipient_New_Initial_Order();
 
 		return $email_classes;
 	}
