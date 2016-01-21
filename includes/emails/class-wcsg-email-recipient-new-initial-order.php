@@ -12,6 +12,7 @@ class WCSG_Email_Recipient_New_Initial_Order extends WC_Email {
 		$this->id             = 'recipient_completed_order';
 		$this->title          = __( 'New Initial Order - Recipient', 'woocommerce-subscriptions-gifting' );
 		$this->description    = __( 'This email is sent to recipients notifying them of subscriptions purchased for them.', 'woocommerce-subscriptions-gifting' );
+		$this->customer_email = true;
 
 		$this->heading        = __( 'New Order', 'woocommerce-subscriptions-gifting' );
 		$this->subject        = __( 'Your new subscriptions at {site_title}', 'woocommerce-subscriptions-gifting' );

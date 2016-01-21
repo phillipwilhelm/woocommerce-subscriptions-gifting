@@ -64,6 +64,12 @@ class WCS_Unit_Tests_Bootstrap {
 		// load WooCommerce Subcriptions
 		require_once( $this->modules_dir . '/woocommerce-subscriptions/woocommerce-subscriptions.php' );
 
+		// Set Subcriptions install data so that Gifting won't exit early
+		$active_plugins   = get_option( 'active_plugins', array() );
+		$active_plugins[] = 'woocommerce-subscriptions/woocommerce-subscriptions.php';
+		update_option( 'active_plugins', $active_plugins );
+		update_option( WC_Subscriptions_Admin::$option_prefix . '_active_version', WC_Subscriptions::$version );
+
 		// load WooCommerce Subcriptions Gifting
 		require_once( $this->plugin_dir . '/woocommerce-subscriptions-gifting.php' );
 
