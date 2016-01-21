@@ -150,7 +150,7 @@ class WCS_Gifting {
 	public static function update_cart_item_key( $item, $key, $new_recipient_data ) {
 		if ( empty( $item['wcsg_gift_recipients_email'] ) || $item['wcsg_gift_recipients_email'] != $new_recipient_data ) {
 
-			$cart_item_data = ( empty( $new_recipient_data ) ) ? null : array( 'wcsg_gift_recipients_email' => $new_recipient_data );
+			$cart_item_data = self::add_cart_item_data( $item, $key, $new_recipient_data );
 			$new_key        = WC()->cart->generate_cart_id( $item['product_id'], $item['variation_id'], $item['variation'], $cart_item_data );
 			$cart_item      = WC()->cart->get_cart_item( $new_key );
 
@@ -178,6 +178,33 @@ class WCS_Gifting {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Populates the cart item data that will be used by WooCommerce to generate a unique ID for the cart item. That is to
+	 * avoid merging different products when they aren't the same. Previously the resubscribe status was ignored.
+	 *
+	 * @param array  $item               A cart item with all its data
+	 * @param string $key                A cart item key
+	 * @param array  $new_recipient_data email address of the new recipient
+	 */
+	private static function add_cart_item_data( $item, $key, $new_recipient_data ) {
+		// start with a clean slate
+		$cart_item_data = array();
+
+		// Add the recipient email
+		if ( ! empty( $new_recipient_data ) ) {
+			$cart_item_data = array( 'wcsg_gift_recipients_email' => $new_recipient_data );
+		}
+
+		// Add resubscribe data
+		if ( array_key_exists( 'subscription_resubscribe', $item ) ) {
+			$cart_item_data = array_merge( $cart_item_data, array( 'subscription_resubscribe' => $item['subscription_resubscribe'] ) );
+		}
+
+		$cart_item_data = apply_filters( 'wcsg_cart_item_data', $cart_item_data, $item, $key, $new_recipient_data );
+
+		return $cart_item_data;
 	}
 
 	/**
