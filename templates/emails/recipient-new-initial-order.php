@@ -53,7 +53,7 @@ foreach ( $subscriptions as $subscription_id ) {
 			<th class="td" scope="col" style="text-align:left;"><?php esc_html_e( 'Price', 'woocommerce-subscriptions-gifting' ); ?></th>
 		</tr>
 	<tbody>
-		<?php echo wp_kses_post( $subscription->email_order_items_table( true, false, true ) ); ?>
+		<?php echo wp_kses_post( WC_Subscriptions_Email::email_order_items_table( $subscription, true, false, true ) ); ?>
 	</tbody><?php
 }
 echo '</table>';

@@ -27,7 +27,7 @@ foreach ( $subscriptions as $subscription_id ) {
 	$items        = $subscription->get_items();
 	$total        = $subscription->get_formatted_order_total();
 	echo sprintf( __( 'Subscription #%s', 'woocommerce-subscriptions-gifting' ), esc_attr( $subscription_id ) ) . "\n";
-	echo "\n" . $subscription->email_order_items_table( true, false, true, '', '', true );
+	echo "\n" . WC_Subscriptions_Email::email_order_items_table( $subscription, true, false, true, '', '', true );
 }
 
 echo apply_filters( 'woocommerce_email_footer_text', get_option( 'woocommerce_email_footer_text' ) );
