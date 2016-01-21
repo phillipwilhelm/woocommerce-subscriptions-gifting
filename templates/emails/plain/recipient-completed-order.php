@@ -12,7 +12,7 @@ echo '= ' . $email_heading . " =\n\n";
 echo sprintf( __( 'Hi there,', 'woocommerce-subscriptions-gifting' ) ) . "\n";
 // translators: 1$: Purchaser's name and email, 2$ The name of the site.
 echo sprintf( __( '%1$s just purchased ' .  _n( 'a subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' for you at %2$s.', 'woocommerce-subscriptions-gifting' ), wp_kses( $subscription_purchaser, wp_kses_allowed_html( 'user_description' ) ), esc_html( $blogname ) );
-echo sprintf( __( ' The order has been completed. Details of the ' . _n( 'subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' are shown below.', 'woocommerce-subscriptions-gifting' ) ) . "\n\n";
+echo sprintf( __( ' Details of the ' . _n( 'subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' are shown below.', 'woocommerce-subscriptions-gifting' ) ) . "\n\n";
 
 $new_recipient = get_user_meta( $recipient_user->ID, 'wcsg_update_account', true );
 

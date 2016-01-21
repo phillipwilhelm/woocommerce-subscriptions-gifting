@@ -39,7 +39,12 @@ class WCSG_Email {
 		add_action( 'woocommerce_created_customer', __CLASS__ . '::send_new_recient_user_email', 10, 3 );
 		add_action( 'woocommerce_created_customer', __CLASS__ . '::maybe_reattach_wc_new_customer_email', 11, 2 );
 
-		add_action( 'woocommerce_order_status_completed', __CLASS__ . '::maybe_send_recipient_order_emails', 9, 1 );
+		add_action( 'woocommerce_order_status_pending_to_processing', __CLASS__ . '::maybe_send_recipient_order_emails' );
+		add_action( 'woocommerce_order_status_pending_to_completed', __CLASS__ . '::maybe_send_recipient_order_emails' );
+		add_action( 'woocommerce_order_status_pending_to_on-hold', __CLASS__ . '::maybe_send_recipient_order_emails' );
+		add_action( 'woocommerce_order_status_failed_to_processing', __CLASS__ . '::maybe_send_recipient_order_emails' );
+		add_action( 'woocommerce_order_status_failed_to_completed', __CLASS__ . '::maybe_send_recipient_order_emails' );
+		add_action( 'woocommerce_order_status_failed_to_on-hold', __CLASS__ . '::maybe_send_recipient_order_emails' );
 
 		$renewal_notification_actions = array(
 			'woocommerce_order_status_pending_to_processing_renewal_notification',
@@ -66,7 +71,7 @@ class WCSG_Email {
 				if ( isset( $subscription->recipient_user ) ) {
 					if ( ! in_array( $subscription->recipient_user, $processed_recipients ) ) {
 						$recipient_subscriptions = WCSG_Recipient_Management::get_recipient_subscriptions( $subscription->recipient_user, $order_id );
-						do_action( 'wcsg_completed_order_recipient_notification', $subscription->recipient_user, $recipient_subscriptions );
+						do_action( 'wcsg_new_order_recipient_notification', $subscription->recipient_user, $recipient_subscriptions );
 						array_push( $processed_recipients, $subscription->recipient_user );
 					}
 				}
