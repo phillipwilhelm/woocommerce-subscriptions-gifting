@@ -10,6 +10,8 @@ class WCSG_Email_Completed_Renewal_Order extends WCS_Email_Completed_Renewal_Ord
 		$this->id             = 'recipient_completed_renewal_order';
 		$this->title          = __( 'Completed Renewal Order - Recipient', 'woocommerce-subscriptions-gifting' );
 		$this->description    = __( 'Renewal order complete emails are sent to the recipient when a subscription renewal order is marked complete and usually indicates that the item for that renewal period has been shipped.', 'woocommerce-subscriptions-gifting' );;
+		$this->customer_email = true;
+
 		$this->heading        = __( 'Your renewal order is complete', 'woocommerce-subscriptions-gifting' );
 		$this->subject        = __( 'Your {blogname} renewal order from {order_date} is complete', 'woocommerce-subscriptions-gifting' );
 
