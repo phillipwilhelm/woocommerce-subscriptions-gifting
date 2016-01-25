@@ -10,7 +10,7 @@ class WCSG_Download_Handler {
 		add_filter( 'woocommerce_downloadable_file_permission_data', __CLASS__ . '::grant_recipient_download_permissions', 11 );
 		add_filter( 'woocommerce_get_item_downloads', __CLASS__ . '::get_item_download_links', 10, 3 );
 
-		add_action( 'woocommerce_process_shop_order_meta', __CLASS__ . '::save_download_permission_meta', 10, 1 );
+		add_action( 'woocommerce_process_shop_order_meta', __CLASS__ . '::remove_meta_box_save', 10, 1 );
 	}
 
 	/**
@@ -110,7 +110,7 @@ class WCSG_Download_Handler {
 	 *
 	 * @param int $subscription_id
 	 */
-	public static function save_download_permission_meta( $subscription_id ) {
+	public static function remove_meta_box_save( $subscription_id ) {
 
 		if ( wcs_is_subscription( $subscription_id ) && WCS_Gifting::is_gifted_subscription( $subscription_id ) ) {
 
