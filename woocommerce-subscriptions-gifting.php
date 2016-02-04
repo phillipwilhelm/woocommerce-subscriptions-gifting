@@ -264,7 +264,7 @@ class WCS_Gifting {
 	 * Returns a combination of the customer's first name, last name and email depending on what the customer has set.
 	 *
 	 * @param int $user_id The ID of the customer user
-	 * @param bool $strip_tags Whether to strip HTML tags in user name (default to false)
+	 * @param bool $strip_tags Whether to strip HTML tags in user name (defaulted to false)
 	 */
 	public static function get_user_display_name( $user_id, $strip_tags = false ) {
 

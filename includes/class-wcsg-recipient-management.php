@@ -307,9 +307,9 @@ class WCSG_Recipient_Management {
 		if ( false !== strpos( $value, 'wcsg_recipient_id' ) ) {
 
 			$recipient_id = substr( $value, strlen( 'wcsg_recipient_id_' ) );
-			$flatten      = is_checkout() && ! is_wc_endpoint_url( 'order-received' );
+			$strip_tags   = is_checkout() && ! is_wc_endpoint_url( 'order-received' );
 
-			return WCS_Gifting::get_user_display_name( $recipient_id, $flatten );
+			return WCS_Gifting::get_user_display_name( $recipient_id, $strip_tags );
 
 		} else if ( false !== strpos( $value, 'wcsg_deleted_recipient_data' ) ) {
 
