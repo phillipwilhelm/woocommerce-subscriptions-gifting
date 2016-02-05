@@ -415,7 +415,9 @@ class WCSG_Recipient_Management {
 		if ( ! empty( $user_ids ) ) {
 
 			foreach ( $user_ids as $user_id ) {
+
 				$gifted_subscriptions = WCSG_Recipient_Management::get_recipient_subscriptions( $user_id );
+
 				if ( 0 != count( $gifted_subscriptions ) ) {
 					$recipient_users[ $user_id ] = $gifted_subscriptions;
 				}
@@ -436,9 +438,10 @@ class WCSG_Recipient_Management {
 
 					echo '<dt>ID #' . esc_attr( $recipient_id ) . ': ' . esc_attr( $recipient->user_login ) . '</dt>';
 
-					foreach ( $subscriptions as $subscription ) {
+					foreach ( $subscriptions as $subscription_id ) {
 
-						echo '<dd>' . esc_html__( 'Subscription' , 'woocommerce-subscriptions-gifting' ) . ' <a href="'. esc_url( wcs_get_edit_post_link( $subscription ) ) . '">#' . esc_html( $subscription ) . '</a></dd>';
+						$subscription = wcs_get_subscription( $subscription_id );
+						echo '<dd>' . esc_html__( 'Subscription' , 'woocommerce-subscriptions-gifting' ) . ' <a href="'. esc_url( wcs_get_edit_post_link( $subscription->id ) ) . '">#' . esc_html( $subscription->get_order_number() ) . '</a></dd>';
 
 					}
 				}
