@@ -24,9 +24,7 @@ if ( 'true' == $new_recipient ) {
 
 foreach ( $subscriptions as $subscription_id ) {
 	$subscription = wcs_get_subscription( $subscription_id );
-	$items        = $subscription->get_items();
-	$total        = $subscription->get_formatted_order_total();
-	echo sprintf( __( 'Subscription #%s', 'woocommerce-subscriptions-gifting' ), esc_attr( $subscription_id ) ) . "\n";
+	echo sprintf( __( 'Subscription #%s', 'woocommerce-subscriptions-gifting' ), esc_attr( $subscription->get_order_number() ) ) . "\n";
 	echo "\n" . WC_Subscriptions_Email::email_order_items_table( $subscription, true, false, true, '', '', true );
 }
 

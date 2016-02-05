@@ -39,12 +39,10 @@ if ( 0 < count( $subscriptions ) ) : ?>
 <?php endif;
 
 foreach ( $subscriptions as $subscription_id ) {
-	$subscription = wcs_get_subscription( $subscription_id );
-	$items        = $subscription->get_items();
-	$total        = $subscription->get_formatted_order_total();?>
+	$subscription = wcs_get_subscription( $subscription_id );?>
 	<thead>
 		<tr>
-			<td style="padding: -6" colspan="3"><h3><?php printf( esc_html__( 'Subscription #%s', 'woocommerce-subscriptions-gifting' ), esc_attr( $subscription_id ) ) ?></h3></td>
+			<td style="padding: -6" colspan="3"><h3><?php printf( esc_html__( 'Subscription #%s', 'woocommerce-subscriptions-gifting' ), esc_attr( $subscription->get_order_number() ) ) ?></h3></td>
 		</tr>
 	</thead>
 		<tr>
