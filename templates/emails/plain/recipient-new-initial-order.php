@@ -25,7 +25,14 @@ if ( 'true' == $new_recipient ) {
 foreach ( $subscriptions as $subscription_id ) {
 	$subscription = wcs_get_subscription( $subscription_id );
 	echo sprintf( __( 'Subscription #%s', 'woocommerce-subscriptions-gifting' ), esc_attr( $subscription->get_order_number() ) ) . "\n";
-	echo "\n" . WC_Subscriptions_Email::email_order_items_table( $subscription, true, false, true, '', '', true );
+	echo "\n" . WC_Subscriptions_Email::email_order_items_table( $subscription, array(
+		'show_download_links' => true,
+		'show_sku'            => false,
+		'show_purchase_note'  => true,
+		'show_image'          => '',
+		'image_size'          => '',
+		'plain_text'          => true,
+	) );
 }
 
 echo apply_filters( 'woocommerce_email_footer_text', get_option( 'woocommerce_email_footer_text' ) );
