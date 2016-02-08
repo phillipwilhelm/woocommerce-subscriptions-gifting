@@ -55,7 +55,7 @@ foreach ( $subscriptions as $subscription_id ) {
 			'show_download_links' => true,
 			'show_sku'            => false,
 			'show_purchase_note'  => true,
-		 ) ); ?>
+		) ) ); ?>
 	</tbody><?php
 }
 echo '</table>';
