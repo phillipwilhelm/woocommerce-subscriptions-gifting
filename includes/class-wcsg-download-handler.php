@@ -121,10 +121,11 @@ class WCSG_Download_Handler {
 			AND product_id = %s
 		", $user_id, $order->id, $product_id ) );
 
-		$files = array();
+		$files   = array();
+		$product = wc_get_product( $product_id );
 
 		foreach ( $downloads as $download ) {
-			$product = wc_get_product( $product_id );
+
 			if ( $product->has_file( $download->download_id ) ) {
 				$files[ $download->download_id ]                 = $product->get_file( $download->download_id );
 				$files[ $download->download_id ]['download_url'] = add_query_arg(
