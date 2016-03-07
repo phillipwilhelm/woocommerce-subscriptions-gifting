@@ -282,6 +282,10 @@ class WCSG_Recipient_Management {
 			}
 
 			wc_update_order_item_meta( $item_id, 'wcsg_recipient', 'wcsg_recipient_id_' . $recipient_user_id );
+
+			// Clear the order item meta cache so all meta is included in emails sent on checkout
+			$cache_key = WC_Cache_Helper::get_cache_prefix( 'orders' ) . 'item_meta_array_' . $item_id;
+			wp_cache_delete( $cache_key, 'orders' );
 		}
 	}
 
