@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 ?>
 
-<?php do_action( 'woocommerce_email_header', $email_heading ); ?>
+<?php do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 
 <p><?php printf( esc_html__( 'Hi there,', 'woocommerce-subscriptions-gifting' ) ); ?></p>
 <p><?php printf( esc_html__( '%s just purchased ' .  _n( 'a subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' for you at %s.', 'woocommerce-subscriptions-gifting' ), wp_kses( $subscription_purchaser, wp_kses_allowed_html( 'user_description' ) ), esc_html( $blogname ) ); ?>
@@ -23,7 +23,7 @@ $new_recipient = get_user_meta( $recipient_user->ID, 'wcsg_update_account', true
 
 if ( 'true' == $new_recipient ) : ?>
 
-<p><?php esc_html_e( 'We noticed you didn\'t have an account so we created one for you. Your account login details will have been sent to you in a separate email.' ); ?></p>
+<p><?php esc_html_e( 'We noticed you didn\'t have an account so we created one for you. Your account login details will have been sent to you in a separate email.', 'woocommerce-subscriptions-gifting' ); ?></p>
 
 <?php else : ?>
 
@@ -59,4 +59,4 @@ foreach ( $subscriptions as $subscription_id ) {
 	</tbody><?php
 }
 echo '</table>';
-do_action( 'woocommerce_email_footer' );
+do_action( 'woocommerce_email_footer', $email );

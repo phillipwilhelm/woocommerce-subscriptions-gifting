@@ -57,6 +57,7 @@ class WCSG_Email_Recipient_New_Initial_Order extends WC_Email {
 			'subscriptions'          => $this->subscriptions,
 			'sent_to_admin'          => false,
 			'plain_text'             => false,
+			'email'                  => $this,
 			),
 			'',
 			$this->template_base
@@ -77,6 +78,7 @@ class WCSG_Email_Recipient_New_Initial_Order extends WC_Email {
 			'subscriptions'          => $this->subscriptions,
 			'sent_to_admin'          => false,
 			'plain_text'             => true,
+			'email'                  => $this,
 			),
 			'',
 			$this->template_base
