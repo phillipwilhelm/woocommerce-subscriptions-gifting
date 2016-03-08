@@ -268,15 +268,23 @@ class WCS_Gifting {
 	 * Returns a combination of the customer's first name, last name and email depending on what the customer has set.
 	 *
 	 * @param int $user_id The ID of the customer user
+	 * @param bool $strip_tags Whether to strip HTML tags in user name (defaulted to false)
 	 */
-	public static function get_user_display_name( $user_id ) {
+	public static function get_user_display_name( $user_id, $strip_tags = false ) {
+
 		$user = get_user_by( 'id', $user_id );
 		$name = '';
+
 		if ( ! empty( $user->first_name ) ) {
 			$name = $user->first_name . ( ( ! empty( $user->last_name ) ) ? ' ' . $user->last_name : '' ) . ' (' . make_clickable( $user->user_email ) . ')';
 		} else {
 			$name = make_clickable( $user->user_email );
 		}
+
+		if ( $strip_tags ) {
+			$name = wp_strip_all_tags( $name );
+		}
+
 		return $name;
 	}
 
