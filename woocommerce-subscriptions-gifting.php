@@ -29,6 +29,10 @@
 
 include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 
+if ( ! function_exists( 'woothemes_queue_update' ) || ! function_exists( 'is_woocommerce_active' ) ) {
+	require_once( 'woo-includes/woo-functions.php' );
+}
+
 /**
  * Check if WooCommerce and Subscriptions are active.
  */
