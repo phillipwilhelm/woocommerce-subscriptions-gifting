@@ -176,11 +176,16 @@ class WCSG_Recipient_Management {
 	 */
 	public static function add_recipient_subscriptions( $subscriptions, $user_id ) {
 		//get the subscription posts that have been gifted to this user
-		$recipient_subs = self::get_recipient_subscriptions( $user_id );
+		$recipient_subscriptions = self::get_recipient_subscriptions( $user_id );
 
-		foreach ( $recipient_subs as $subscription_id ) {
+		foreach ( $recipient_subscriptions as $subscription_id ) {
 			$subscriptions[ $subscription_id ] = wcs_get_subscription( $subscription_id );
 		}
+
+		if ( 0 < count( $recipient_subscriptions ) ) {
+			krsort( $subscriptions );
+		}
+
 		return $subscriptions;
 	}
 
