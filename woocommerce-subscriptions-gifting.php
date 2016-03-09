@@ -401,7 +401,7 @@ class WCS_Gifting {
 
 		$contains_gifted_subscription = false;
 
-		foreach( wcs_get_subscriptions_for_order( $order ) as $subscription_id => $subscription ) {
+		foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription_id => $subscription ) {
 
 			if ( self::is_gifted_subscription( $subscription ) ) {
 				$contains_gifted_subscription = true;
