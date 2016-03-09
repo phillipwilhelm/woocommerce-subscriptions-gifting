@@ -96,9 +96,9 @@ class WCS_Gifting {
 	public static function load_dependant_classes() {
 		require_once( 'includes/class-wcsg-query.php' );
 
-		if ( is_plugin_active( 'woocommerce-memberships/woocommerce-memberships.php' ) ) {
+		if ( class_exists( 'WC_Memberships_Membership_Plan' ) ) {
 
-			if ( ! version_compare( get_option( 'wc_memberships_version' ), WCS_Gifting::$wcm_minimum_supported_version, '<' ) ) {
+			if ( version_compare( get_option( 'wc_memberships_version' ), WCS_Gifting::$wcm_minimum_supported_version, '>=' ) ) {
 				require_once( 'includes/class-wcsg-memberships-integration.php' );
 			} else {
 				add_action( 'admin_notices', 'WCS_Gifting::plugin_dependency_notices' );
