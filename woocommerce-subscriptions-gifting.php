@@ -399,13 +399,17 @@ class WCS_Gifting {
 			return false;
 		}
 
-		foreach ( $order->get_items() as $order_item ) {
-			if ( isset( $order_item['item_meta']['wcsg_recipient'] ) ) {
-				return true;
+		$contains_gifted_subscription = false;
+
+		foreach( wcs_get_subscriptions_for_order( $order ) as $subscription_id => $subscription ) {
+
+			if ( self::is_gifted_subscription( $subscription ) ) {
+				$contains_gifted_subscription = true;
+				break;
 			}
 		}
 
-		return false;
+		return $contains_gifted_subscription;
 	}
 
 	/**
