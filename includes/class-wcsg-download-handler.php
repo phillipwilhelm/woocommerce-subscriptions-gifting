@@ -148,15 +148,6 @@ class WCSG_Download_Handler {
 					'downloads_remaining'	=> wc_clean( $downloads_remaining[ $i ] )
 				);
 
-				error_log('update' . print_r($data,true));
-				error_log('where' . print_r(array(
-					'order_id' 		=> $post_id,
-					'product_id' 	=> absint( $product_ids[ $i ] ),
-					'download_id'	=> wc_clean( $download_ids[ $i ] ),
-					'user_email'    => $customer_email, // Recipient email
-					'user_id'       => $customer_user, // Recipient id
-					),true));
-
 				$format = array( '%d', '%s', '%s' );
 
 				$expiry  = ( array_key_exists( $i, $access_expires ) && '' != $access_expires[ $i ] ) ? date_i18n( 'Y-m-d', strtotime( $access_expires[ $i ] ) ) : null;
