@@ -121,7 +121,7 @@ class WCSG_Download_Handler {
 	public static function save_meta_box( $post_id, $post ) {
 		global $wpdb;
 
-		if ( isset( $_POST['download_id'] ) ) {
+		if ( isset( $_POST['download_id'] ) && isset( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) {
 
 			// Download data
 			$download_ids           = $_POST['download_id'];
@@ -130,42 +130,50 @@ class WCSG_Download_Handler {
 			$access_expires         = $_POST['access_expires'];
 
 			// Subscription data
-			$subscription = wcs_get_subscription( $post_id );
-			$recipient = get_userdata( $subscription->recipient_user );
-			$customer_email  = $recipient->user_email;
-			$customer_user   = $recipient->ID;
+			$subscription    = wcs_get_subscription( $post_id );
+			$recipient_user  = get_userdata( $subscription->recipient_user );
+			$recipient_email = $recipient_user->user_email;
+
+			$customer_user   = get_post_meta( $post->ID, '_customer_user', true );
+			$customer_email  = get_post_meta( $post->ID, '_billing_email', true );
+
+			$users = array(
+				$customer_user                => $customer_email,
+				$subscription->recipient_user => $recipient_email,
+			);
+
 			$product_ids_max = max( array_keys( $product_ids ) );
 
 			for ( $i = 0; $i <= $product_ids_max; $i ++ ) {
+				foreach ( $users as $user_id => $user_email ) {
 
-				if ( ! isset( $product_ids[ $i ] ) ) {
-					continue;
+					if ( ! isset( $product_ids[ $i ] ) ) {
+						continue;
+					}
+
+					$expiry  = ( array_key_exists( $i, $access_expires ) && '' != $access_expires[ $i ] ) ? date_i18n( 'Y-m-d', strtotime( $access_expires[ $i ] ) ) : null;
+
+					$data = array(
+						'user_id'             => absint( $user_id ),
+						'user_email'          => wc_clean( $user_email ),
+						'downloads_remaining' => wc_clean( $downloads_remaining[ $i ] ),
+						'access_expires'      => $expiry,
+					);
+
+					$format = array( '%d', '%s', '%s', '%s' );
+
+					$wpdb->update( $wpdb->prefix . 'woocommerce_downloadable_product_permissions',
+						$data,
+						array(
+							'order_id'    => $post_id,
+							'product_id'  => absint( $product_ids[ $i ] ),
+							'download_id' => wc_clean( $download_ids[ $i ] ),
+							'user_email'  => $user_email,
+							'user_id'     => $user_id,
+							),
+						$format, array( '%d', '%d', '%s', '%s', '%d' )
+					);
 				}
-
-				$data = array(
-					'user_id'				=> absint( $customer_user ), // Recipient id
-					'user_email' 			=> wc_clean( $customer_email ), // Recipient email
-					'downloads_remaining'	=> wc_clean( $downloads_remaining[ $i ] )
-				);
-
-				$format = array( '%d', '%s', '%s' );
-
-				$expiry  = ( array_key_exists( $i, $access_expires ) && '' != $access_expires[ $i ] ) ? date_i18n( 'Y-m-d', strtotime( $access_expires[ $i ] ) ) : null;
-
-				$data['access_expires'] = $expiry;
-				$format[]               = '%s';
-
-				$wpdb->update( $wpdb->prefix . "woocommerce_downloadable_product_permissions",
-					$data,
-					array(
-						'order_id' 		=> $post_id,
-						'product_id' 	=> absint( $product_ids[ $i ] ),
-						'download_id'	=> wc_clean( $download_ids[ $i ] ),
-						'user_email'    => $customer_email, // Recipient email
-						'user_id'       => $customer_user, // Recipient id
-						),
-					$format, array( '%d', '%d', '%s', '%s', '%d' )
-				);
 			}
 		}
 	}
