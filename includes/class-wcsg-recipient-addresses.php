@@ -10,6 +10,14 @@ class WCSG_Recipient_Addresses {
 	}
 
 
+	/**
+	 * Returns the subset of user subscriptions which should be included when updating all subscription addresses.
+	 * When setting shipping addresses only include those which the user has purchased for themselves or have been gifted to them.
+	 * When setting billing addresses only include subscriptions that belong to the user and those they have gifted to another user.
+	 *
+	 * @param array|subscriptions
+	 * @return array|subscriptions
+	 */
 	public static function get_users_subscriptions( $subscriptions, $user_id ) {
 
 		if ( ( 'shipping' == get_query_var( 'edit-address' ) || 'billing' == get_query_var( 'edit-address' ) ) && ! isset( $_GET['subscription'] ) ) {
