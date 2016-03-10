@@ -168,7 +168,6 @@ class WCSG_Memberships_Integration {
 					}
 				}
 			}
-
 		}
 	}
 
