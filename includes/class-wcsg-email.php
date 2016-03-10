@@ -214,7 +214,7 @@ class WCSG_Email {
 	public static function maybe_change_download_email_heading( $heading, $order ) {
 
 		if ( empty( self::$sending_downloadable_email ) ) {
-			return;
+			return $heading;
 		}
 
 		$user_id = $order->customer_user;
