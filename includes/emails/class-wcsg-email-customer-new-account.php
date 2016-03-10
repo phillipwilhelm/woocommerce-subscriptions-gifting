@@ -13,12 +13,13 @@ class WCSG_Email_Customer_New_Account extends WC_Email {
 	function __construct() {
 
 		// Call override values
-		$this->id          = 'WCSG_Email_Customer_New_Account';
-		$this->title       = __( 'New Recipient Account', 'woocommerce-subscriptions-gifting' );
-		$this->description = __( 'New account notification emails are sent to the subscription recipient when an account is created for them.', 'woocommerce-subscriptions-gifting' );
+		$this->id             = 'WCSG_Email_Customer_New_Account';
+		$this->title          = __( 'New Recipient Account', 'woocommerce-subscriptions-gifting' );
+		$this->description    = __( 'New account notification emails are sent to the subscription recipient when an account is created for them.', 'woocommerce-subscriptions-gifting' );
+		$this->customer_email = true;
 
-		$this->subject     = __( 'Your account on {site_title}', 'woocommerce-subscriptions-gifting' );
-		$this->heading     = __( 'Welcome to {site_title}', 'woocommerce-subscriptions-gifting' );
+		$this->subject        = __( 'Your account on {site_title}', 'woocommerce-subscriptions-gifting' );
+		$this->heading        = __( 'Welcome to {site_title}', 'woocommerce-subscriptions-gifting' );
 
 		$this->template_html  = 'emails/new-recipient-customer.php';
 		$this->template_plain = 'emails/plain/new-recipient-customer.php';
@@ -63,6 +64,7 @@ class WCSG_Email_Customer_New_Account extends WC_Email {
 			'subscription_purchaser' => $this->subscription_owner,
 			'sent_to_admin'          => false,
 			'plain_text'             => false,
+			'email'                  => $this,
 			),
 			'',
 			$this->template_base
@@ -83,6 +85,7 @@ class WCSG_Email_Customer_New_Account extends WC_Email {
 			'subscription_purchaser' => $this->subscription_owner,
 			'sent_to_admin'          => false,
 			'plain_text'             => true,
+			'email'                  => $this,
 			),
 			'',
 			$this->template_base

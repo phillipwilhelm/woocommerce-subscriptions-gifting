@@ -12,6 +12,7 @@ class WCSG_Email_Processing_Renewal_Order extends WCS_Email_Processing_Renewal_O
 		$this->id             = 'gift_recipient_processing_renewal_order';
 		$this->title          = __( 'Processing Renewal Order - Recipient', 'woocommerce-subscriptions-gifting' );
 		$this->description    = __( 'This is an order notification sent to the recipient after payment for a subscription renewal order is completed. It contains the renewal order details.', 'woocommerce-subscriptions-gifting' );
+		$this->customer_email = true;
 
 		$this->heading        = __( 'Thank you for your order', 'woocommerce-subscriptions-gifting' );
 		$this->subject        = __( 'Your {blogname} renewal order receipt from {order_date}', 'woocommerce-subscriptions-gifting' );

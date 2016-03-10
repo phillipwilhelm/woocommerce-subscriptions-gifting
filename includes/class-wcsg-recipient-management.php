@@ -9,7 +9,7 @@ class WCSG_Recipient_Management {
 
 		add_action( 'woocommerce_order_details_after_customer_details', __CLASS__ . '::gifting_information_after_customer_details', 1 );
 
-		add_filter( 'wcs_view_subscription_actions', __CLASS__ . '::add_recipient_actions', 1, 2 );
+		add_filter( 'wcs_view_subscription_actions', __CLASS__ . '::add_recipient_actions', 11, 2 );
 
 		//we want to handle the changing of subscription status before Subscriptions core
 		add_action( 'init', __CLASS__ . '::change_user_recipient_subscription', 99 );
@@ -19,6 +19,10 @@ class WCSG_Recipient_Management {
 		add_filter( 'woocommerce_subscription_related_orders', __CLASS__ . '::maybe_remove_parent_order', 11, 4 );
 
 		add_filter( 'user_has_cap', __CLASS__ . '::grant_recipient_capabilities', 11, 3 );
+
+		add_action( 'delete_user_form', __CLASS__ . '::maybe_display_delete_recipient_warning', 10 );
+
+		add_action( 'delete_user', __CLASS__ . '::maybe_remove_recipient', 10, 1 );
 
 		add_action( 'woocommerce_add_order_item_meta', __CLASS__ . '::maybe_add_recipient_order_item_meta', 10, 2 );
 
@@ -60,15 +64,6 @@ class WCSG_Recipient_Management {
 						}
 					}
 					break;
-				case 'edit_shop_subscription_payment_method' :
-
-					$user_id      = $args[1];
-					$subscription = wcs_get_subscription( $args[2] );
-
-					if ( $user_id == $subscription->recipient_user ) {
-						$allcaps['edit_shop_subscription_payment_method'] = true;
-					}
-					break;
 			}
 		}
 		return $allcaps;
@@ -83,33 +78,33 @@ class WCSG_Recipient_Management {
 	 */
 	public static function add_recipient_actions( $actions, $subscription ) {
 
-		if ( $subscription->recipient_user == wp_get_current_user()->ID ) {
+		if ( WCS_Gifting::is_gifted_subscription( $subscription ) && $subscription->recipient_user == wp_get_current_user()->ID ) {
+
+			$recipient_actions = array();
 
 			if ( $subscription->can_be_updated_to( 'on-hold' ) ) {
-				$actions['suspend'] = array(
+				$recipient_actions['suspend'] = array(
 					'url'  => self::get_recipient_change_status_link( $subscription->id, 'on-hold', $subscription->recipient_user ),
 					'name' => __( 'Suspend', 'woocommerce-subscriptions-gifting' ),
 				);
 			} else if ( $subscription->can_be_updated_to( 'active' ) && ! $subscription->needs_payment() ) {
-				$actions['reactivate'] = array(
+				$recipient_actions['reactivate'] = array(
 					'url'  => self::get_recipient_change_status_link( $subscription->id, 'active', $subscription->recipient_user ),
 					'name' => __( 'Reactivate', 'woocommerce-subscriptions-gifting' ),
 				);
 			}
 
 			if ( $subscription->can_be_updated_to( 'cancelled' ) ) {
-				$actions['cancel'] = array(
+				$recipient_actions['cancel'] = array(
 					'url'  => self::get_recipient_change_status_link( $subscription->id, 'cancelled', $subscription->recipient_user ),
 					'name' => __( 'Cancel', 'woocommerce-subscriptions-gifting' ),
 				);
 			}
 
-			if ( $subscription->can_be_updated_to( 'new-payment-method' ) ) {
-				$actions['change_payment_method'] = array(
-					'url'  => wp_nonce_url( add_query_arg( array( 'change_payment_method' => $subscription->id ), $subscription->get_checkout_payment_url() ) ),
-					'name' => __( 'Change Payment', 'woocommerce-subscriptions-gifting' ),
-				);
-			}
+			$actions = array_merge( $recipient_actions, $actions );
+
+			//remove the ability for recipients to change the payment method.
+			unset( $actions['change_payment_method'] );
 		}
 		return $actions;
 	}
@@ -158,7 +153,7 @@ class WCSG_Recipient_Management {
 	 */
 	public static function recipient_can_suspend( $user_can_suspend, $subscription ) {
 
-		if ( $subscription->recipient_user == wp_get_current_user()->ID ) {
+		if ( WCS_Gifting::is_gifted_subscription( $subscription ) && $subscription->recipient_user == wp_get_current_user()->ID ) {
 
 			// Make sure subscription suspension count hasn't been reached
 			$suspension_count    = $subscription->suspension_count;
@@ -194,7 +189,7 @@ class WCSG_Recipient_Management {
 	 */
 	public static function gifting_information_after_customer_details( $subscription ) {
 		//check if the subscription is gifted
-		if ( ! empty( $subscription->recipient_user ) ) {
+		if ( WCS_Gifting::is_gifted_subscription( $subscription ) ) {
 			$customer_user  = get_user_by( 'id', $subscription->customer_user );
 			$recipient_user = get_user_by( 'id', $subscription->recipient_user );
 			$current_user   = wp_get_current_user();
@@ -241,7 +236,7 @@ class WCSG_Recipient_Management {
 	 * @return array $related_orders an array of order ids related to the $subscription
 	 */
 	public static function maybe_remove_parent_order( $related_orders, $subscription ) {
-		if ( wp_get_current_user()->ID == $subscription->recipient_user ) {
+		if ( WCS_Gifting::is_gifted_subscription( $subscription ) && wp_get_current_user()->ID == $subscription->recipient_user ) {
 			$related_order_ids = array_keys( $related_orders );
 			if ( in_array( $subscription->order->id, $related_order_ids ) ) {
 				unset( $related_orders[ $subscription->order->id ] );
@@ -259,7 +254,7 @@ class WCSG_Recipient_Management {
 	public static function maybe_add_recipient_order_item_meta( $item_id, $cart_item ) {
 		$recipient_email = '';
 
-		if ( isset( $cart_item['subscription_renewal'] ) ) {
+		if ( isset( $cart_item['subscription_renewal'] ) && WCS_Gifting::is_gifted_subscription( $cart_item['subscription_renewal']['subscription_id'] ) ) {
 			$recipient_id    = get_post_meta( $cart_item['subscription_renewal']['subscription_id'], '_recipient_user', true );
 			$recipient       = get_user_by( 'id', $recipient_id );
 			$recipient_email = $recipient->user_email;
@@ -274,7 +269,7 @@ class WCSG_Recipient_Management {
 			if ( empty( $recipient_user_id ) ) {
 				// create a username for the new customer
 				$username  = explode( '@', $recipient_email );
-				$username  = sanitize_user( $username[0] );
+				$username  = sanitize_user( $username[0], true );
 				$counter   = 1;
 				$original_username = $username;
 				while ( username_exists( $username ) ) {
@@ -287,6 +282,10 @@ class WCSG_Recipient_Management {
 			}
 
 			wc_update_order_item_meta( $item_id, 'wcsg_recipient', 'wcsg_recipient_id_' . $recipient_user_id );
+
+			// Clear the order item meta cache so all meta is included in emails sent on checkout
+			$cache_key = WC_Cache_Helper::get_cache_prefix( 'orders' ) . 'item_meta_array_' . $item_id;
+			wp_cache_delete( $cache_key, 'orders' );
 		}
 	}
 
@@ -297,7 +296,7 @@ class WCSG_Recipient_Management {
 	 * @param string $name The name of the order item meta (key)
 	 */
 	public static function format_recipient_meta_label( $label, $name ) {
-		if ( 'wcsg_recipient' == $name ) {
+		if ( 'wcsg_recipient' == $name || 'wcsg_deleted_recipient_data' == $name ) {
 			$label = 'Recipient';
 		}
 		return $label;
@@ -310,8 +309,16 @@ class WCSG_Recipient_Management {
 	 */
 	public static function format_recipient_meta_value( $value ) {
 		if ( false !== strpos( $value, 'wcsg_recipient_id' ) ) {
+
 			$recipient_id = substr( $value, strlen( 'wcsg_recipient_id_' ) );
-			$value        = WCS_Gifting::get_user_display_name( $recipient_id );
+			$strip_tags   = is_checkout() && ! is_wc_endpoint_url( 'order-received' );
+
+			return WCS_Gifting::get_user_display_name( $recipient_id, $strip_tags );
+
+		} else if ( false !== strpos( $value, 'wcsg_deleted_recipient_data' ) ) {
+
+			$recipient_data = json_decode( substr( $value, strlen( 'wcsg_deleted_recipient_data_' ) ), true );
+			return $recipient_data['display_name'];
 		}
 		return $value;
 	}
@@ -322,7 +329,7 @@ class WCSG_Recipient_Management {
 	 * @param array $ignored_meta_keys An array of order item meta keys which are skipped when displaying meta.
 	 */
 	public static function hide_recipient_order_item_meta( $ignored_meta_keys ) {
-		array_push( $ignored_meta_keys,'wcsg_recipient' );
+		array_push( $ignored_meta_keys, 'wcsg_recipient', 'wcsg_deleted_recipient_data' );
 		return $ignored_meta_keys;
 	}
 
@@ -332,28 +339,122 @@ class WCSG_Recipient_Management {
 	 * @param int $item_id The id of the order item.
 	 */
 	public static function display_recipient_meta_admin( $item_id ) {
-		$recipient_meta = wc_get_order_item_meta( $item_id, 'wcsg_recipient' );
+
+		$recipient_meta             = wc_get_order_item_meta( $item_id, 'wcsg_recipient' );
+		$deleted_recipient_meta     = wc_get_order_item_meta( $item_id, 'wcsg_deleted_recipient_data' );
+		$recipient_shipping_address = '';
+		$recipient_display_name     = '';
+
 		if ( ! empty( $recipient_meta ) ) {
-			$recipient_id = substr( $recipient_meta, strlen( 'wcsg_recipient_id_' ) );
-			$recipient_shipping_address = WC()->countries->get_formatted_address( array(
-				'first_name' => get_user_meta( $recipient_id, 'shipping_first_name', true ),
-				'last_name' => get_user_meta( $recipient_id, 'shipping_last_name', true ),
-				'company' => get_user_meta( $recipient_id, 'shipping_company', true ),
-				'address_1' => get_user_meta( $recipient_id, 'shipping_address_1', true ),
-				'address_2' => get_user_meta( $recipient_id, 'shipping_address_2', true ),
-				'city' => get_user_meta( $recipient_id, 'shipping_city', true ),
-				'state' => get_user_meta( $recipient_id, 'shipping_state', true ),
-				'postcode' => get_user_meta( $recipient_id, 'shipping_postcode', true ),
-				'country' => get_user_meta( $recipient_id, 'shipping_country', true ),
-			) );
+
+			$recipient_id               = substr( $recipient_meta, strlen( 'wcsg_recipient_id_' ) );
+			$recipient_shipping_address = WC()->countries->get_formatted_address( WCS_Gifting::get_users_shipping_address( $recipient_id ) );
+			$recipient_display_name     = WCS_Gifting::get_user_display_name( $recipient_id );
+
+		} else if ( ! empty( $deleted_recipient_meta ) ) {
+
+			$recipient_data         = json_decode( substr( $deleted_recipient_meta, strlen( 'wcsg_deleted_recipient_data_' ) ), true );
+			$recipient_display_name = $recipient_data['display_name'];
+
+			unset( $recipient_data['display_name'] );
+
+			$recipient_shipping_address = WC()->countries->get_formatted_address( $recipient_data );
+		}
+
+		if ( ! empty( $recipient_meta ) || ! empty( $deleted_recipient_meta ) ) {
 
 			if ( empty( $recipient_shipping_address ) ) {
 				$recipient_shipping_address = 'N/A';
 			}
-			echo '<br />';
-			echo '<b>Recipient:</b> ' . wp_kses( WCS_Gifting::get_user_display_name( $recipient_id ), wp_kses_allowed_html( 'user_description' ) );
-			echo '<img class="help_tip" data-tip="Shipping: ' . esc_attr( $recipient_shipping_address ) . '" src="' . esc_url( WC()->plugin_url() ) . '/assets/images/help.png" height="16" width="16" />';
 
+			echo '<br />';
+			echo '<b>Recipient:</b> ' . wp_kses( $recipient_display_name , wp_kses_allowed_html( 'user_description' ) );
+			echo '<img class="help_tip" data-tip="Shipping: ' . esc_attr( $recipient_shipping_address ) . '" src="' . esc_url( WC()->plugin_url() ) . '/assets/images/help.png" height="16" width="16" />';
+		}
+	}
+
+	/**
+	 * Removes recipient subscription meta from gifted subscriptions if the recipient is deleted.
+	 *
+	 * @param int $user_id The id of the user being deleted.
+	 */
+	public static function maybe_remove_recipient( $user_id ) {
+
+		$gifted_subscriptions = WCSG_Recipient_Management::get_recipient_subscriptions( $user_id );
+		$gifted_items         = WCS_Gifting::get_recipient_order_items( $user_id );
+
+		if ( ! empty( $gifted_subscriptions ) ) {
+			foreach ( $gifted_subscriptions as $subscription_id ) {
+				update_post_meta( $subscription_id, '_recipient_user', 'deleted_recipient' );
+			}
+
+			$recipient      = get_user_by( 'id', $user_id );
+			$recipient_data = json_encode(
+				array_merge(
+					array( 'display_name' => addslashes( WCS_Gifting::get_user_display_name( $user_id ) ) ),
+					WCS_Gifting::get_users_shipping_address( $user_id )
+				)
+			);
+
+			foreach ( $gifted_items as $gifted_item ) {
+				if ( ! wcs_is_subscription( $gifted_item['order_id'] ) ) {
+					wc_update_order_item_meta( $gifted_item['order_item_id'], 'wcsg_deleted_recipient_data', 'wcsg_deleted_recipient_data_' . $recipient_data );
+				}
+				wc_delete_order_item_meta( $gifted_item['order_item_id'], 'wcsg_recipient', 'wcsg_recipient_id_' . $user_id );
+			}
+		}
+	}
+
+	/**
+	 * Displays a warning message if a recipient is in the process of being deleted.
+	 */
+	public static function maybe_display_delete_recipient_warning() {
+
+		$recipient_users = array();
+
+		if ( empty( $_REQUEST['users'] ) ) {
+			$user_ids = array( $_REQUEST['user'] );
+		} else {
+			$user_ids = $_REQUEST['users'];
+		}
+
+		if ( ! empty( $user_ids ) ) {
+
+			foreach ( $user_ids as $user_id ) {
+
+				$gifted_subscriptions = WCSG_Recipient_Management::get_recipient_subscriptions( $user_id );
+
+				if ( 0 != count( $gifted_subscriptions ) ) {
+					$recipient_users[ $user_id ] = $gifted_subscriptions;
+				}
+			}
+
+			$recipients_count = count( $recipient_users );
+
+			if ( 0 != $recipients_count ) {
+
+				echo '<p><strong>' . esc_html__( 'WARNING:', 'woocommerce-subscriptions-gifting' ) . ' </strong>';
+				echo esc_html( _n( 'The following recipient will be removed from their subscriptions:', 'The following recipients will be removed from their subscriptions:',$recipients_count, 'woocommerce-subscriptions-gifting' ) );
+
+				echo '<p><dl>';
+
+				foreach ( $recipient_users as $recipient_id => $subscriptions ) {
+
+					$recipient = get_userdata( $recipient_id );
+
+					echo '<dt>ID #' . esc_attr( $recipient_id ) . ': ' . esc_attr( $recipient->user_login ) . '</dt>';
+
+					foreach ( $subscriptions as $subscription_id ) {
+
+						$subscription = wcs_get_subscription( $subscription_id );
+						echo '<dd>' . esc_html__( 'Subscription' , 'woocommerce-subscriptions-gifting' ) . ' <a href="'. esc_url( wcs_get_edit_post_link( $subscription->id ) ) . '">#' . esc_html( $subscription->get_order_number() ) . '</a></dd>';
+
+					}
+				}
+
+				echo '</dl>';
+
+			}
 		}
 	}
 }

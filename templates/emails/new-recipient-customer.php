@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 ?>
 
-<?php do_action( 'woocommerce_email_header', $email_heading ); ?>
+<?php do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 
 <p><?php printf( esc_html__( 'Hi there,', 'woocommerce-subscriptions-gifting' ) ); ?></p>
 <p><?php printf( esc_html__( '%s just purchased a subscription for you at %s so we\'ve created an account for you to manage the subscription.', 'woocommerce-subscriptions-gifting' ), wp_kses( $subscription_purchaser, wp_kses_allowed_html( 'user_description' ) ), esc_html( $blogname ) ); ?></p>
@@ -25,4 +25,4 @@ if ( ! defined( 'ABSPATH' ) ) {
 <p><?php printf( esc_html__( 'Once completed you may access your account area to view your subscription here: %s.', 'woocommerce-subscriptions-gifting' ),
 '<a href="' . esc_url( wc_get_page_permalink( 'myaccount' ) ) . '">' . esc_html__( 'My Account', 'woocommerce-subscriptions-gifting' ) . '</a>' ); ?></p>
 
-<?php do_action( 'woocommerce_email_footer' ); ?>
+<?php do_action( 'woocommerce_email_footer', $email ); ?>
