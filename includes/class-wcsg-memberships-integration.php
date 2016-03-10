@@ -156,14 +156,19 @@ class WCSG_Memberships_Integration {
 				$recipient_subscriptions         = WCSG_Recipient_Management::get_recipient_subscriptions( $args['user_id'] );
 				$recipient_subscription_in_order = array_intersect( array_keys( $subscriptions_in_order ), $recipient_subscriptions );
 
-				update_post_meta( $args['user_membership_id'], '_subscription_id', reset( $recipient_subscription_in_order ) );
+				$subscription = wcs_get_subscription( reset( $recipient_subscription_in_order ) );
+
+				update_post_meta( $args['user_membership_id'], '_subscription_id', $subscription->id );
+				wc_memberships()->get_subscriptions_integration()->update_related_membership_dates( $subscription, 'end', $subscription->get_date( 'end' ) );
 			} else {
 				foreach ( $subscriptions_in_order as $subscription ) {
 					if ( ! isset( $subscription->recipient_user ) ) {
 						update_post_meta( $args['user_membership_id'], '_subscription_id', $subscription->id );
+						wc_memberships()->get_subscriptions_integration()->update_related_membership_dates( $subscription, 'end', $subscription->get_date( 'end' ) );
 					}
 				}
 			}
+
 		}
 	}
 
