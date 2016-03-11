@@ -5,7 +5,7 @@ class WCSG_Recipient_Management {
 	 * Setup hooks & filters, when the class is initialised.
 	 */
 	public static function init() {
-		add_filter( 'wcs_get_users_subscriptions', __CLASS__ . '::add_recipient_subscriptions', 1, 2 );
+		add_filter( 'wcs_get_users_subscriptions', __CLASS__ . '::get_users_subscriptions', 1, 2 );
 
 		add_action( 'woocommerce_order_details_after_customer_details', __CLASS__ . '::gifting_information_after_customer_details', 1 );
 
@@ -178,7 +178,8 @@ class WCSG_Recipient_Management {
 	 * @param array|subscriptions An array of subscriptions assigned to the user
 	 * @return array|subscriptions An updated array of subscriptions with any subscriptions gifted to the user added.
 	 */
-	public static function add_recipient_subscriptions( $subscriptions, $user_id ) {
+	public static function get_users_subscriptions( $subscriptions, $user_id ) {
+
 		//get the subscription posts that have been gifted to this user
 		$recipient_subscriptions = self::get_recipient_subscriptions( $user_id );
 
