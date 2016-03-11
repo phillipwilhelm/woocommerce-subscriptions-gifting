@@ -16,11 +16,13 @@ class WCSG_Checkout {
 		add_filter( 'woocommerce_ship_to_different_address_checked', __CLASS__ . '::maybe_ship_to_recipient', 100, 1 );
 
 		add_filter( 'woocommerce_checkout_get_value', __CLASS__ . '::maybe_get_recipient_shipping', 10, 2 );
+
+		add_action( 'woocommerce_checkout_update_order_review', __CLASS__ . '::store_recipients_in_session', 10, 1 );
 	}
 
 	/**
-	 * Adds gifting ui elements to the checkout page, adding in previously set
-	 * recipient information if it exists.
+	 * Adds gifting ui elements to the checkout page. Also updates recipient information
+	 * stored on the cart item from session data if it exists.
 	 *
 	 * @param int|quantity
 	 * @param object|cart_item The Cart_Item for which we are adding ui elements
@@ -29,8 +31,16 @@ class WCSG_Checkout {
 	 */
 	public static function add_gifting_option_checkout( $quantity, $cart_item, $cart_item_key ) {
 
-		return $quantity . WCSG_Cart::maybe_display_gifting_information( $cart_item, $cart_item_key );
+		$recipients = WC()->session->get( 'wcsg_recipients' );
 
+		if ( ! empty( $recipients ) && isset( $recipients[ $cart_item_key ] ) ) {
+			$cart_item['wcsg_gift_recipients_email'] = $recipients[ $cart_item_key ];
+
+			unset( $recipients[ $cart_item_key ] );
+			WC()->session->set( 'wcsg_recipients', $recipients );
+		}
+
+		return $quantity . WCSG_Cart::maybe_display_gifting_information( $cart_item, $cart_item_key );
 	}
 
 	/**
@@ -42,7 +52,7 @@ class WCSG_Checkout {
 	 */
 	public static function subscription_created( $subscription, $order, $recurring_cart ) {
 
-		$cart_item = array_pop( $recurring_cart->cart_contents );
+		$cart_item = reset( $recurring_cart->cart_contents );
 
 		if ( ! empty( $cart_item['wcsg_gift_recipients_email'] ) ) {
 
@@ -75,7 +85,7 @@ class WCSG_Checkout {
 	 * @return string|cart_key The cart_key with a recipient's email appended
 	 */
 	public static function add_recipient_email_recurring_cart_key( $cart_key, $cart_item ) {
-		if ( isset( $cart_item['wcsg_gift_recipients_email'] ) ) {
+		if ( ! empty( $cart_item['wcsg_gift_recipients_email'] ) ) {
 			$cart_key .= '_' . $cart_item['wcsg_gift_recipients_email'];
 		}
 		return $cart_key;
@@ -147,6 +157,21 @@ class WCSG_Checkout {
 			}
 		}
 		return $value;
+	}
+
+	/**
+	 * Stores recipient email data in the session to prevent losing changes made to recipient emails
+	 * during the checkout updating the order review fields.
+	 *
+	 * @param string $checkout_data Checkout _POST data in a query string format.
+	 */
+	public static function store_recipients_in_session( $checkout_data ) {
+
+		parse_str( $checkout_data, $checkout_data );
+
+		if ( isset( $checkout_data['recipient_email'] ) ) {
+			WC()->session->set( 'wcsg_recipients', $checkout_data['recipient_email'] );
+		}
 	}
 }
 WCSG_Checkout::init();
