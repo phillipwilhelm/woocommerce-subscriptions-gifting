@@ -2,6 +2,8 @@
 
 class WCSG_Download_Handler {
 
+	private static $subscription_download_permissions;
+
 	/**
 	* Setup hooks & filters, when the class is initialised.
 	*/
@@ -9,6 +11,11 @@ class WCSG_Download_Handler {
 		add_filter( 'woocommerce_subscription_settings', __CLASS__ . '::register_download_settings' );
 		add_filter( 'woocommerce_downloadable_file_permission_data', __CLASS__ . '::grant_recipient_download_permissions', 11 );
 		add_filter( 'woocommerce_get_item_downloads', __CLASS__ . '::get_item_download_links', 10, 3 );
+
+		/* Download Permission Meta Box Functions */
+		add_action( 'woocommerce_process_shop_order_meta', __CLASS__ . '::download_permissions_meta_box_save', 10, 1 );
+		add_action( 'woocommerce_admin_order_data_after_order_details', __CLASS__ . '::add_download_permission_fields', 10, 1 );
+		add_filter( 'woocommerce_admin_download_permissions_title', __CLASS__ . '::add_user_to_download_permission_title', 10, 1 );
 	}
 
 	/**
@@ -101,5 +108,113 @@ class WCSG_Download_Handler {
 
 		return array_merge( $settings, $download_settings );
 	}
+
+	/**
+	 * Outputs hidden fields on the edit subscription screen, storing download permission ids and users to be used when saving download permissions.
+	 * Saves the download permissions so they can be used later, when displaying user information
+	 *
+	 * @param WC_Subscription $subscription
+	 */
+	public static function add_download_permission_fields( $subscription ) {
+		global $wpdb;
+
+		if ( WCS_Gifting::is_gifted_subscription( $subscription ) ) {
+
+			self::$subscription_download_permissions = $wpdb->get_results( $wpdb->prepare( "
+				SELECT * FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions
+				WHERE order_id = %d ORDER BY product_id
+			", $subscription->id ) );
+
+			foreach ( self::$subscription_download_permissions as $index => $download ) { ?>
+				<input type="hidden" name="wcsg_download_permission_ids[<?php echo esc_attr( $index ); ?>]" value="<?php echo absint( $download->permission_id ); ?>" />
+				<input type="hidden" name="wcsg_download_user_ids[<?php echo esc_attr( $index ); ?>]" value="<?php echo absint( $download->user_id ); ?>" /><?php
+			}
+		}
+	}
+
+	/**
+	 * Formats the download permission title to also include information about the user the permission belongs to.
+	 * This is to make it clear to store managers which user's permissions are being edited.
+	 *
+	 * @param string $download_title the download permission title displayed in order download permisssion meta boxes
+	 */
+	public static function add_user_to_download_permission_title( $download_title ) {
+		global $post;
+
+		$subscription = wcs_get_subscription( $post->ID );
+
+		if ( WCS_Gifting::is_gifted_subscription( $subscription ) ) {
+			foreach ( self::$subscription_download_permissions as $index => $download ) {
+				if ( ! isset( $download->displayed ) ) {
+
+					$user_role = ( $download->user_id == $subscription->recipient_user ) ? __( 'Recipient', 'woocommerce-subscriptions-gifting' ) : __( 'Purchaser', 'woocommerce-subscriptions-gifting' );
+					$user      = get_userdata( $download->user_id );
+					$user_name = ucfirst( $user->first_name ) . ( ( ! empty( $user->last_name ) ) ? ' ' . ucfirst( $user->last_name ) : '' );
+
+					$download_title = $user_role . ' (' . ( empty( $user_name ) ? ucfirst( $user->display_name ) : $user_name ) . ') &mdash; ' . $download_title;
+					$download->displayed = true;
+					break;
+				}
+			}
+		}
+
+		return $download_title;
+	}
+
+	/**
+	 * Save download permission meta box data. Unhooks WC_Meta_Box_Order_Downloads::save() to prevent the WC save function from being called.
+	 *
+	 * @param int $subscription_id
+	 */
+	public static function download_permissions_meta_box_save( $subscription_id ) {
+		global $wpdb;
+
+		if ( isset( $_POST['wcsg_download_permission_ids'] ) && isset( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( $_POST['woocommerce_meta_nonce'], 'woocommerce_save_data' ) ) {
+
+			remove_action( 'woocommerce_process_shop_order_meta', 'WC_Meta_Box_Order_Downloads::save', 30 );
+
+			$permission_ids      = $_POST['wcsg_download_permission_ids'];
+			$user_ids            = $_POST['wcsg_download_user_ids'];
+			$download_ids        = $_POST['download_id'];
+			$product_ids         = $_POST['product_id'];
+			$downloads_remaining = $_POST['downloads_remaining'];
+			$access_expires      = $_POST['access_expires'];
+
+			$subscription = wcs_get_subscription( $subscription_id );
+
+			foreach ( $download_ids as $index => $download_id ) {
+
+				$expiry = ( array_key_exists( $index, $access_expires ) && '' != $access_expires[ $index ] ) ? date_i18n( 'Y-m-d', strtotime( $access_expires[ $index ] ) ) : null;
+
+				$data = array(
+					'downloads_remaining' => wc_clean( $downloads_remaining[ $index ] ),
+					'access_expires'      => $expiry,
+				);
+
+				$format = array( '%s', '%s' );
+
+				// if we're updating the purchaser's permissions, update the download user id and email, in case it has changed
+				if ( $user_ids[ $index ] != $subscription->recipient_user ) {
+					$data['user_id'] = absint( $_POST['customer_user'] );
+					$format[] = '%d';
+
+					$data['user_email'] = wc_clean( $_POST['_billing_email'] );
+					$format[] = '%s';
+				}
+
+				$wpdb->update( $wpdb->prefix . 'woocommerce_downloadable_product_permissions',
+					$data,
+					array(
+						'order_id'    => $subscription_id,
+						'product_id'  => absint( $product_ids[ $index ] ),
+						'download_id' => wc_clean( $download_ids[ $index ] ),
+						'permission_id'  => $permission_ids[ $index ],
+						),
+					$format, array( '%d', '%d', '%s', '%d' )
+				);
+			}
+		}
+	}
+
 }
 WCSG_Download_Handler::init();
