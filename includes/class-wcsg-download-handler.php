@@ -15,7 +15,7 @@ class WCSG_Download_Handler {
 		/* Download Permission Meta Box Functions */
 		add_action( 'woocommerce_process_shop_order_meta', __CLASS__ . '::download_permissions_meta_box_save', 10, 1 );
 		add_action( 'woocommerce_admin_order_data_after_order_details', __CLASS__ . '::add_download_permission_fields', 10, 1 );
-		add_filter( 'woocommerce_admin_download_permissions_title', __CLASS__ . '::add_user_to_download_permission_title', 10, 1 );
+		add_filter( 'woocommerce_admin_download_permissions_title', __CLASS__ . '::add_user_to_download_permission_title', 10, 3 );
 	}
 
 	/**
@@ -138,10 +138,9 @@ class WCSG_Download_Handler {
 	 *
 	 * @param string $download_title the download permission title displayed in order download permisssion meta boxes
 	 */
-	public static function add_user_to_download_permission_title( $download_title ) {
-		global $post;
+	public static function add_user_to_download_permission_title( $download_title, $product_id, $order_id ) {
 
-		$subscription = wcs_get_subscription( $post->ID );
+		$subscription = wcs_get_subscription( $order_id );
 
 		if ( WCS_Gifting::is_gifted_subscription( $subscription ) ) {
 			foreach ( self::$subscription_download_permissions as $index => $download ) {
