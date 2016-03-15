@@ -2,7 +2,7 @@
 
 class WCSG_Download_Handler {
 
-	private static $subscription_download_permissions;
+	private static $subscription_download_permissions = array();
 
 	/**
 	* Setup hooks & filters, when the class is initialised.
@@ -16,6 +16,9 @@ class WCSG_Download_Handler {
 		add_action( 'woocommerce_process_shop_order_meta', __CLASS__ . '::download_permissions_meta_box_save', 10, 1 );
 		add_action( 'woocommerce_admin_order_data_after_order_details', __CLASS__ . '::add_download_permission_fields', 10, 1 );
 		add_filter( 'woocommerce_admin_download_permissions_title', __CLASS__ . '::add_user_to_download_permission_title', 10, 3 );
+
+		// hooked on prior to WC WC_AJAX::grant_access_to_download()
+		add_action( 'wp_ajax_woocommerce_grant_access_to_download', __CLASS__ . '::grant_access_to_download_via_meta_box', 9 );
 	}
 
 	/**
@@ -120,10 +123,7 @@ class WCSG_Download_Handler {
 
 		if ( WCS_Gifting::is_gifted_subscription( $subscription ) ) {
 
-			self::$subscription_download_permissions = $wpdb->get_results( $wpdb->prepare( "
-				SELECT * FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions
-				WHERE order_id = %d ORDER BY product_id
-			", $subscription->id ) );
+			self::$subscription_download_permissions = self::get_subscription_download_permissions( $subscription->id );
 
 			foreach ( self::$subscription_download_permissions as $index => $download ) { ?>
 				<input type="hidden" name="wcsg_download_permission_ids[<?php echo esc_attr( $index ); ?>]" value="<?php echo absint( $download->permission_id ); ?>" />
@@ -143,6 +143,7 @@ class WCSG_Download_Handler {
 		$subscription = wcs_get_subscription( $order_id );
 
 		if ( WCS_Gifting::is_gifted_subscription( $subscription ) ) {
+
 			foreach ( self::$subscription_download_permissions as $index => $download ) {
 				if ( ! isset( $download->displayed ) ) {
 
@@ -151,6 +152,7 @@ class WCSG_Download_Handler {
 					$user_name = ucfirst( $user->first_name ) . ( ( ! empty( $user->last_name ) ) ? ' ' . ucfirst( $user->last_name ) : '' );
 
 					$download_title = $user_role . ' (' . ( empty( $user_name ) ? ucfirst( $user->display_name ) : $user_name ) . ') &mdash; ' . $download_title;
+
 					$download->displayed = true;
 					break;
 				}
@@ -215,5 +217,95 @@ class WCSG_Download_Handler {
 		}
 	}
 
+	/**
+	 * Gets all download permissions for a subscription
+	 *
+	 * @param int $subscription_id
+	 */
+	public static function get_subscription_download_permissions( $subscription_id ) {
+		global $wpdb;
+
+		return $wpdb->get_results( $wpdb->prepare( "
+			SELECT * FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions
+			WHERE order_id = %d ORDER BY product_id", $subscription_id ) );
+	}
+
+	/**
+	 * Grants download permissions from the edit subscription meta box grant access button.
+	 * Outputs meta box table rows for each permission granted.
+	 */
+	public static function grant_access_to_download_via_meta_box() {
+
+		check_ajax_referer( 'grant-access', 'security' );
+
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			die( -1 );
+		}
+
+		global $wpdb;
+
+		$wpdb->hide_errors();
+
+		$order_id     = intval( $_POST['order_id'] );
+		$product_ids  = $_POST['product_ids'];
+		$loop         = intval( $_POST['loop'] );
+		$file_counter = 0;
+
+		if ( WCS_Gifting::is_gifted_subscription( $order_id ) ) {
+
+			$subscription         = wcs_get_subscription( $order_id );
+			$download_permissions = self::get_subscription_download_permissions( $order_id );
+			$file_names           = array();
+
+			if ( ! $subscription->billing_email ) {
+				die();
+			}
+
+			if ( ! is_array( $product_ids ) ) {
+				$product_ids = array( $product_ids );
+			}
+
+			foreach ( $product_ids as $product_id ) {
+				$product = wc_get_product( $product_id );
+				$files   = $product->get_files();
+
+				if ( $files ) {
+					foreach ( $files as $download_id => $file ) {
+
+						$file_counter ++;
+
+						if ( isset( $file['name'] ) ) {
+							$file_names[ $download_id ] = $file['name'];
+						} else {
+							$file_names[ $download_id ] = sprintf( __( 'File %d', 'woocommerce-subscriptions-gifting' ), $file_counter );
+						}
+
+						wc_downloadable_file_permission( $download_id, $product_id, $subscription );
+					}
+				}
+			}
+
+			if ( 0 < count( $file_names ) ) {
+				$updated_download_permissions = self::get_subscription_download_permissions( $order_id );
+				$new_download_permissions     = array_diff( array_keys( $updated_download_permissions ), array_keys( $download_permissions ) );
+
+				foreach ( $new_download_permissions as $new_download_permission_index ) {
+
+					$download = $updated_download_permissions[ $new_download_permission_index ];
+					self::$subscription_download_permissions[] = $download;
+
+					$loop ++;
+					$file_count = $file_names[ $download->download_id ];
+
+					include( plugin_dir_path( WC_PLUGIN_FILE ) . 'includes/admin/meta-boxes/views/html-order-download-permission.php' );?>
+
+					<input type="hidden" name="wcsg_download_permission_ids[<?php echo esc_attr( $loop ); ?>]" value="<?php echo absint( $download->permission_id ); ?>" />
+					<input type="hidden" name="wcsg_download_user_ids[<?php echo esc_attr( $loop ); ?>]" value="<?php echo absint( $download->user_id ); ?>" /><?php
+				}
+			}
+
+			die();
+		}
+	}
 }
 WCSG_Download_Handler::init();
