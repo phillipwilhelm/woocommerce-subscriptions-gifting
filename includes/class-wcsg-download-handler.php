@@ -309,7 +309,7 @@ class WCSG_Download_Handler {
 	/**
 	 * Revokes access to a download permission via AJAX request from the edit subscription download permissions meta box.
 	 * Replaces WC_AJAX::revoke_access_to_download() for gifted subscriptions because the WC core revoke access function
-	 * doesn't have the neccessary data to revoke access without also pulling access to both recipient and purchaser.
+	 * doesn't have the necessary data to revoke access without also pulling access to both recipient and purchaser.
 	 */
 	public static function revoke_access_to_download_via_meta_box() {
 
