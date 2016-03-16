@@ -14,7 +14,7 @@ class WCSG_Download_Handler {
 
 		/* Download Permission Meta Box Functions */
 		add_action( 'woocommerce_process_shop_order_meta', __CLASS__ . '::download_permissions_meta_box_save', 10, 1 );
-		add_action( 'woocommerce_admin_order_data_after_order_details', __CLASS__ . '::add_download_permission_fields', 10, 1 );
+		add_action( 'woocommerce_admin_order_data_after_order_details', __CLASS__ . '::get_download_permissions_before_meta_box', 10, 1 );
 		add_filter( 'woocommerce_admin_download_permissions_title', __CLASS__ . '::add_user_to_download_permission_title', 10, 3 );
 
 		// Granting access via download meta box - hooked on prior to WC_AJAX::grant_access_to_download()
@@ -122,17 +122,12 @@ class WCSG_Download_Handler {
 	 *
 	 * @param WC_Subscription $subscription
 	 */
-	public static function add_download_permission_fields( $subscription ) {
+	public static function get_download_permissions_before_meta_box( $subscription ) {
 		global $wpdb;
 
 		if ( WCS_Gifting::is_gifted_subscription( $subscription ) ) {
 
 			self::$subscription_download_permissions = self::get_subscription_download_permissions( $subscription->id );
-
-			foreach ( self::$subscription_download_permissions as $index => $download ) { ?>
-				<input type="hidden" id="wcsg_download_permission_ids_<?php echo esc_attr( $index ); ?>" name="wcsg_download_permission_ids[<?php echo esc_attr( $index ); ?>]" value="<?php echo absint( $download->permission_id ); ?>" />
-				<input type="hidden" id="wcsg_download_user_ids_<?php echo esc_attr( $index ); ?>" name="wcsg_download_user_ids[<?php echo esc_attr( $index ); ?>]" value="<?php echo absint( $download->user_id ); ?>" /><?php
-			}
 		}
 	}
 
@@ -149,14 +144,15 @@ class WCSG_Download_Handler {
 		if ( WCS_Gifting::is_gifted_subscription( $subscription ) ) {
 
 			foreach ( self::$subscription_download_permissions as $index => $download ) {
-				if ( ! isset( $download->displayed ) ) {
+				if ( ! isset( $download->displayed ) ) { ?>
+					<input type="hidden" id="wcsg_download_permission_ids_<?php echo esc_attr( $index ); ?>" name="wcsg_download_permission_ids[<?php echo esc_attr( $index ); ?>]" value="<?php echo absint( $download->permission_id ); ?>" />
+					<input type="hidden" id="wcsg_download_user_ids_<?php echo esc_attr( $index ); ?>" name="wcsg_download_user_ids[<?php echo esc_attr( $index ); ?>]" value="<?php echo absint( $download->user_id ); ?>" /><?php
 
 					$user_role = ( $download->user_id == $subscription->recipient_user ) ? __( 'Recipient', 'woocommerce-subscriptions-gifting' ) : __( 'Purchaser', 'woocommerce-subscriptions-gifting' );
 					$user      = get_userdata( $download->user_id );
 					$user_name = ucfirst( $user->first_name ) . ( ( ! empty( $user->last_name ) ) ? ' ' . ucfirst( $user->last_name ) : '' );
 
 					$download_title = $user_role . ' (' . ( empty( $user_name ) ? ucfirst( $user->display_name ) : $user_name ) . ') &mdash; ' . $download_title;
-
 					$download->displayed = true;
 					break;
 				}
@@ -295,16 +291,14 @@ class WCSG_Download_Handler {
 
 				foreach ( $new_download_permissions as $new_download_permission_index ) {
 
-					$download = $updated_download_permissions[ $new_download_permission_index ];
-					self::$subscription_download_permissions[] = $download;
-
 					$loop ++;
+
+					$download   = $updated_download_permissions[ $new_download_permission_index ];
 					$file_count = $file_names[ $download->download_id ];
 
-					include( plugin_dir_path( WC_PLUGIN_FILE ) . 'includes/admin/meta-boxes/views/html-order-download-permission.php' );?>
+					self::$subscription_download_permissions[ $loop ] = $download;
 
-					<input type="hidden" id="wcsg_download_permission_ids_<?php echo esc_attr( $loop ); ?>" name="wcsg_download_permission_ids[<?php echo esc_attr( $loop ); ?>]" value="<?php echo absint( $download->permission_id ); ?>" />
-					<input type="hidden" id="wcsg_download_user_ids_<?php echo esc_attr( $loop ); ?>" name="wcsg_download_user_ids[<?php echo esc_attr( $loop ); ?>]" value="<?php echo absint( $download->user_id ); ?>" /><?php
+					include( plugin_dir_path( WC_PLUGIN_FILE ) . 'includes/admin/meta-boxes/views/html-order-download-permission.php' );
 				}
 			}
 
@@ -346,7 +340,7 @@ class WCSG_Download_Handler {
 	}
 
 	/**
-	 * Flags the permission being revoked by storing the download permission id in session data,
+	 * Flags the download permission being revoked by storing the permission id in session data,
 	 * This value will ensure the query to revoke access is unique to prevent deleting permissions
 	 * for both recipient and purchaser.
 	 */
