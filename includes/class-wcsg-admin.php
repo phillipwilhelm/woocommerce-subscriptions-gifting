@@ -29,7 +29,7 @@ class WCSG_Admin {
 			$purchaser_name = '<a href="' . esc_url( get_edit_user_link( $purchaser_id ) ) . '">' . ucfirst( $purchaser_user->first_name ) . ( ( ! empty( $purchaser_user->last_name ) ) ? ' ' . ucfirst( $purchaser_user->last_name ) : '' ) . '</a>';
 
 			// translators: $1: is subscription order number,$2: is recipient user's name, $3: is the purchaser user's name
-			$column_content = sprintf( _x( '%1$s for %2$s Purchased by: %3$s', 'Subscription title on admin table. (e.g.: #211 for John Doe Purchased by: Jane Doe)', 'woocommerce-subscriptions-gifting' ), '<a href="' . esc_url( get_edit_post_link( $subscription->id ) ) . '">#<strong>' . esc_attr( $subscription->get_order_number() ) . '</strong></a>', $recipient_name, $purchaser_name );
+			$column_content = sprintf( _x( '%1$s for %2$s purchased by %3$s', 'Subscription title on admin table. (e.g.: #211 for John Doe Purchased by: Jane Doe)', 'woocommerce-subscriptions-gifting' ), '<a href="' . esc_url( get_edit_post_link( $subscription->id ) ) . '">#<strong>' . esc_attr( $subscription->get_order_number() ) . '</strong></a>', $recipient_name, $purchaser_name );
 
 			$column_content .= '</div>';
 		}
