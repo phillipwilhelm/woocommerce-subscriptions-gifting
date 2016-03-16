@@ -17,8 +17,12 @@ class WCSG_Download_Handler {
 		add_action( 'woocommerce_admin_order_data_after_order_details', __CLASS__ . '::add_download_permission_fields', 10, 1 );
 		add_filter( 'woocommerce_admin_download_permissions_title', __CLASS__ . '::add_user_to_download_permission_title', 10, 3 );
 
-		// hooked on prior to WC WC_AJAX::grant_access_to_download()
+		// Granting access via download meta box - hooked on prior to WC_AJAX::grant_access_to_download()
 		add_action( 'wp_ajax_woocommerce_grant_access_to_download', __CLASS__ . '::grant_access_to_download_via_meta_box', 9 );
+
+		// Revoking access via download meta box - hooked on prior to WC_AJAX::revoke_access_to_download()
+		add_action( 'wp_ajax_woocommerce_revoke_access_to_download', __CLASS__ . '::revoke_access_to_download_via_meta_box', 9 );
+		add_action( 'wp_ajax_wcsg_revoke_access_to_download', __CLASS__ . '::set_revoking_permission_id_flag' );
 	}
 
 	/**
@@ -126,8 +130,8 @@ class WCSG_Download_Handler {
 			self::$subscription_download_permissions = self::get_subscription_download_permissions( $subscription->id );
 
 			foreach ( self::$subscription_download_permissions as $index => $download ) { ?>
-				<input type="hidden" name="wcsg_download_permission_ids[<?php echo esc_attr( $index ); ?>]" value="<?php echo absint( $download->permission_id ); ?>" />
-				<input type="hidden" name="wcsg_download_user_ids[<?php echo esc_attr( $index ); ?>]" value="<?php echo absint( $download->user_id ); ?>" /><?php
+				<input type="hidden" id="wcsg_download_permission_ids_<?php echo esc_attr( $index ); ?>" name="wcsg_download_permission_ids[<?php echo esc_attr( $index ); ?>]" value="<?php echo absint( $download->permission_id ); ?>" />
+				<input type="hidden" id="wcsg_download_user_ids_<?php echo esc_attr( $index ); ?>" name="wcsg_download_user_ids[<?php echo esc_attr( $index ); ?>]" value="<?php echo absint( $download->user_id ); ?>" /><?php
 			}
 		}
 	}
@@ -299,13 +303,65 @@ class WCSG_Download_Handler {
 
 					include( plugin_dir_path( WC_PLUGIN_FILE ) . 'includes/admin/meta-boxes/views/html-order-download-permission.php' );?>
 
-					<input type="hidden" name="wcsg_download_permission_ids[<?php echo esc_attr( $loop ); ?>]" value="<?php echo absint( $download->permission_id ); ?>" />
-					<input type="hidden" name="wcsg_download_user_ids[<?php echo esc_attr( $loop ); ?>]" value="<?php echo absint( $download->user_id ); ?>" /><?php
+					<input type="hidden" id="wcsg_download_permission_ids_<?php echo esc_attr( $loop ); ?>" name="wcsg_download_permission_ids[<?php echo esc_attr( $loop ); ?>]" value="<?php echo absint( $download->permission_id ); ?>" />
+					<input type="hidden" id="wcsg_download_user_ids_<?php echo esc_attr( $loop ); ?>" name="wcsg_download_user_ids[<?php echo esc_attr( $loop ); ?>]" value="<?php echo absint( $download->user_id ); ?>" /><?php
 				}
 			}
 
 			die();
 		}
+	}
+
+	/**
+	 * Revokes access to a download permission via AJAX request from the edit subscription download permissions meta box.
+	 * Replaces WC_AJAX::revoke_access_to_download() for gifted subscriptions because the WC core revoke access function
+	 * doesn't have the neccessary data to revoke access without also pulling access to both recipient and purchaser.
+	 */
+	public static function revoke_access_to_download_via_meta_box() {
+
+		check_ajax_referer( 'revoke-access', 'security' );
+
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			die( -1 );
+		}
+
+		global $wpdb;
+
+		$order_id = intval( $_POST['order_id'] );
+
+		if ( WCS_Gifting::is_gifted_subscription( $order_id ) ) {
+
+			remove_action( 'wp_ajax_woocommerce_revoke_access_to_download', 'WC_AJAX::revoke_access_to_download' );
+
+			$permission_id = WC()->session->get( 'wcsg_revoking_permission_flag' );
+
+			if ( ! empty( $permission_id ) ) {
+				$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions WHERE order_id = %d AND permission_id = %d", $order_id, $permission_id ) );
+			}
+
+			unset( WC()->session->wcsg_revoking_permission_flag );
+
+			die();
+		}
+	}
+
+	/**
+	 * Flags the permission being revoked by storing the download permission id in session data,
+	 * This value will ensure the query to revoke access is unique to prevent deleting permissions
+	 * for both recipient and purchaser.
+	 */
+	public static function set_revoking_permission_id_flag() {
+
+		check_admin_referer( 'revoke_download_permission', 'nonce' );
+
+		$permission_id   = intval( $_POST['download_permission_id'] );
+		$subscription_id = intval( $_POST['post_id'] );
+
+		if ( WCS_Gifting::is_gifted_subscription( $subscription_id ) ) {
+			WC()->session->set( 'wcsg_revoking_permission_flag', $permission_id );
+		}
+
+		die();
 	}
 }
 WCSG_Download_Handler::init();
