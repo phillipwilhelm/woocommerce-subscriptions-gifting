@@ -1,8 +1,7 @@
 jQuery(document).ready(function($){
 
 	$(".wc-metaboxes").on('click', '.revoke_access',function() {
-		var download_permission_index = $(this).parent().next().find("input[name^=downloads_remaining]").attr('name').match(/\d+/g);
-		var permission_id = $("#wcsg_download_permission_ids_" + download_permission_index).val();
+		var permission_id = $(this).siblings().find('.wcsg_download_permission_id').val();
 		var post_id = $("#post_ID").val();
 
 		if (  0 < permission_id ) {

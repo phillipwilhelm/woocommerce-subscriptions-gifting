@@ -145,8 +145,8 @@ class WCSG_Download_Handler {
 
 			foreach ( self::$subscription_download_permissions as $index => $download ) {
 				if ( ! isset( $download->displayed ) ) { ?>
-					<input type="hidden" id="wcsg_download_permission_ids_<?php echo esc_attr( $index ); ?>" name="wcsg_download_permission_ids[<?php echo esc_attr( $index ); ?>]" value="<?php echo absint( $download->permission_id ); ?>" />
-					<input type="hidden" id="wcsg_download_user_ids_<?php echo esc_attr( $index ); ?>" name="wcsg_download_user_ids[<?php echo esc_attr( $index ); ?>]" value="<?php echo absint( $download->user_id ); ?>" /><?php
+					<input type="hidden" class="wcsg_download_permission_id" name="wcsg_download_permission_ids[<?php echo esc_attr( $index ); ?>]" value="<?php echo absint( $download->permission_id ); ?>" />
+					<input type="hidden" class="wcsg_download_permission_id" name="wcsg_download_user_ids[<?php echo esc_attr( $index ); ?>]" value="<?php echo absint( $download->user_id ); ?>" /><?php
 
 					$user_role = ( $download->user_id == $subscription->recipient_user ) ? __( 'Recipient', 'woocommerce-subscriptions-gifting' ) : __( 'Purchaser', 'woocommerce-subscriptions-gifting' );
 					$user      = get_userdata( $download->user_id );
