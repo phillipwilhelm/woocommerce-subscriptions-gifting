@@ -7,6 +7,8 @@ class WCSG_Admin {
 	public static function init() {
 
 		add_filter( 'woocommerce_subscription_list_table_column_content', __CLASS__ . '::display_recipient_name_in_subscription_title', 1, 3 );
+
+		add_filter( 'woocommerce_order_items_meta_get_formatted', __CLASS__ . '::remove_recipient_order_item_meta', 1, 1 );
 	}
 
 	/**
@@ -35,6 +37,28 @@ class WCSG_Admin {
 		}
 
 		return $column_content;
+	}
+
+	/**
+	 * Removes the recipient order item meta from the admin subscriptions table.
+	 *
+	 * @param array $formatted_meta formatted order item meta key, label and value
+	 */
+	public static function remove_recipient_order_item_meta( $formatted_meta ) {
+
+		if ( is_admin() ) {
+			$screen = get_current_screen();
+
+			if ( 'edit-shop_subscription' == $screen->id ) {
+				foreach ( $formatted_meta as $meta_id => $meta ) {
+					if ( 'wcsg_recipient' == $meta['key'] ) {
+						unset( $formatted_meta[ $meta_id ] );
+					}
+				}
+			}
+		}
+
+		return $formatted_meta;
 	}
 }
 WCSG_Admin::init();
