@@ -235,7 +235,7 @@ class WCSG_Email {
 
 		$order_downloads = WCSG_Download_Handler::get_user_downloads_for_order( $order, $user_id );
 
-		$string_to_format = strpos( current_filter(),'email_heading' ) ? 'heading' : 'subject';
+		$string_to_format = strpos( current_filter(), 'email_heading' ) ? 'heading' : 'subject';
 
 		if ( isset( $sending_email ) && empty( $order_downloads ) && isset( $sending_email->{$string_to_format} ) ) {
 			$heading = $sending_email->format_string( $sending_email->{$string_to_format} );
