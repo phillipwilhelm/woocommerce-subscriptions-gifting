@@ -116,9 +116,9 @@ class WCSG_Download_Handler {
 		$downloads = $wpdb->get_results( $wpdb->prepare("
 			SELECT *
 			FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions
-			WHERE user_id = %s
-			AND order_id = %s
-			AND product_id = %s
+			WHERE user_id = %d
+			AND order_id = %d
+			AND product_id = %d
 		", $user_id, $order->id, $product_id ) );
 
 		$files   = array();
