@@ -117,8 +117,8 @@ class WCSG_Download_Handler {
 	}
 
 	/**
-	 * Outputs hidden fields on the edit subscription screen, storing download permission ids and users to be used when saving download permissions.
-	 * Saves the download permissions so they can be used later, when displaying user information
+	 * Before displaying the meta box, save the download permissions so they can be used later when displaying
+	 * user information and outputting download permission hidden fields.
 	 *
 	 * @param WC_Subscription $subscription
 	 */
@@ -135,7 +135,7 @@ class WCSG_Download_Handler {
 	 * Formats the download permission title to also include information about the user the permission belongs to.
 	 * This is to make it clear to store managers which user's permissions are being edited.
 	 *
-	 * @param string $download_title the download permission title displayed in order download permisssion meta boxes
+	 * @param string $download_title the download permission title displayed in order download permission meta boxes
 	 */
 	public static function add_user_to_download_permission_title( $download_title, $product_id, $order_id ) {
 
@@ -218,7 +218,7 @@ class WCSG_Download_Handler {
 	}
 
 	/**
-	 * Gets all download permissions for a subscription
+	 * Get all download permissions for a subscription
 	 *
 	 * @param int $subscription_id
 	 */
@@ -340,7 +340,7 @@ class WCSG_Download_Handler {
 	}
 
 	/**
-	 * Flags the download permission being revoked by storing the permission id in session data,
+	 * Flags the download permission being revoked by storing the permission id in session data.
 	 * This value will ensure the query to revoke access is unique to prevent deleting permissions
 	 * for both recipient and purchaser.
 	 */
