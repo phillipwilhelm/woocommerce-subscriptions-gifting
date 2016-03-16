@@ -60,12 +60,15 @@ require_once( 'includes/class-wcsg-email.php' );
 
 require_once( 'includes/class-wcsg-download-handler.php' );
 
+require_once( 'includes/class-wcsg-recipient-addresses.php' );
+
 class WCS_Gifting {
 
 	public static $plugin_file = __FILE__;
 
 	public static $wc_minimum_supported_version  = '2.3';
 	public static $wcs_minimum_supported_version = '2.0';
+	public static $wcm_minimum_supported_version = '1.4';
 
 	/**
 	 * Setup hooks & filters, when the class is initialised.
@@ -98,6 +101,15 @@ class WCS_Gifting {
 	 */
 	public static function load_dependant_classes() {
 		require_once( 'includes/class-wcsg-query.php' );
+
+		if ( class_exists( 'WC_Memberships_Membership_Plan' ) ) {
+
+			if ( version_compare( get_option( 'wc_memberships_version' ), WCS_Gifting::$wcm_minimum_supported_version, '>=' ) ) {
+				require_once( 'includes/class-wcsg-memberships-integration.php' );
+			} else {
+				add_action( 'admin_notices', 'WCS_Gifting::plugin_dependency_notices' );
+			}
+		}
 	}
 
 	/**
@@ -305,6 +317,11 @@ class WCS_Gifting {
 		} else if ( version_compare( get_option( 'woocommerce_subscriptions_active_version' ), WCS_Gifting::$wcs_minimum_supported_version, '<' ) ) {
 			self::output_plugin_dependency_notice( 'WooCommerce Subscriptions', WCS_Gifting::$wcs_minimum_supported_version );
 		}
+
+		if ( is_plugin_active( 'woocommerce-memberships/woocommerce-memberships.php' ) && version_compare( get_option( 'wc_memberships_version' ), WCS_Gifting::$wcm_minimum_supported_version, '<' ) ) {
+			self::output_plugin_dependency_notice( 'WooCommerce Memberships', WCS_Gifting::$wcm_minimum_supported_version );
+		}
+
 	}
 
 	/**
@@ -316,13 +333,17 @@ class WCS_Gifting {
 	 */
 	public static function output_plugin_dependency_notice( $plugin_name, $required_version = false ) {
 
-		if ( current_user_can( 'activate_plugins' ) ) :
+		if ( current_user_can( 'activate_plugins' ) ) {
 			if ( $required_version ) { ?>
-
 				<div id="message" class="error">
 					<p><?php
+					if ( 'WooCommerce Memberships' == $plugin_name ) {
+						// translators: 1$-2$: opening and closing <strong> tags, 3$ plugin name, 4$ required plugin version, 5$-6$: opening and closing link tags, leads to plugins.php in admin, 7$: line break, 8$-9$ Opening and closing small tags
+						printf( esc_html__( '%1$sWooCommerce Subscriptions Gifting Membership integration is inactive.%2$s In order to integrate with WooCommerce Memberships, WooCommerce Subscriptions Gifting requires %3$s %4$s or newer. %5$sPlease update &raquo;%6$s %7$s%8$sNote: All other WooCommerce Subscriptions Gifting features will remain available, however purchasing membership plans for recipients will fail to grant the membership to the gift recipient.%9$s', 'woocommerce-subscriptions-gifting' ), '<strong>', '</strong>', esc_html( $plugin_name ), esc_html( $required_version ), '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">', '</a>', '</br>', '<small>', '</small>' );
+					} else {
 						// translators: 1$-2$: opening and closing <strong> tags, 3$ plugin name, 4$ required plugin version, 5$-6$: opening and closing link tags, leads to plugins.php in admin
-						printf( esc_html__( '%1$sWooCommerce Subscriptions Gifting is inactive.%2$s This version of WooCommerce Subscriptions Gifting requires %3$s %4$s or newer. %5$sPlease update &raquo;%6$s', 'woocommerce-subscriptions-gifting' ), '<strong>', '</strong>', esc_html( $plugin_name ), esc_html( $required_version ), '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">', '</a>' ); ?>
+						printf( esc_html__( '%1$sWooCommerce Subscriptions Gifting is inactive.%2$s This version of WooCommerce Subscriptions Gifting requires %3$s %4$s or newer. %5$sPlease update &raquo;%6$s', 'woocommerce-subscriptions-gifting' ), '<strong>', '</strong>', esc_html( $plugin_name ), esc_html( $required_version ), '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">', '</a>' );
+					} ?>
 					</p>
 				</div>
 			<?php } else {
@@ -343,7 +364,7 @@ class WCS_Gifting {
 					</p>
 				</div>
 			<?php }
-		endif;
+		}
 	}
 
 	/**
@@ -354,7 +375,7 @@ class WCS_Gifting {
 	 */
 	public static function is_gifted_subscription( $subscription ) {
 
-		if ( ! is_object( $subscription ) ) {
+		if ( ! $subscription instanceof WC_Subscription ) {
 			$subscription = wcs_get_subscription( $subscription );
 		}
 
@@ -402,5 +423,45 @@ class WCS_Gifting {
 			'country'    => get_user_meta( $user_id, 'shipping_country', true ),
 		);
 	}
+
+	/**
+	 * Determines if an order contains a gifted subscription.
+	 *
+	 * @param mixed $order the order id or order object to check
+	 * @return bool
+	 */
+	public static function order_contains_gifted_subscription( $order ) {
+
+		if ( ! is_object( $order ) ) {
+			$order = wc_get_order( $order );
+		}
+
+		if ( ! is_a( $order, 'WC_Order' ) ) {
+			return false;
+		}
+
+		$contains_gifted_subscription = false;
+
+		foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription_id => $subscription ) {
+
+			if ( self::is_gifted_subscription( $subscription ) ) {
+				$contains_gifted_subscription = true;
+				break;
+			}
+		}
+
+		return $contains_gifted_subscription;
+	}
+
+	/**
+	 * Retrieves the user id of the recipient stored in order item meta.
+	 *
+	 * @param mixed $order_item the order item to check
+	 * @return mixed bool|int The recipient user id or false if the order item is not gifted
+	 */
+	public static function get_order_item_recipient_user_id( $order_item ) {
+		return ( isset( $order_item['item_meta']['wcsg_recipient'] ) ) ? substr( $order_item['item_meta']['wcsg_recipient'][0], strlen( 'wcsg_recipient_id_' ) ) : false;
+	}
+
 }
 WCS_Gifting::init();
