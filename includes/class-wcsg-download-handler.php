@@ -12,12 +12,12 @@ class WCSG_Download_Handler {
 		add_filter( 'woocommerce_downloadable_file_permission_data', __CLASS__ . '::grant_recipient_download_permissions', 11 );
 		add_filter( 'woocommerce_get_item_downloads', __CLASS__ . '::get_item_download_links', 15, 3 );
 
-		/* Download Permission Meta Box Functions */
+		// Download Permission Meta Box Functions
 		add_action( 'woocommerce_process_shop_order_meta', __CLASS__ . '::download_permissions_meta_box_save', 10, 1 );
 		add_action( 'woocommerce_admin_order_data_after_order_details', __CLASS__ . '::get_download_permissions_before_meta_box', 10, 1 );
 		add_filter( 'woocommerce_admin_download_permissions_title', __CLASS__ . '::add_user_to_download_permission_title', 10, 3 );
 
-		// Granting access via download meta box - hooked on prior to WC_AJAX::grant_access_to_download()
+		// Grant access via download meta box - hooked on prior to WC_AJAX::grant_access_to_download()
 		add_action( 'wp_ajax_woocommerce_grant_access_to_download', __CLASS__ . '::grant_access_to_download_via_meta_box', 9 );
 
 		// Revoke access via download meta box - hooked to a custom Ajax handler in place of WC_AJAX::revoke_access_to_download()
@@ -113,8 +113,9 @@ class WCSG_Download_Handler {
 	}
 
 	/**
-	 * Before displaying the meta box, save the download permissions so they can be used later when displaying
-	 * user information and outputting download permission hidden fields.
+	 * Before displaying the meta box, save an unmodified set of the download permissions so they can be used later
+	 * when displaying user information and outputting download permission hidden fields (which needs to be done just
+	 * once per permission).
 	 *
 	 * @param WC_Subscription $subscription
 	 */
@@ -130,6 +131,11 @@ class WCSG_Download_Handler {
 	/**
 	 * Formats the download permission title to also include information about the user the permission belongs to.
 	 * This is to make it clear to store managers which user's permissions are being edited.
+	 *
+	 * We also sneak in hidden fields for the user and permission ID to make sure that we can revoke or modify
+	 * permissions for a specific user, because WC doesn't use permission IDs and instead uses download IDs, which
+	 * are a hash that do not take into account user ID and duplicate permissions for the same product on the same
+	 * order for different users.
 	 *
 	 * @param string $download_title the download permission title displayed in order download permission meta boxes
 	 */
@@ -159,7 +165,13 @@ class WCSG_Download_Handler {
 	}
 
 	/**
-	 * Save download permission meta box data. Unhooks WC_Meta_Box_Order_Downloads::save() to prevent the WC save function from being called.
+	 * Save download permission meta box data.
+	 *
+	 * We need to unhook WC_Meta_Box_Order_Downloads::save() to prevent the WC save function from being called because
+	 * it does not differentiate between duplicate permissions for the same product on the same order even when the
+	 * permissions are for different users (and with different permission IDs). This means it would modify all
+	 * permissions on that order for that product and set them all to be for the same user, instead of keeping
+	 * them for the different users.
 	 *
 	 * @param int $subscription_id
 	 */
