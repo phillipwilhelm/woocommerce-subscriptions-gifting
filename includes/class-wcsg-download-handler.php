@@ -8,13 +8,16 @@ class WCSG_Download_Handler {
 	public static function init() {
 		add_filter( 'woocommerce_subscription_settings', __CLASS__ . '::register_download_settings' );
 		add_filter( 'woocommerce_downloadable_file_permission_data', __CLASS__ . '::grant_recipient_download_permissions', 11 );
-		add_filter( 'woocommerce_get_item_downloads', __CLASS__ . '::get_item_download_links', 10, 3 );
+		add_filter( 'woocommerce_get_item_downloads', __CLASS__ . '::get_item_download_links', 15, 3 );
 
 		add_action( 'woocommerce_process_shop_order_meta', __CLASS__ . '::remove_meta_box_save', 10, 1 );
 	}
 
 	/**
-	 * Gets the current user's download links for a downloadable order item.
+	 * Gets the correct user's download links for a downloadable order item.
+	 * If the request is from within an email, the links belonging to the email recipient are returned otherwise
+	 * if the request is from the view subscription page use the current user id,
+	 * otherwise the links for order's customer user are returned.
 	 *
 	 * @param array $files Downloadable files for the order item
 	 * @param array $item Order line item.
@@ -22,26 +25,20 @@ class WCSG_Download_Handler {
 	 * @return array $files
 	 */
 	public static function get_item_download_links( $files, $item, $order ) {
-		global $wp_query;
 
-		if ( wcs_is_subscription( $order ) && wcs_is_view_subscription_page() ) {
-			$subscription = wcs_get_subscription( $wp_query->query['view-subscription'] );
+		if ( ! empty( $order->recipient_user ) ) {
+			$subscription_recipient = get_user_by( 'id', $order->recipient_user );
+			$user_id                = ( wcs_is_subscription( $order ) && wcs_is_view_subscription_page() ) ? get_current_user_id() : $order->customer_user;
+			$mailer                 = WC()->mailer();
 
-			if ( isset( $subscription->recipient_user ) ) {
-				$downloads = wc_get_customer_available_downloads( get_current_user_id() );
-
-				foreach ( $downloads as $download ) {
-					$product_id = wcs_get_canonical_product_id( $item );
-
-					if ( $product_id == $download['product_id'] && $order->id == $download['order_id'] ) {
-						$files[ $download['download_id'] ] = array(
-							'name'         => $download['file']['name'],
-							'file'         => $download['file']['file'],
-							'download_url' => $download['download_url'],
-						);
-					}
+			foreach ( $mailer->emails as $email ) {
+				if ( isset( $email->wcsg_sending_recipient_email ) ) {
+					$user_id = $order->recipient_user;
+					break;
 				}
 			}
+
+			$files = self::get_user_downloads_for_order_item( $order, $user_id, $item );
 		}
 		return $files;
 	}
@@ -116,6 +113,72 @@ class WCSG_Download_Handler {
 
 			remove_action( 'woocommerce_process_shop_order_meta', 'WC_Meta_Box_Order_Downloads::save', 30 );
 		}
+	}
+
+	/**
+	 * Retrieves a user's download permissions for an order.
+	 *
+	 * @param  WC_Order $order
+	 * @param  int $user_id
+	 * @param  array $item
+	 *
+	 * @return array
+	 */
+	public static function get_user_downloads_for_order_item( $order, $user_id, $item ) {
+		global $wpdb;
+
+		$product_id = wcs_get_canonical_product_id( $item );
+
+		$downloads = $wpdb->get_results( $wpdb->prepare("
+			SELECT *
+			FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions
+			WHERE user_id = %d
+			AND order_id = %d
+			AND product_id = %d
+		", $user_id, $order->id, $product_id ) );
+
+		$files   = array();
+		$product = wc_get_product( $product_id );
+
+		foreach ( $downloads as $download ) {
+
+			if ( $product->has_file( $download->download_id ) ) {
+				$files[ $download->download_id ]                 = $product->get_file( $download->download_id );
+				$files[ $download->download_id ]['download_url'] = add_query_arg(
+					array(
+						'download_file' => $product_id,
+						'order'         => $download->order_key,
+						'email'         => $download->user_email,
+						'key'           => $download->download_id,
+					),
+					home_url( '/' )
+				);
+			}
+		}
+		return $files;
+	}
+
+	/**
+	 * Retrieves all the user's download permissions for an order by checking
+	 * for downloads stored on the subscriptions in the order.
+	 *
+	 * @param  WC_Order $order
+	 * @param  int $user_id
+	 *
+	 * @return array
+	 */
+	public static function get_user_downloads_for_order( $order, $user_id ) {
+
+		$subscriptions   = wcs_get_subscriptions_for_order( $order, array( 'order_type' => array( 'any' ) ) );
+		$order_downloads = array();
+
+		foreach ( $subscriptions as $subscription ) {
+			foreach ( $subscription->get_items() as $subscription_item ) {
+				$order_downloads = array_merge( $order_downloads, self::get_user_downloads_for_order_item( $subscription, $user_id, $subscription_item ) );
+			}
+		}
+
+		return $order_downloads;
 	}
 }
 WCSG_Download_Handler::init();

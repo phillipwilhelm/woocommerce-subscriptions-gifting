@@ -2,6 +2,8 @@
 
 class WCSG_Email_Processing_Renewal_Order extends WCS_Email_Processing_Renewal_Order {
 
+	public $wcsg_sending_recipient_email;
+
 	/**
 	 * Create an instance of the class.
 	 */
@@ -29,6 +31,7 @@ class WCSG_Email_Processing_Renewal_Order extends WCS_Email_Processing_Renewal_O
 	 * trigger function.
 	 */
 	function trigger( $order_id ) {
+
 		if ( $order_id ) {
 			$this->object    = wc_get_order( $order_id );
 			$subscriptions   = wcs_get_subscriptions_for_renewal_order( $order_id );
@@ -48,6 +51,10 @@ class WCSG_Email_Processing_Renewal_Order extends WCS_Email_Processing_Renewal_O
 		if ( ! $this->is_enabled() || ! $this->get_recipient() ) {
 			return;
 		}
+
+		$this->wcsg_sending_recipient_email = $recipient_id;
 		$this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
+
+		unset( $this->wcsg_sending_recipient_email );
 	}
 }
