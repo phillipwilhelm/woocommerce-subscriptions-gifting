@@ -18,7 +18,7 @@ class WCSG_Download_Handler {
 		add_filter( 'woocommerce_admin_download_permissions_title', __CLASS__ . '::add_user_to_download_permission_title', 10, 3 );
 
 		// Grant access via download meta box - hooked on prior to WC_AJAX::grant_access_to_download()
-		add_action( 'wp_ajax_woocommerce_grant_access_to_download', __CLASS__ . '::grant_access_to_download_via_meta_box', 9 );
+		add_action( 'wp_ajax_woocommerce_grant_access_to_download', __CLASS__ . '::ajax_grant_download_permission', 9 );
 
 		// Revoke access via download meta box - hooked to a custom Ajax handler in place of WC_AJAX::revoke_access_to_download()
 		add_action( 'wp_ajax_wcsg_revoke_access_to_download', __CLASS__ . '::ajax_revoke_download_permission' );
@@ -242,7 +242,7 @@ class WCSG_Download_Handler {
 	 * Grants download permissions from the edit subscription meta box grant access button.
 	 * Outputs meta box table rows for each permission granted.
 	 */
-	public static function grant_access_to_download_via_meta_box() {
+	public static function ajax_grant_download_permission() {
 
 		check_ajax_referer( 'grant-access', 'security' );
 
