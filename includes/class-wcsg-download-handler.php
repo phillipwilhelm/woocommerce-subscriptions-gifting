@@ -230,7 +230,7 @@ class WCSG_Download_Handler {
 	 *
 	 * @param int $subscription_id
 	 */
-	public static function get_subscription_download_permissions( $subscription_id, $order_by = 'product_id' ) {
+	private static function get_subscription_download_permissions( $subscription_id, $order_by = 'product_id' ) {
 		global $wpdb;
 
 		// Only allow ordering by permissions_id and product_id (because we can't sanitise $order_by with $wpdb->prepare(), we need it as a column not a string)
