@@ -230,12 +230,17 @@ class WCSG_Download_Handler {
 	 *
 	 * @param int $subscription_id
 	 */
-	public static function get_subscription_download_permissions( $subscription_id ) {
+	public static function get_subscription_download_permissions( $subscription_id, $order_by = 'product_id' ) {
 		global $wpdb;
+
+		// Only allow ordering by permissions_id and product_id (because we can't sanitise $order_by with $wpdb->prepare(), we need it as a column not a string)
+		if ( $order_by !== 'permission_id' ) {
+			$order_by = 'product_id';
+		}
 
 		return $wpdb->get_results( $wpdb->prepare( "
 			SELECT * FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions
-			WHERE order_id = %d ORDER BY product_id", $subscription_id ) );
+			WHERE order_id = %d ORDER BY {$order_by}", $subscription_id ) );
 	}
 
 	/**
@@ -262,7 +267,7 @@ class WCSG_Download_Handler {
 		if ( WCS_Gifting::is_gifted_subscription( $order_id ) ) {
 
 			$subscription         = wcs_get_subscription( $order_id );
-			$download_permissions = self::get_subscription_download_permissions( $order_id );
+			$download_permissions = self::get_subscription_download_permissions( $order_id, 'permission_id' );
 			$file_names           = array();
 
 			if ( ! $subscription->billing_email ) {
@@ -294,7 +299,7 @@ class WCSG_Download_Handler {
 			}
 
 			if ( 0 < count( $file_names ) ) {
-				$updated_download_permissions = self::get_subscription_download_permissions( $order_id );
+				$updated_download_permissions = self::get_subscription_download_permissions( $order_id, 'permission_id' );
 				$new_download_permissions     = array_diff( array_keys( $updated_download_permissions ), array_keys( $download_permissions ) );
 
 				foreach ( $new_download_permissions as $new_download_permission_index ) {
