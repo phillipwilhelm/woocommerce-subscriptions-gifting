@@ -102,7 +102,7 @@ class WCS_Gifting {
 
 		if ( 'shop_subscription' == $screen->id && WCS_Gifting::is_gifted_subscription( $post->ID ) ) {
 
-			wp_register_script( 'wcs_gifting_admin', plugins_url( '/js/wcsg-admin.js', __FILE__ ), array( 'jquery' ) );
+			wp_register_script( 'wcs_gifting_admin', plugins_url( '/js/wcsg-admin.js', __FILE__ ), array( 'jquery', 'wc-admin-order-meta-boxes' ) );
 
 			wp_localize_script( 'wcs_gifting_admin', 'wcs_gifting', array(
 				'revoke_download_permission_nonce' => wp_create_nonce( 'revoke_download_permission' ),

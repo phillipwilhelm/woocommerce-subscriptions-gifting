@@ -21,7 +21,7 @@ class WCSG_Download_Handler {
 		add_action( 'wp_ajax_woocommerce_grant_access_to_download', __CLASS__ . '::grant_access_to_download_via_meta_box', 9 );
 
 		// Revoke access via download meta box - hooked to a custom Ajax handler in place of WC_AJAX::revoke_access_to_download()
-		add_action( 'wp_ajax_wcsg_revoke_access_to_download', __CLASS__ . '::set_revoking_permission_id_flag' );
+		add_action( 'wp_ajax_wcsg_revoke_access_to_download', __CLASS__ . '::ajax_revoke_download_permission' );
 	}
 
 	/**
@@ -303,19 +303,40 @@ class WCSG_Download_Handler {
 	}
 
 	/**
-	 * Flags the download permission being revoked by storing the permission id in session data.
-	 * This value will ensure the query to revoke access is unique to prevent deleting permissions
-	 * for both recipient and purchaser.
+	 * WooCommerce revokes download permissions based only on the product an order ID, that means when
+	 * revoking downloads on a gift subscription with permissions for both the purchaser and recipient,
+	 * it will revoke both sets of permissions instead of only the permission against which the store
+	 * manager clicked the "Revoke Access" button.
+	 *
+	 * To workaround this, we add the permission ID as a hidden fields against each download permission
+	 * with @see self::add_user_to_download_permission_title(). We then trigger a custom Ajax request
+	 * that passes the permission ID to the server to make sure we only revoke only that permission.
+	 *
+	 * We also need to remove WC's handler, which is the WC_Ajax:;revoke_access_to_download() method attached
+	 * to the 'woocommerce_revoke_access_to_download' Ajax action. To do this, we have out wcsg-admin.js file
+	 * enqueued after WooCommerce's 'wc-admin-order-meta-boxes' script and then in our JavaScript call
+	 * $( '.order_download_permissions' ).off() to remove WooCommerce's Ajax method.
+	 *
+	 * @since 1.0
 	 */
-	public static function set_revoking_permission_id_flag() {
+	public static function ajax_revoke_download_permission() {
+		global $wpdb;
 
 		check_admin_referer( 'revoke_download_permission', 'nonce' );
 
-		$permission_id   = intval( $_POST['download_permission_id'] );
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			die( -1 );
+		}
+
 		$subscription_id = intval( $_POST['post_id'] );
 
 		if ( WCS_Gifting::is_gifted_subscription( $subscription_id ) ) {
-			WC()->session->set( 'wcsg_revoking_permission_flag', $permission_id );
+
+			$permission_id = intval( $_POST['download_permission_id'] );
+
+			if ( ! empty( $permission_id ) ) {
+				$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions WHERE order_id = %d AND permission_id = %d", $subscription_id, $permission_id ) );
+			}
 		}
 
 		die();
