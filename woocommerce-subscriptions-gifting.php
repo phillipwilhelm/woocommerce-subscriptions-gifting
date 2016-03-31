@@ -88,6 +88,30 @@ class WCS_Gifting {
 		add_action( 'wc_get_template', __CLASS__ . '::get_recent_orders_template', 1 , 3 );
 
 		add_filter( 'wcs_renewal_order_meta_query', __CLASS__ . '::remove_renewal_order_meta_query', 11 );
+
+		add_action( 'admin_enqueue_scripts',  __CLASS__ . '::admin_scripts' );
+	}
+
+	/**
+	 * Register/queue admin scripts.
+	 */
+	public static function admin_scripts() {
+		global $post;
+
+		$screen = get_current_screen();
+
+		if ( 'shop_subscription' == $screen->id && WCS_Gifting::is_gifted_subscription( $post->ID ) ) {
+
+			wp_register_script( 'wcs_gifting_admin', plugins_url( '/js/wcsg-admin.js', __FILE__ ), array( 'jquery', 'wc-admin-order-meta-boxes' ) );
+
+			wp_localize_script( 'wcs_gifting_admin', 'wcs_gifting', array(
+				'revoke_download_permission_nonce' => wp_create_nonce( 'revoke_download_permission' ),
+				'ajax_url'                         => admin_url( 'admin-ajax.php' ),
+				)
+			);
+
+			wp_enqueue_script( 'wcs_gifting_admin' );
+		}
 	}
 
 	/**
