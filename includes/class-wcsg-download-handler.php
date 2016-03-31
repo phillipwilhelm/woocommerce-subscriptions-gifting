@@ -234,7 +234,7 @@ class WCSG_Download_Handler {
 		global $wpdb;
 
 		// Only allow ordering by permissions_id and product_id (because we can't sanitise $order_by with $wpdb->prepare(), we need it as a column not a string)
-		if ( $order_by !== 'permission_id' ) {
+		if ( 'permission_id' !== $order_by ) {
 			$order_by = 'product_id';
 		}
 
