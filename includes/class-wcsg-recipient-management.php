@@ -82,25 +82,25 @@ class WCSG_Recipient_Management {
 
 			$recipient_actions = array();
 			$current_status    = $subscription->get_status();
-			$recipient_id      = $subscription->recipient_user;
+			$recipient_user    = get_user_by( 'id', $subscription->recipient_user );
 
 			$admin_with_suspension_disallowed = ( current_user_can( 'manage_woocommerce' ) && '0' === get_option( WC_Subscriptions_Admin::$option_prefix . '_max_customer_suspensions', '0' ) ) ? true : false;
 
-			if ( $subscription->can_be_updated_to( 'on-hold' ) && wcs_can_user_put_subscription_on_hold( $subscription, $recipient_id ) && ! $admin_with_suspension_disallowed ) {
+			if ( $subscription->can_be_updated_to( 'on-hold' ) && wcs_can_user_put_subscription_on_hold( $subscription, $recipient_user ) && ! $admin_with_suspension_disallowed ) {
 				$recipient_actions['suspend'] = array(
-					'url'  => self::get_recipient_change_status_link( $subscription->id, 'on-hold', $recipient_id, $current_status ),
+					'url'  => self::get_recipient_change_status_link( $subscription->id, 'on-hold', $recipient_user->ID, $current_status ),
 					'name' => __( 'Suspend', 'woocommerce-subscriptions-gifting' ),
 				);
 			} else if ( $subscription->can_be_updated_to( 'active' ) && ! $subscription->needs_payment() ) {
 				$recipient_actions['reactivate'] = array(
-					'url'  => self::get_recipient_change_status_link( $subscription->id, 'active', $recipient_id, $current_status ),
+					'url'  => self::get_recipient_change_status_link( $subscription->id, 'active', $recipient_user->ID, $current_status ),
 					'name' => __( 'Reactivate', 'woocommerce-subscriptions-gifting' ),
 				);
 			}
 
 			if ( $subscription->can_be_updated_to( 'cancelled' ) ) {
 				$recipient_actions['cancel'] = array(
-					'url'  => self::get_recipient_change_status_link( $subscription->id, 'cancelled', $recipient_id, $current_status ),
+					'url'  => self::get_recipient_change_status_link( $subscription->id, 'cancelled', $recipient_user->ID, $current_status ),
 					'name' => __( 'Cancel', 'woocommerce-subscriptions-gifting' ),
 				);
 			}
