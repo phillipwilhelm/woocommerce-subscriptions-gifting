@@ -1,6 +1,6 @@
 # WooCommerce Subscriptions Gifting
 
-[![Build Status](https://magnum.travis-ci.com/Prospress/woocommerce-subscriptions-gifting.svg?token=7qcKG8toQcpjnZpuJrFT&branch=master)](https://magnum.travis-ci.com/Prospress/woocommerce-subscriptions-gifting) [![codecov.io](http://codecov.io/github/Prospress/woocommerce-subscriptions-gifting/coverage.svg?token=d9aaaF18bY&branch=master)](http://codecov.io/github/Prospress/woocommerce-subscriptions-gifting?branch=master)
+[![Build Status](https://travis-ci.org/Prospress/woocommerce-subscriptions-gifting.svg?branch=master)](https://travis-ci.org/Prospress/woocommerce-subscriptions-gifting) [![codecov.io](http://codecov.io/github/Prospress/woocommerce-subscriptions-gifting/coverage.svg?token=d9aaaF18bY&branch=master)](http://codecov.io/github/Prospress/woocommerce-subscriptions-gifting?branch=master)
 
 [WooCommerce Subscriptions](https://www.woothemes.com/products/woocommerce-subscriptions/) makes it possible to offer subscription products in your WooCommerce store.
 
