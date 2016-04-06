@@ -2,80 +2,68 @@
 
 [![Build Status](https://magnum.travis-ci.com/Prospress/woocommerce-subscriptions-gifting.svg?token=7qcKG8toQcpjnZpuJrFT&branch=master)](https://magnum.travis-ci.com/Prospress/woocommerce-subscriptions-gifting) [![codecov.io](http://codecov.io/github/Prospress/woocommerce-subscriptions-gifting/coverage.svg?token=d9aaaF18bY&branch=master)](http://codecov.io/github/Prospress/woocommerce-subscriptions-gifting?branch=master)
 
-This is the repository for Subscriptions Gifting. Important data:
+[WooCommerce Subscriptions](https://www.woothemes.com/products/woocommerce-subscriptions/) makes it possible to offer subscription products in your WooCommerce store.
 
-## Branches
+But what happens if a customer wants to purchase a subscription for someone else?
 
-* `master` is used for the current released version
+They could enter the recipient's shipping address for physical products to make sure they receive packages, but what about virtual products, like memberships? And what happens if the recipient moves before the subscription ends, how do they update their shipping address?
 
-##  Overview
-WooCommerce Subscriptions Gifting is an extension for WooCommerce Subscriptions that allows customers to purchase subscription products for recipients. 
+WooCommerce Subscriptions Gifting solves these issues and many more, by making it possible for one person to purchase a subscription product for someone else. It then shares the subscription between the purchaser and recipient.
 
-Whether customers are adding products to their cart from the single product page, reviewing their cart or checking out, customers can choose to purchase subscriptions for others by simply entering the recipient's email address. WooCommerce Subscriptions Gifting will manage the rest.
+Whether customers are adding products to their cart from the single product page, reviewing their cart or checking out, customers can choose to purchase subscriptions for others by entering the recipient's email address. WooCommerce Subscriptions Gifting will take care of the rest.
 
 ## Setup
 ### Installation
-You can download the plugin from [here](https://github.com/Prospress/woocommerce-subscriptions-gifting/archive/master.zip). To install it, follow these steps:
 
-1. Go to Plugins > Add New > Upload
-2. Select the ZIP file you just downloaded
-3. Click Install Now, and then Activate
+To install Gifting:
 
-## Usage
-### Purchasing Subscription Products for Others
-There are three ways customers can choose to purchase a subscription product for someone else:
+1. Download the latest version of the plugin [here](https://github.com/Prospress/woocommerce-subscriptions-gifting/archive/master.zip)
+1. Go to **Plugins > Add New > Upload** administration screen on your WordPress site
+1. Select the ZIP file you just downloaded
+1. Click **Install Now**
+1. Click **Activate**
+
+## Customer's View
+
+There are three pages where a customer can choose to purchase a subscription product for someone else:
 * Single Product Page
 * Cart Page
 * Checkout Page
 
 #### Single Product Page
-To purchase a subscription for another customer via the Single Product page:
+To purchase a subscription for another customer via the Single Product page, a customer can:
 
-1. Go to a subscription product’s Single Product Page.
-3. Select the checkbox “This is a gift”.
-4. Type in the recipient’s email address.
-5. click “Sign Up Now”.
+1. Go to a subscription product’s Single Product Page
+3. Select the checkbox _"This is a gift"_
+4. Type in the recipient’s email address
+5. Click **Sign Up Now**
 
-<img src="https://cldup.com/kXmf1yXzGC-3000x3000.png" height="621" width="740">
+![](https://cldup.com/kXmf1yXzGC-3000x3000.png)
 
 #### Cart Page
-When reviewing their cart, customers can also choose a subscription cart item to be gifted by:
+To gift a subscription via the cart page, the customer can: 
 
-1. Selecting the checkbox “This is a gift”.
-2. Type in the recipient’s email address.
-3. click “Update Cart”.
+1. Go to the _Cart_ page
+1. Click the checkbox _"This is a gift"_
+1. Type in the recipient’s email address
+1. Click **Update Cart**
 
-<img src="https://cldup.com/sFeLKUucKK-3000x3000.png" height="409" width="606">
+![](https://cldup.com/sFeLKUucKK-3000x3000.png)
 
 #### Checkout
-To purchase a gifted subscription via the checkout: 
+To gift a subscription via the checkout, the customer can: 
 
-1. Go to the Checkout Page.
-2. Click the checkbox “This is a gift”.
-3. Type in the recipient’s email address.
-5. click “Place Order”.
+1. Go to the _Checkout_ page
+1. Click the checkbox _"This is a gift"_
+1. Type in the recipient’s email address
+1. Click **Place Order**
 
-<img src="https://cldup.com/kA3UOUCnyE-3000x3000.png" height="736" width="449">
+![](https://cldup.com/kA3UOUCnyE-3000x3000.png)
 
-#### Mini Cart Widget
-In order to make it clear to customers how their cart is arranged, the cart items that have been assigned a gift recipient will display recipient details alongside their products in the mini cart. 
+## Shared Subscription Management
+Once a subscription product has been purchased for a recipient, both the recipient and purchaser will have access to view and manage certain aspects of the subscription over its lifecycle via the **My Subscriptions** table on the **My Account** Page.
 
-<img src="https://cldup.com/7Z_W7LHABo-3000x3000.png" height="534" width="242">
-
-### Completing an Order with Gifted Subscriptions
-Once an order with a gifted subscription is placed, customers are given an overview of their order. Here the purchaser can see which products in their order have been purchased and for who. 
-
-<img src="https://cldup.com/HNLhiWHwPi-3000x3000.png" height="721" width="450">
-
-#### Subscription Grouping
-Similar to how WooCommerce Subscriptions version 2.0 creates subscriptions through [**subscription product grouping**](http://docs.woothemes.com/document/subscriptions/multiple-subscriptions/#section-3), subscription products with an equivalent billing schedule and recipient are grouped into the one subscription.
-
-For example, if a customer purchases 3 x monthly subscriptions in the one transaction and two are a gift for the same recipient, 2 subscriptions would be created - one with one line item and the second with the two line items purchased for the recipient.
-
-This separation of subscriptions for recipient and purchaser allows each subscription to be managed and renewed separately and allows for both the recipient and purchaser to manage their subscriptions separately.
-
-### Subscription Management
-Once a subscription has been purchased for a recipient, they are given access to view and manage their subscription from the My Subscriptions table on the My Account Page. The table below outlines the actions both recipients and purchasers can make on gifted subscriptions:
+The table below outlines the actions recipients and purchasers can make on gifted subscriptions:
 
 | Action                     | Recipient    | Purchaser   |
 |:--------------------------|:------------:|:-----------:|
@@ -91,34 +79,77 @@ Once a subscription has been purchased for a recipient, they are given access to
 | View Parent Orders         |       ✖      |      ✔      |
 | View Renewal Orders        |       ✔      |      ✔      |
 
-#### View Subscription Page
+## Other Notes
+
+### Mini Cart Widget
+To make it clear to customers whether products are to be gifted or not, the cart items that have been assigned a gift recipient will display recipient details alongside the cart items in the mini cart.
+
+![](https://cldup.com/7Z_W7LHABo-3000x3000.png)
+
+### Completing an Order with Gifted Subscriptions
+Once an order with a gifted subscription is placed, customers are given an overview of their order. Here the purchaser can see which products in their order have been purchased and for who.
+
+As seen above, the details of this order are not shared with recipients in case additional products are purchased with the gifted subscription product.
+
+![](https://cldup.com/HNLhiWHwPi-3000x3000.png)
+
+### Processing Orders with Gift Recipients
+
+When an order containing a gifted subscription product is created, the gift recipient email is stored alongside their order line items. When processing orders, this allows you to see which line items in an order are being purchased for a different recipient. 
+
+![](https://cldup.com/pen2oWA7uk-3000x3000.png)
+
+**Note:** _If the recipient is subsequently deleted, in addition to the behaviour already discussed [here](https://github.com/Prospress/woocommerce-subscriptions-gifting/blob/master/README.md#deleting-subscription-recipients), the original order and renewal orders will maintain this information once the recipient is deleted, however, future renewal orders will no longer hold this information._
+
+### WooCommerce Memberships Integration
+
+If your store makes use of the WooCommerce Subscriptions and [WooCommerce Memberships](http://www.woothemes.com/products/woocommerce-memberships/) plugins the ability to purchase membership subscriptions is important. Which is why we have made sure we integrate with WooCommerce Memberships. 
+
+In a nutshell, gift recipients who are purchased a subscription product tied to a membership plan will receive the benefits of the membership rather than the purchaser. All the features of managing the memberships granted through gifted subscriptions remain intact, you can pause, edit, cancel and delete memberships granted to recipients just as normal through the **WooCommerce > Memberships** page.  
+
+### Subscription Grouping
+
+WooCommerce Subscriptions version 2.0 creates subscriptions by [**grouping products**](http://docs.woothemes.com/document/subscriptions/multiple-subscriptions/#section-3) based on their billing schedule.
+
+Gifting will also group products based on the recipient so that even if products have the same billing schedule, if they are for different recipients, they will not be grouped together.
+
+For example, if a customer purchases 3 x monthly subscriptions in the one transaction and two are a gift for the same recipient, 2 subscriptions would be created - one with one line item for the first recipient and the second with the two line items purchased for the other recipient.
+
+This separation of subscriptions for recipient and purchaser allows each subscription to be managed and renewed separately and allows for both the recipient and purchaser to manage their subscriptions separately, even if they were purchased in the same transaction.
+
+### View Subscription Page
+
 When visiting the View Subscription Page, both recipient and purchaser are given a couple of extra details to assist in managing their subscription. 
 
-* **Recipient/Purchaser Details -** Details of the other participating person in the gifted subscription are displayed alongside their role in the customer details table on the view subscription page. *For example:*
-<img src="https://cldup.com/6fQ8Lw7s8h-3000x3000.jpeg" height="192" width="555">
-<img src="https://cldup.com/hqPdbqpMWB-3000x3000.jpeg" height="195" width="555">
+#### Recipient/Purchaser Details
+Details of the other participating person in the gifted subscription are displayed alongside their role in the customer details table on the view subscription page.
 
-* **Renewal Purchaser Details -** Because both recipient and purchaser can pay manual or failed renewals, the renewal purchaser's details are outlined in the Related Orders table. 
+<img src="https://cldup.com/6fQ8Lw7s8h-3000x3000.jpeg" height="192" width="555" style="display: block; margin: 0.6em auto;">
+<img src="https://cldup.com/hqPdbqpMWB-3000x3000.jpeg" height="195" width="555" style="display: block; margin: 0.6em auto;">
+
+#### Purchaser Details on Renewal Order
+Because both recipient and purchaser can pay manual or failed renewals, the renewal purchaser's details are outlined in the Related Orders table.
 
 <img src="https://cldup.com/OjB5qSWSIw-3000x3000.png" height="192" width="538">
 
 *Note: Purchaser details are only displayed if the current user did not purchase the renewal.* 
 
 #### Recipient Account Creation
+
 In the event that a recipient does not have an account with your store at the time of being gifted a subscription, an account will be created in order for them to manage their subscription. Login details of the account, as well as information about where they can manage their new subscription, is sent to the recipient via email.
 
 The first time the new recipient logs into their account they will be prompted to enter their shipping address as well as change their password.
 
-<img src="https://cldup.com/hbICzQoNWr-3000x3000.png" height="777" width="597">
+![](https://cldup.com/hbICzQoNWr-3000x3000.png)
 
+<img src="https://cldup.com/dMR6-BEByL-3000x3000.png" height="799" width="409" align="right">
 #### Shipping Address
-In addition to the differences between a typical subscription and a gifted subscription already discussed, when a gifted subscription is purchased, the shipping address of the subscription is set to the recipient's shipping address. This streamlines the process for customers proceeding through the checkout when purchasing subscription products for other users.
+
+When a gifted subscription is purchased, the shipping address of the subscription is set to the recipient's shipping address. This streamlines the process for customers proceeding through the checkout when purchasing subscription products for other users.
 
 *Additional Notes:*
-- *If the recipient does not have an account or has not set the shipping address on their account at the time of purchasing the subscription, the subscriptions shipping address will not be set and will display as NA. This will then be updated when the recipient logs in and enters their details*
+- *If the recipient does not have an account or has not set the shipping address on their account at the time of purchasing the subscription, the subscriptions shipping address will not be set and will display as N/A. This will then be updated when the recipient logs in and enters their details*
 - *In order to maintain a gifted subscription's shipping address when manually renewing, the recipient's shipping address will automatically be entered into the checkout shipping fields.*
-
-<img src="https://cldup.com/dMR6-BEByL-3000x3000.png" height="799" width="409">
 
 #### Recipient and Purchaser Privacy
 In order to provide a level of privacy between purchaser and recipient when managing a gifted subscription, some limitations are placed on viewing related orders and the manual renewal process. These include:
@@ -137,42 +168,27 @@ In order to keep recipients up-to-date with their gifted subscriptions, WooComme
 Like WooCommerce emails, you can enable/disable, edit and customize these emails through settings. To edit emails sent by WooCommerce Subscriptions Gifting, go to: **WooCommerce > Settings > Emails.** 
 
 #### Downloadable Products
-WooCommerce Subscriptions Gifting supports purchasing downloadable products for recipients. 
+WooCommerce Subscriptions Gifting supports purchasing downloadable products for recipients.
 
-When a downloadable product is purchased for a recipient, by default the recipient is granted the permissions to download the files attached to that product. However it is possible to grant download permissions to both recipient and purchaser through the WooCommerce Settings menu, go to **WooCommerce > Settings > Subscriptions.** 
+When a downloadable product is purchased for a recipient, by default the recipient is granted the permissions to download the files attached to that product. However it is possible to grant download permissions to both recipient and purchaser.
 
-<!---
-IMAGE
--->
+To enable dual permissions:
 
-Similar to the normal process for downloading files, recipients can download the files they have been granted access to from the My Account Page and the View Subscription page.
+1. Go to the **WooCommerce > Settings** administration screen
+1. Click the **Subscriptions** tab
+1. Scroll down to the **Gifting Subscriptions** section
+1. Click **Downloadable Products** to enable or disable dual permissions
 
-<!---
-Dual Image My Downloads and View Subscriptions line items. 
--->
+Similar to the normal process for downloading files, recipients can download the files they have been granted access to from the **My Account** page and the **My Account > View Subscription** page.
 
-#### Deleting Subscription Recipients
-In the case that a recipient user is to be deleted, a warning message will be displayed outlining which users will be removed from their subscriptions. It's **important** to note that the subscription(s) will continue to behave as normal once the subscription recipient has been deleted.
+#### Deleting a Recipient's Account
 
-<img src="https://cldup.com/yRwaLdSYSg-3000x3000.png" height="263" width="497">
+<img src="https://cldup.com/yRwaLdSYSg-3000x3000.png" height="263" width="497" align="right">
 
-### Processing Orders with Gift Recipients
-When an order is placed which contains gifted subscription products, the gift recipient is stored alongside their order line items. When processing orders this allows you to see which line items in an order are being purchased for another customer. 
+WordPress provides an administration interface for [deleting user accounts](http://codex.wordpress.org/Users_Users_SubPanel#Delete_Users).
 
-<img src="https://cldup.com/pen2oWA7uk-3000x3000.png">
+When deleting a recipient's user account, the recipient will also be removed from any subscription he or she is associated with.
 
-**Note:** _If the recipient is subsequently deleted, in addition to the behaviour already discussed [here](https://github.com/Prospress/woocommerce-subscriptions-gifting/blob/master/README.md#deleting-subscription-recipients), the original order and renewal orders will maintain this information once the recipient is deleted, however, future renewal orders will no longer hold this information._
+A warning message will be displayed outlining which subscriptions the user will be removed from.
 
-### WooCommerce Memberships Integration
-If your store makes use of the WooCommerce Subscriptions and [WooCommerce Memberships](http://www.woothemes.com/products/woocommerce-memberships/) plugins the ability to purchase membership subscriptions is important. Which is why we have made sure we integrate with WooCommerce Memberships. 
-
-In a nutshell, gift recipients who are purchased a subscription product tied to a membership plan will receive the benefits of the membership rather than the purchaser. All the features of managing the memberships granted through gifted subscriptions remain intact, you can pause, edit, cancel and delete memberships granted to recipients just as normal through the **WooCommerce > Memberships** page.  
-
-## Notes
-### Topics Not Yet Documented
-* Cannot gift a product while switching.
-* ...
-
-### Additional resources
-
-* [Testing readme](tests/README.md)
+It's important to note that the subscription(s) will not be deleted. The subscription(s) will continue to behave as normal for the purchaser once the subscription recipient has been deleted.
