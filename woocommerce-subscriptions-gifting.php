@@ -1,13 +1,13 @@
 <?php
 /**
  * Plugin Name: WooCommerce Subscriptions Gifting
- * Plugin URI:
- * Description: Allow customers to buy products and services with recurring payments for other recipients.
+ * Plugin URI: https://github.com/prospress/woocommerce-subscriptions-gifting
+ * Description: Allow customers to buy a subscription product for someone else, then share subscription management between the purchaser and recipient.
  * Author: Prospress Inc.
  * Author URI: http://prospress.com/
- * Version: 1.0-bleeding
+ * Version: 1.0
  *
- * Copyright 2015 Prospress, Inc.  (email : freedoms@prospress.com)
+ * Copyright 2016 Prospress, Inc.  (email : freedoms@prospress.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

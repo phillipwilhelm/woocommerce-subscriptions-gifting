@@ -1,4 +1,4 @@
 *** WooCommerce Subscriptions Gifting Changelog ***
 
-2015.NN.NN - version 1.0
- * First Release
+2016.04.06 - version 1.0
+ * Initial release, live from #WooConf
