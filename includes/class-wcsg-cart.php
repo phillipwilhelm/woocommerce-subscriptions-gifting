@@ -23,7 +23,7 @@ class WCSG_Cart {
 	 */
 	public static function add_gifting_option_cart( $title, $cart_item, $cart_item_key ) {
 
-		$is_mini_cart = ( did_action( 'woocommerce_before_mini_cart' ) > did_action( 'woocommerce_after_mini_cart' ) ) ? true : false;
+		$is_mini_cart = did_action( 'woocommerce_before_mini_cart' ) && ! did_action( 'woocommerce_after_mini_cart' );
 
 		if ( is_cart() && ! $is_mini_cart ) {
 			$title .= self::maybe_display_gifting_information( $cart_item, $cart_item_key );
