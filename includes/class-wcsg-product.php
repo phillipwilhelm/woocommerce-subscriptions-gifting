@@ -72,18 +72,24 @@ class WCSG_Product {
 		global $product;
 
 		if ( WC_Subscriptions_Product::is_subscription( $product ) && ! isset( $_GET['switch-subscription'] ) ) {
-			$email            = '';
-			$email_field_args = WCS_Gifting::get_recipient_email_field_args( $email );
+			$email               = '';
+			$checkbox_attributes = array();
 
-			if ( self::$product_limited_to_recipient ) {
-				echo '<p>' . esc_html( 'You have an active subscription to this product already. However you can purchase it for someone else.', 'woocommerce-subscriptions-gifting' ) . '<p>';
-				unset( $email_field_args['style_attributes']['display'] );
-
-			} else if ( ! empty( $_POST['recipient_email'][0] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
+			if ( ! empty( $_POST['recipient_email'][0] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
 				$email = $_POST['recipient_email'][0];
+				$checkbox_attributes = array( 'checked' );
 			}
 
-			wc_get_template( 'html-add-recipient.php', array( 'email_field_args' => $email_field_args, 'id' => 0, 'email' => $email, 'limited_to_recipient' => self::$product_limited_to_recipient ), '', plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
+			$email_field_args    = WCS_Gifting::get_recipient_email_field_args( $email );
+
+			if ( self::$product_limited_to_recipient ) {
+				unset( $email_field_args['style_attributes']['display'] );
+				$checkbox_attributes = array( 'checked', 'disabled' );
+
+				echo '<p>' . esc_html( 'You have an active subscription to this product already. However you can purchase it for someone else.', 'woocommerce-subscriptions-gifting' ) . '<p>';
+			}
+
+			wc_get_template( 'html-add-recipient.php', array( 'email_field_args' => $email_field_args, 'id' => 0, 'email' => $email, 'checkbox_attributes' => $checkbox_attributes ), '', plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
 		}
 	}
 
