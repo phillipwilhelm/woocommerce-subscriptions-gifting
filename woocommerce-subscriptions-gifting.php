@@ -284,7 +284,7 @@ class WCS_Gifting {
 		}
 
 		if ( empty( $email ) ) {
-			array_push( $email_field_args['style_attributes'], 'display: none' );
+			$email_field_args['style_attributes']['display'] = 'display: none';
 		}
 		return apply_filters( 'wcsg_recipient_email_field_args', $email_field_args, $email );
 	}
@@ -487,6 +487,20 @@ class WCS_Gifting {
 	 */
 	public static function get_order_item_recipient_user_id( $order_item ) {
 		return ( isset( $order_item['item_meta']['wcsg_recipient'] ) ) ? substr( $order_item['item_meta']['wcsg_recipient'][0], strlen( 'wcsg_recipient_id_' ) ) : false;
+	}
+
+	// return a subset of subscriptions which the user is strictly speaking the recipient of. That is, all the subscriptions this user has purchased for them selves (no recipient) and all the subscriptions this user is the recicipent of.
+	public static function get_subscriptions_belonging_to_user( $subscriptions, $user_id ) {
+
+		foreach ( $subscriptions as $subscription_id => $subscription ) {
+
+			if ( ! empty( $subscription->recipient_user ) && $subscription->recipient_user != $user_id ) {
+				unset( $subscriptions[ $subscription_id ] );
+			}
+		}
+
+		return $subscriptions;
+
 	}
 
 }

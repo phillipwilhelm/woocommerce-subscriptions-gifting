@@ -26,12 +26,8 @@ class WCSG_Recipient_Addresses {
 			// We dont want to update the shipping address of subscriptions the user isn't the recipient of.
 			if ( 'shipping' == get_query_var( 'edit-address' ) ) {
 
-				foreach ( $subscriptions as $subscription_id => $subscription ) {
+				$subscriptions = WCS_Gifting::get_subscriptions_belonging_to_user( $subscriptions, $user_id );
 
-					if ( ! empty( $subscription->recipient_user ) && $subscription->recipient_user != $user_id ) {
-						unset( $subscriptions[ $subscription_id ] );
-					}
-				}
 			} else if ( 'billing' == get_query_var( 'edit-address' ) ) {
 
 				// We dont want to update the billing address of gifted subscriptions for this user.
