@@ -173,30 +173,32 @@ class WCSG_Cart {
 	// load the cart before WC and store the cart data so recipient data stored in the cart can be used for determining purchasability
 	public static function load_cart_from_session() {
 
-		$cart = WC()->session->get( 'cart', null );
+		if ( isset( WC()->session ) ) {
+			$cart = WC()->session->get( 'cart', null );
 
-		//TODO: get updated recipient data from post - cannot use the values stored on the cart as they could be out of date
+			//TODO: get updated recipient data from post - cannot use the values stored on the cart as they could be out of date
 
-		foreach ( $cart as $cart_item_key => $cart_item ) {
-			$user_id = '';
+			foreach ( $cart as $cart_item_key => $cart_item ) {
+				$user_id = '';
 
-			if ( isset( $cart_item['wcsg_gift_recipients_email'] ) ) {
-				$user_id = email_exists( $cart_item['wcsg_gift_recipients_email'] );
+				if ( isset( $cart_item['wcsg_gift_recipients_email'] ) ) {
+					$user_id = email_exists( $cart_item['wcsg_gift_recipients_email'] );
 
-				if ( empty( $user_id ) ) {
-					$user_id = 0;
+					if ( empty( $user_id ) ) {
+						$user_id = 0;
+					}
 				}
+
+				self::$cart_item_recipients[ $cart_item_key ] = $user_id;
 			}
 
-			self::$cart_item_recipients[ $cart_item_key ] = $user_id;
+			// point the product recipient to the first user
+			$user_id = reset( self::$cart_item_recipients );
+
+			self::update_product_recipient_user( $user_id );
+
+			WC()->session->set( 'cart', $cart );
 		}
-
-		// point the product recipient to the first user
-		$user_id = reset( self::$cart_item_recipients );
-
-		self::update_product_recipient_user( $user_id );
-
-		WC()->session->set( 'cart', $cart );
 	}
 
 	// called after the cart has loaded the cart item from session, point the recipient user flag to the next user
