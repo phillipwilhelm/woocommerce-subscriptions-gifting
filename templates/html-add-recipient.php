@@ -1,5 +1,8 @@
 <fieldset>
 	<input type="checkbox" id="gifting_<?php esc_attr_e( $id, 'woocommerce_subscriptions_gifting' ) ?>_option" class="woocommerce_subscription_gifting_checkbox" value="gift" <?php echo esc_attr( implode( ' ', $checkbox_attributes ) ); ?> />
+	<?php if ( $limited_to_recipient ) : ?>
+		 <input type="hidden" name="limited_to_recipient" value="true">
+	<?php endif ?>
 	<?php echo esc_html( apply_filters( 'wcsg_enable_gifting_checkbox_label', __( 'This is a gift', 'woocommerce_subscriptions_gifting' ) ) ); ?> <br />
 	<p class="form-row form-row <?php esc_attr_e( implode( ' ', $email_field_args['class'] ) ); ?>" style="<?php esc_attr_e( implode( '; ', $email_field_args['style_attributes'] ) );?>">
 		<label for="recipient_email[<?php esc_attr_e( $id );?>]">

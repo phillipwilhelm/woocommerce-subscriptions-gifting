@@ -2,6 +2,7 @@
 class WCSG_Product {
 
 	protected static $product_limited_to_recipient = false;
+	public static $recipient_user;
 
 	/**
 	 * Setup hooks & filters, when the class is initialised.
@@ -32,17 +33,28 @@ class WCSG_Product {
 	public static function add_recipient_data( $cart_item_data ) {
 		if ( isset( $_POST['recipient_email'] ) && ! empty( $_POST['recipient_email'][0] ) ) {
 			if ( ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
+
 				$recipient_email = sanitize_email( $_POST['recipient_email'][0] );
 
 				if ( $recipient_email == $_POST['recipient_email'][0] && is_email( $recipient_email ) ) {
+
 					if ( WCS_Gifting::email_belongs_to_current_user( $recipient_email ) ) {
+
 						throw new Exception( __( 'You cannot gift a product to yourself.', 'woocommerce-subscriptions-gifting' ) );
 					} else {
+
 						$cart_item_data['wcsg_gift_recipients_email'] = $recipient_email;
+
+						// set a flag so this recipient user can be used  for determining limited products purchasability
+						if ( isset( $_POST['limited_to_recipient'] ) ) {
+							self::$recipient_user = email_exists( $recipient_email );
+						}
 					}
+
 				} else {
 					throw new Exception( __( 'Invalid email address.', 'woocommerce-subscriptions-gifting' ) );
 				}
+
 			} else {
 				throw new Exception( __( 'There was an error with your request. Please try again..', 'woocommerce-subscriptions-gifting' ) );
 			}
@@ -76,11 +88,11 @@ class WCSG_Product {
 			$checkbox_attributes = array();
 
 			if ( ! empty( $_POST['recipient_email'][0] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
-				$email = $_POST['recipient_email'][0];
+				$email               = $_POST['recipient_email'][0];
 				$checkbox_attributes = array( 'checked' );
 			}
 
-			$email_field_args    = WCS_Gifting::get_recipient_email_field_args( $email );
+			$email_field_args = WCS_Gifting::get_recipient_email_field_args( $email );
 
 			if ( self::$product_limited_to_recipient ) {
 				unset( $email_field_args['style_attributes']['display'] );
@@ -89,15 +101,20 @@ class WCSG_Product {
 				echo '<p>' . esc_html( 'You have an active subscription to this product already. However you can purchase it for someone else.', 'woocommerce-subscriptions-gifting' ) . '<p>';
 			}
 
-			wc_get_template( 'html-add-recipient.php', array( 'email_field_args' => $email_field_args, 'id' => 0, 'email' => $email, 'checkbox_attributes' => $checkbox_attributes ), '', plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
+			wc_get_template( 'html-add-recipient.php', array( 'email_field_args' => $email_field_args, 'id' => 0, 'email' => $email, 'checkbox_attributes' => $checkbox_attributes, 'limited_to_recipient' => self::$product_limited_to_recipient ), '', plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
 		}
 	}
 
 	public static function add_is_purchasable_hooks( $is_purchasable, $product ) {
 
-		// prepare for Subscriptions to determine if a user has a subscription with a product by only retreiving subscriptions that strictly belong to the user
-		// must be hooked on after WCSG_Recipient_Management::get_users_subscriptions() [1]
-		add_filter( 'wcs_get_users_subscriptions', 'WCS_Gifting::get_subscriptions_belonging_to_user' , 10 , 2 );
+		// ensure that the recipient user is used to determine if they have any subscriptions for this product
+		if ( isset( self::$recipient_user ) ) {
+			add_filter( 'wcs_get_users_subscriptions', __CLASS__ . '::get_subscriptions_belonging_to_product_recipient' , 9 , 2 );
+		} else {
+			// prepare for Subscriptions to determine if a user has a subscription with a product by only retreiving subscriptions that strictly belong to the user
+			// must be hooked on after WCSG_Recipient_Management::get_users_subscriptions() [1]
+			add_filter( 'wcs_get_users_subscriptions', 'WCS_Gifting::get_subscriptions_belonging_to_user' , 10 , 2 );
+		}
 
 		return $is_purchasable;
 	}
@@ -118,6 +135,22 @@ class WCSG_Product {
 		}
 
 		return $is_purchasable;
+	}
+
+	public static function get_subscriptions_belonging_to_product_recipient( $subscriptions ) {
+
+		if ( isset( self::$recipient_user ) ) {
+			// unhook this function to avoid loop
+			remove_filter( 'wcs_get_users_subscriptions', __CLASS__ . '::get_subscriptions_belonging_to_product_recipient' , 9 );
+
+			// get all this user's subscriptions
+			$subscriptions = wcs_get_users_subscriptions( self::$recipient_user );
+
+			// remove all the subscriptions this user isn't the beneficiary of
+			$subscriptions = WCS_Gifting::get_subscriptions_belonging_to_user( $subscriptions, self::$recipient_user );
+		}
+
+		return $subscriptions;
 	}
 
 
