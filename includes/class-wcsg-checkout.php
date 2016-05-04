@@ -129,7 +129,7 @@ class WCSG_Checkout {
 			$subscription = wcs_get_subscription( $item['subscription_renewal']['subscription_id'] );
 
 			if ( isset( $subscription->recipient_user ) ) {
-				wc_print_notice( esc_html__( 'Shipping to the gift recipient.', 'woocommerce-subscriptions-gifting' ), 'notice' );
+				wc_print_notice( esc_html__( 'Shipping to the subscription recipient.', 'woocommerce-subscriptions-gifting' ), 'notice' );
 				$ship_to_different_address = true;
 			}
 		}
