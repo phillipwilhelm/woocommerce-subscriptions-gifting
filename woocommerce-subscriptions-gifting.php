@@ -170,7 +170,7 @@ class WCS_Gifting {
 				$cleaned_recipient = sanitize_email( $recipient );
 				if ( $recipient == $cleaned_recipient && is_email( $cleaned_recipient ) ) {
 					if ( ! $self_gifting_found && self::email_belongs_to_current_user( $cleaned_recipient ) ) {
-						wc_add_notice( __( 'You cannot gift a product to yourself.', 'woocommerce-subscriptions-gifting' ), 'error' );
+						wc_add_notice( __( 'Please enter a recipient other than yourself.', 'woocommerce-subscriptions-gifting' ), 'error' );
 						$self_gifting_found = true;
 					}
 				} else if ( ! empty( $recipient ) && ! $invalid_email_found ) {
