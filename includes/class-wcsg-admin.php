@@ -1,6 +1,8 @@
 <?php
 class WCSG_Admin {
 
+	public static $option_prefix = 'woocommerce_subscriptions_gifting';
+
 	/**
 	 * Setup hooks & filters, when the class is initialised.
 	 */
@@ -9,6 +11,8 @@ class WCSG_Admin {
 		add_filter( 'woocommerce_subscription_list_table_column_content', __CLASS__ . '::display_recipient_name_in_subscription_title', 1, 3 );
 
 		add_filter( 'woocommerce_order_items_meta_get_formatted', __CLASS__ . '::remove_recipient_order_item_meta', 1, 1 );
+
+		add_filter( 'woocommerce_subscription_settings', __CLASS__ . '::add_settings', 10, 1 );
 	}
 
 	/**
@@ -73,6 +77,32 @@ class WCSG_Admin {
 		}
 
 		return $formatted_meta;
+	}
+
+	/**
+	 * Add Gifting specific settings to standard Subscription settings
+	 *
+	 * @param array $settings
+	 * @return array $settings
+	 */
+	public static function add_settings( $settings ) {
+
+		return array_merge( $settings, array(
+			array(
+				'name'     => __( 'Gifting Subscriptions', 'woocommerce-subscriptions-gifting' ),
+				'type'     => 'title',
+				'id'       => self::$option_prefix,
+			),
+			array(
+				'name'     => __( 'Gifting Checkbox Text', 'woocommerce-subscriptions-gifting' ),
+				'desc'     => __( 'Customise the text displayed on the front-end next to the checkbox to select the product/cart item as a gift.', 'woocommerce-subscriptions' ),
+				'id'       => self::$option_prefix . '_gifting_checkbox_text',
+				'default'  => __( 'This is a gift', 'woocommerce-subscriptions-gifting' ),
+				'type'     => 'text',
+				'desc_tip' => true,
+			),
+			array( 'type' => 'sectionend', 'id' => self::$option_prefix ),
+		 ) );
 	}
 }
 WCSG_Admin::init();

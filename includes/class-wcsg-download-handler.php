@@ -8,7 +8,7 @@ class WCSG_Download_Handler {
 	* Setup hooks & filters, when the class is initialised.
 	*/
 	public static function init() {
-		add_filter( 'woocommerce_subscription_settings', __CLASS__ . '::register_download_settings' );
+		add_filter( 'woocommerce_subscription_settings', __CLASS__ . '::register_download_settings', 11, 1 );
 		add_filter( 'woocommerce_downloadable_file_permission_data', __CLASS__ . '::grant_recipient_download_permissions', 11 );
 		add_filter( 'woocommerce_get_item_downloads', __CLASS__ . '::get_item_download_links', 15, 3 );
 
@@ -67,7 +67,7 @@ class WCSG_Download_Handler {
 
 		if ( wcs_is_subscription( $subscription ) && isset( $subscription->recipient_user ) ) {
 
-			$can_purchaser_download = ( 'yes' == get_option( 'woocommerce_subscriptions_gifting_downloadable_products', 'no' ) ) ? true : false;
+			$can_purchaser_download = ( 'yes' == get_option( WCSG_Admin::$option_prefix . '_downloadable_products', 'no' ) ) ? true : false;
 
 			if ( $can_purchaser_download ) {
 				remove_filter( 'woocommerce_downloadable_file_permission_data', __CLASS__ . '::grant_recipient_download_permissions', 11 );
@@ -86,30 +86,32 @@ class WCSG_Download_Handler {
 	}
 
 	/**
-	 * Adds additional gifting specific settings into Subscriptions settings
+	 * Insert Gifting download specific settings into Subscription settings
 	 *
 	 * @param array $settings Subscription's current set of settings.
 	 * @return array $settings new settings with appended wcsg specific settings.
 	 */
 	public static function register_download_settings( $settings ) {
-		$download_settings = array(
-		array(
-			'name'     => __( 'Gifting Subscriptions', 'woocommerce-subscriptions-gifting' ),
-			'type'     => 'title',
-			'id'       => 'woocommerce_subscriptions_gifting',
-		),
-		array(
-			'name'     => __( 'Downloadable Products', 'woocommerce-subscriptions-gifting' ),
-			'desc'     => __( 'Allow both purchaser and recipient to download subscription products.', 'woocommerce-subscriptions-gifting' ),
-			'id'       => 'woocommerce_subscriptions_gifting_downloadable_products',
-			'default'  => 'no',
-			'type'     => 'checkbox',
-			'desc_tip' => __( 'If you want both the recipient and purchaser of a subscription to have access to downloadable products.', 'woocommerce-subscriptions-gifting' ),
-		),
-		array( 'type' => 'sectionend', 'id' => 'woocommerce_subscriptions_gifting' ),
+
+		$insert_index = array_search( array(
+			'type' => 'sectionend',
+			'id'   => WCSG_Admin::$option_prefix,
+			), $settings
 		);
 
-		return array_merge( $settings, $download_settings );
+		array_splice( $settings, $insert_index, 0, array(
+			array(
+				'name'     => __( 'Downloadable Products', 'woocommerce-subscriptions-gifting' ),
+				'desc'     => __( 'Allow both purchaser and recipient to download subscription products.', 'woocommerce-subscriptions-gifting' ),
+				'id'       => WCSG_Admin::$option_prefix . '_downloadable_products',
+				'default'  => 'no',
+				'type'     => 'checkbox',
+				'desc_tip' => __( 'If you want both the recipient and purchaser of a subscription to have access to downloadable products.', 'woocommerce-subscriptions-gifting' ),
+				),
+			)
+		);
+
+		return $settings;
 	}
 
 	/**
