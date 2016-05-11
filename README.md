@@ -23,6 +23,11 @@ To install Gifting:
 1. Click **Install Now**
 1. Click **Activate**
 
+### Corporate Purchasing
+As well as purchasing gifts for family and friends, Gifting's underlying logic is also suited to corporate purchasing. When communicating with the purchaser or recipient, more generic terminology, like "Recipient", and more generic phrases, like "purchased a subscription for you" are used so that Gifting can be used in both scenarios with very little customisability required. The only reference to the word 'gift' in customer-facing text is the checkbox label,  _"This is a gift"_, displayed on the Single Product, Checkout and Cart pages (see the [Customer's View](https://github.com/Prospress/woocommerce-subscriptions-gifting#customers-view) section). This text is configurable via a setting in **WooCommerce > Settings > Subscriptions**.
+
+![](https://cldup.com/TlpgBAZQpr.png)
+
 ## Customer's View
 
 There are three pages where a customer can choose to purchase a subscription product for someone else:
@@ -142,7 +147,7 @@ The first time the new recipient logs into their account they will be prompted t
 
 ![](https://cldup.com/hbICzQoNWr-3000x3000.png)
 
-<img src="https://cldup.com/dMR6-BEByL-3000x3000.png" height="799" width="409" align="right">
+<img src="https://cldup.com/W_Qf0vhrOr.png" height="778" width="522" align="right">
 #### Shipping Address
 
 When a gifted subscription is purchased, the shipping address of the subscription is set to the recipient's shipping address. This streamlines the process for customers proceeding through the checkout when purchasing subscription products for other users.
