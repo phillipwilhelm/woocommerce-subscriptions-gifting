@@ -34,7 +34,6 @@ class WCSG_Product {
 					// throw exception to be caught by WC add_to_cart(). validate_recipient_emails() will have added the relevant notices
 					throw new Exception();
 				}
-
 			} else {
 				throw new Exception( __( 'There was an error with your request. Please try again..', 'woocommerce-subscriptions-gifting' ) );
 			}
