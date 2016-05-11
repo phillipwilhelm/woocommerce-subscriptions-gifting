@@ -86,7 +86,7 @@ class WCSG_Download_Handler {
 	}
 
 	/**
-	 * Insert Gifting download specific settings into Subscription settings
+	 * Insert Gifting download specific settings into Subscriptions settings
 	 *
 	 * @param array $settings Subscription's current set of settings.
 	 * @return array $settings new settings with appended wcsg specific settings.

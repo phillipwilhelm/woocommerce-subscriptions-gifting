@@ -80,7 +80,7 @@ class WCSG_Admin {
 	}
 
 	/**
-	 * Add Gifting specific settings to standard Subscription settings
+	 * Add Gifting specific settings to standard Subscriptions settings
 	 *
 	 * @param array $settings
 	 * @return array $settings
