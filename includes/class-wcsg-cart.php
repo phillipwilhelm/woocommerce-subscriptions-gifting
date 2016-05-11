@@ -12,6 +12,8 @@ class WCSG_Cart {
 		add_filter( 'woocommerce_update_cart_action_cart_updated', __CLASS__ . '::cart_update', 1, 1 );
 
 		add_filter( 'woocommerce_add_to_cart_validation', __CLASS__ . '::prevent_products_in_gifted_renewal_orders', 10 );
+
+		add_filter( 'woocommerce_order_again_cart_item_data', __CLASS__ . '::add_recipient_to_resubscribe_initial_payment_item', 10, 3 );
 	}
 
 	/**
@@ -152,6 +154,34 @@ class WCSG_Cart {
 				return self::generate_static_gifting_html( $cart_item_key, $recipient_user->user_email );
 			}
 		}
+	}
+
+	/**
+	 * When setting up the cart for resubscribes or initial subscription payment carts, ensure the existing subscription recipient email is added to the cart item.
+	 *
+	 * @param array $cart_item_data
+	 * @param array $line_item
+	 * @param object $subscription
+	 */
+	public static function add_recipient_to_resubscribe_initial_payment_item( $cart_item_data, $line_item, $subscription ) {
+
+		$recipient_user_id = 0;
+
+		if ( $subscription instanceof WC_Order && isset( $line_item['wcsg_recipient'] ) ) {
+			$recipient_user_id = substr( $line_item['wcsg_recipient'], strlen( 'wcsg_recipient_id_' ) );
+
+		} else if ( ! array_key_exists( 'subscription_renewal', $cart_item_data ) && WCS_Gifting::is_gifted_subscription( $subscription ) ) {
+			$recipient_user_id = $subscription->recipient_user;
+		}
+
+		if ( ! empty( $recipient_user_id ) ) {
+			$recipient_user_data  = get_userdata( $recipient_user_id );
+			$recipient_email      = $recipient_user_data->user_email;
+
+			$cart_item_data['wcsg_gift_recipients_email'] = $recipient_email;
+		}
+
+		return $cart_item_data;
 	}
 }
 WCSG_Cart::init();
