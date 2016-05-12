@@ -51,8 +51,10 @@ class WCSG_Test_Download_Permission_Functions extends WC_Unit_Test_Case {
 		}
 
 		//Clean-up
+		remove_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription', 10, 1 );
 		wp_delete_post( $gifted_subscription->id );
 		wp_delete_post( $subscription->id );
+		add_action( 'before_delete_post', 'WC_Subscriptions_Manager::maybe_cancel_subscription', 10, 1 );
 
 		wp_delete_user( $purchaser_user );
 		wp_delete_user( $recipient_user );
