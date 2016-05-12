@@ -108,7 +108,7 @@ class WCSG_Cart {
 					$subscription = wcs_get_subscription( $item['subscription_renewal']['subscription_id'] );
 					if ( WCS_Gifting::is_gifted_subscription( $subscription ) ) {
 						$passed = false;
-						wc_add_notice( __( 'You can not purchase additional products in gifted subscription renewal orders.', 'woocommerce-subscriptions-gifting' ), 'error' );
+						wc_add_notice( __( 'You cannot add additional products to the cart. Please pay for the subscription renewal first.', 'woocommerce-subscriptions-gifting' ), 'error' );
 						break;
 					}
 				}

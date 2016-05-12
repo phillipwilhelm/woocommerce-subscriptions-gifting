@@ -23,6 +23,16 @@ To install Gifting:
 1. Click **Install Now**
 1. Click **Activate**
 
+After installation, you can customise the way Gifting works by going to **WooCommerce > Settings > Subscriptions** and scrolling down to **Gifting Subscriptions**.
+Here you can: 
+- Customise the label text displayed next to the checkbox on the [Single Product, Cart and Checkout pages](https://github.com/Prospress/woocommerce-subscriptions-gifting#customers-view). By default, the text will display "This is a gift", but you may change this to a phrase which suits your store.
+- Enable or disable granting dual download permissions for downloadable subscription purchases. Learn more about this setting in the [Downloadable Products section](https://github.com/Prospress/woocommerce-subscriptions-gifting#downloadable-products). By default, this feature is disabled. 
+
+![](https://cldup.com/lwyKqIJ-v6.png)
+
+## Corporate Purchasing
+As well as purchasing gifts for family and friends, Gifting's underlying logic is also suited to corporate purchasing scenarios. If your store revolves around selling corporate products, it's likely a company purchasing officer may wish to buy and manage subscriptions for members of their team. It is for this reason when communicating with the purchaser and recipient, more generic terminology, like  _"Recipient"_, and generic phrases, like _"purchased a subscription for you"_, are used so that Gifting can be applied in corporate purchasing scenarios with very little customisation required.
+
 ## Customer's View
 
 There are three pages where a customer can choose to purchase a subscription product for someone else:
@@ -142,7 +152,7 @@ The first time the new recipient logs into their account they will be prompted t
 
 ![](https://cldup.com/hbICzQoNWr-3000x3000.png)
 
-<img src="https://cldup.com/dMR6-BEByL-3000x3000.png" height="799" width="409" align="right">
+<img src="https://cldup.com/W_Qf0vhrOr.png" height="778" width="522" align="right">
 #### Shipping Address
 
 When a gifted subscription is purchased, the shipping address of the subscription is set to the recipient's shipping address. This streamlines the process for customers proceeding through the checkout when purchasing subscription products for other users.
