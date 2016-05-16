@@ -17,7 +17,9 @@ class WCSG_Query extends WC_Query {
 	 * Init query vars by loading options.
 	 */
 	public function init_query_vars() {
-		WC()->query->query_vars['new-recipient-account'] = get_option( 'woocommerce_myaccount_new_recipient_account_endpoint', 'new-recipient-account' );
+		$this->query_vars = array(
+			'new-recipient-account' => get_option( 'woocommerce_myaccount_view_subscriptions_endpoint', 'new-recipient-account' ),
+		);
 	}
 
 	/**
