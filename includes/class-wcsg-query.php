@@ -10,6 +10,8 @@ class WCSG_Query extends WC_Query {
 
 		add_filter( 'the_title', array( $this, 'get_endpoint_title' ), 11, 1 );
 
+		add_action( 'pre_get_posts', array( $this, 'pre_get_posts' ), 11 );
+
 		$this->init_query_vars();
 	}
 
@@ -36,6 +38,31 @@ class WCSG_Query extends WC_Query {
 		}
 
 		return $title;
+	}
+
+	/**
+	 * Fix for endpoints on the homepage
+	 *
+	 * Based on WC_Query->pre_get_posts(), but only applies the fix for endpoints on the homepage from it
+	 * instead of duplicating all the code to handle the main product query.
+	 *
+	 * @param mixed $q query object
+	 */
+	public function pre_get_posts( $q ) {
+		// We only want to affect the main query
+		if ( ! $q->is_main_query() ) {
+			return;
+		}
+		if ( $q->is_home() && 'page' === get_option( 'show_on_front' ) && absint( get_option( 'page_on_front' ) ) !== absint( $q->get( 'page_id' ) ) ) {
+			$_query = wp_parse_args( $q->query );
+			if ( ! empty( $_query ) && array_intersect( array_keys( $_query ), array_keys( $this->query_vars ) ) ) {
+				$q->is_page     = true;
+				$q->is_home     = false;
+				$q->is_singular = true;
+				$q->set( 'page_id', (int) get_option( 'page_on_front' ) );
+				add_filter( 'redirect_canonical', '__return_false' );
+			}
+		}
 	}
 
 }
