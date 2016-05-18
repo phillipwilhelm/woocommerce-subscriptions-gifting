@@ -84,7 +84,8 @@ class WCS_Gifting {
 
 		add_action( 'wp_enqueue_scripts', __CLASS__ . '::gifting_scripts' );
 
-		add_action( 'plugins_loaded', __CLASS__ . '::load_dependant_classes' );
+		// Needs to run after Subscriptions has loaded its dependant classes
+		add_action( 'plugins_loaded', __CLASS__ . '::load_dependant_classes' , 11 );
 
 		add_action( 'init', __CLASS__ . '::maybe_flush_rewrite_rules' );
 
