@@ -67,7 +67,7 @@ class WCSG_Admin {
 		if ( is_admin() ) {
 			$screen = get_current_screen();
 
-			if ( 'edit-shop_subscription' == $screen->id ) {
+			if ( isset( $screen->id ) && 'edit-shop_subscription' == $screen->id ) {
 				foreach ( $formatted_meta as $meta_id => $meta ) {
 					if ( 'wcsg_recipient' == $meta['key'] ) {
 						unset( $formatted_meta[ $meta_id ] );
