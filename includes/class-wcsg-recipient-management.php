@@ -33,6 +33,8 @@ class WCSG_Recipient_Management {
 		add_filter( 'woocommerce_hidden_order_itemmeta', __CLASS__ . '::hide_recipient_order_item_meta', 10, 1 );
 
 		add_action( 'woocommerce_before_order_itemmeta', __CLASS__ . '::display_recipient_meta_admin', 10, 1 );
+
+		add_action( 'woocommerce_subscription_status_updated', __CLASS__ . '::maybe_update_recipient_role', 10, 2 );
 	}
 
 	/**
@@ -464,6 +466,31 @@ class WCSG_Recipient_Management {
 
 				echo '</dl>';
 
+			}
+		}
+	}
+
+	/**
+	 * On subscription status changes, maybe update the role of the subscription recipient (if set) depending on the new subscription status.
+	 * Sets the recipient user to the inactive subscriber role on on-hold, cancelled, expired statuses and an active subscriber role on active statuses.
+	 *
+	 * @param WC_Subscription $subscription
+	 * @param string $new_status The subscription's new status
+	 */
+	public static function maybe_update_recipient_role( $subscription, $new_status ) {
+
+		$inactive_statuses = array(
+			'on-hold',
+			'cancelled',
+			'expired',
+		);
+
+		if ( WCS_Gifting::is_gifted_subscription( $subscription ) ) {
+
+			if ( in_array( $new_status, $inactive_statuses ) ) {
+				wcs_maybe_make_user_inactive( $subscription->recipient_user );
+			} else if ( 'active' == $new_status ) {
+				wcs_make_user_active( $subscription->recipient_user );
 			}
 		}
 	}
