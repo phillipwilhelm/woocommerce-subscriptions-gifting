@@ -62,13 +62,28 @@ class WCSG_Product {
 	 */
 	public static function add_gifting_option_product() {
 		global $product;
-		if ( WC_Subscriptions_Product::is_subscription( $product ) && ! isset( $_GET['switch-subscription'] ) ) {
+		if ( self::is_giftable( $product ) && ! isset( $_GET['switch-subscription'] ) ) {
 			$email = '';
 			if ( ! empty( $_POST['recipient_email'][0] ) && ! empty( $_POST['_wcsgnonce'] ) && wp_verify_nonce( $_POST['_wcsgnonce'], 'wcsg_add_recipient' ) ) {
 				$email = $_POST['recipient_email'][0];
 			}
 			wc_get_template( 'html-add-recipient.php', array( 'email_field_args' => WCS_Gifting::get_recipient_email_field_args( $email ), 'id' => 0, 'email' => $email ), '', plugin_dir_path( WCS_Gifting::$plugin_file ) . 'templates/' );
 		}
+	}
+
+	/**
+	 * Checks if a given product is a giftable product
+	 *
+	 * @param int|WC_Product $product A WC_Product object or the ID of a product to check
+	 * @return bool
+	 */
+	public static function is_giftable( $product ) {
+
+		if ( ! is_object( $product ) ) {
+			$product = wc_get_product( $product );
+		}
+
+		return apply_filters( 'wcsg_is_giftable_product', WC_Subscriptions_Product::is_subscription( $product ), $product );
 	}
 }
 WCSG_Product::init();

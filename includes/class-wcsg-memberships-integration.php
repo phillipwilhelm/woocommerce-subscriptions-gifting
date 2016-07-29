@@ -34,7 +34,7 @@ class WCSG_Memberships_Integration {
 	 */
 	public static function grant_membership_access( $grant_access, $membership_data ) {
 
-		if ( $grant_access && WC_Subscriptions_Product::is_subscription( $membership_data['product_id'] ) && WCS_Gifting::order_contains_gifted_subscription( $membership_data['order_id'] ) ) {
+		if ( $grant_access && WCSG_Product::is_giftable( $membership_data['product_id'] ) && WCS_Gifting::order_contains_gifted_subscription( $membership_data['order_id'] ) ) {
 
 			// defaulted to false unless we find the purchaser has purchased the product for themselves
 			$grant_access = false;
