@@ -124,7 +124,7 @@ class WCSG_Cart {
 	 * @return bool | whether the cart item is giftable.
 	 */
 	public static function is_giftable_item( $cart_item ) {
-		return WC_Subscriptions_Product::is_subscription( $cart_item['data'] ) && ! isset( $cart_item['subscription_renewal'] ) && ! isset( $cart_item['subscription_switch'] );
+		return WCSG_Product::is_giftable( $cart_item['data'] ) && ! isset( $cart_item['subscription_renewal'] ) && ! isset( $cart_item['subscription_switch'] );
 	}
 
 	/**
