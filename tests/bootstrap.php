@@ -130,9 +130,11 @@ class WCS_Unit_Tests_Bootstrap {
 		require_once( $this->modules_dir . '/woocommerce/tests/framework/class-wc-api-unit-test-case.php' );
 
 		// LOAD WC-API Files
-		require_once( $this->modules_dir . '/woocommerce/includes/api/class-wc-api-server.php' );
-		require_once( $this->modules_dir . '/woocommerce/includes/api/class-wc-api-resource.php' );
-		require_once( $this->modules_dir . '/woocommerce/includes/api/class-wc-api-orders.php' );
+		if ( version_compare( WC_VERSION, '2.6', '<' ) ) {
+			require_once( $this->modules_dir . '/woocommerce/includes/api/class-wc-api-server.php' );
+			require_once( $this->modules_dir . '/woocommerce/includes/api/class-wc-api-resource.php' );
+			require_once( $this->modules_dir . '/woocommerce/includes/api/class-wc-api-orders.php' );
+		}
 
 		// Load WCS required classes
 		require_once( $this->modules_dir . '/woocommerce-subscriptions/includes/class-wc-subscription.php' );
