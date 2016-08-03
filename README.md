@@ -202,3 +202,10 @@ When deleting a recipient's user account, the recipient will also be removed fro
 A warning message will be displayed outlining which subscriptions the user will be removed from.
 
 It's important to note that the subscription(s) will not be deleted. The subscription(s) will continue to behave as normal for the purchaser once the subscription recipient has been deleted.
+
+
+---
+
+<p align="center">
+<img src="https://cloud.githubusercontent.com/assets/235523/11986380/bb6a0958-a983-11e5-8e9b-b9781d37c64a.png" width="160">
+</p>
