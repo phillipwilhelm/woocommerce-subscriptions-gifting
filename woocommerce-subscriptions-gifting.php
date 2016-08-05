@@ -6,6 +6,7 @@
  * Author: Prospress Inc.
  * Author URI: http://prospress.com/
  * Version: 1.0
+ * License: GPLv2
  *
  * GitHub Plugin URI: Prospress/woocommerce-subscriptions-gifting
  * GitHub Branch: master
