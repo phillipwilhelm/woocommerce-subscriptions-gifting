@@ -13,6 +13,8 @@ class WCSG_Admin {
 		add_filter( 'woocommerce_order_items_meta_get_formatted', __CLASS__ . '::remove_recipient_order_item_meta', 1, 1 );
 
 		add_filter( 'woocommerce_subscription_settings', __CLASS__ . '::add_settings', 10, 1 );
+
+		add_filter( 'request',  __CLASS__ . '::request_query', 11 , 1 );
 	}
 
 	/**
@@ -103,6 +105,31 @@ class WCSG_Admin {
 			),
 			array( 'type' => 'sectionend', 'id' => self::$option_prefix ),
 		 ) );
+	}
+
+	/**
+	 * Adds meta query to also include subscriptions the user is the recipient of when filtering subscriptions by customer.
+	 *
+	 * @param  array $vars
+	 * @return array
+	 */
+	public static function request_query( $vars ) {
+		global $typenow;
+
+		if ( 'shop_subscription' === $typenow ) {
+
+			// Add _recipient_user meta check when filtering by customer
+			if ( isset( $_GET['_customer_user'] ) && $_GET['_customer_user'] > 0 ) {
+				$vars['meta_query'][] = array(
+					'key'   => '_recipient_user',
+					'value' => (int) $_GET['_customer_user'],
+					'compare' => '=',
+				);
+				$vars['meta_query']['relation'] = 'OR';
+			}
+		}
+
+		return $vars;
 	}
 }
 WCSG_Admin::init();
