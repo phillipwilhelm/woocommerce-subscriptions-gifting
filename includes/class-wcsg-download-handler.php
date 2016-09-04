@@ -242,7 +242,7 @@ class WCSG_Download_Handler {
 
 		return $wpdb->get_results( $wpdb->prepare( "
 			SELECT * FROM {$wpdb->prefix}woocommerce_downloadable_product_permissions
-			WHERE order_id = %d ORDER BY {$order_by}", $subscription_id ) );
+			WHERE order_id = %d ORDER BY %s", $subscription_id, $order_by ) );
 	}
 
 	/**
