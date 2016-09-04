@@ -45,7 +45,7 @@
 				<td class="order-total" data-title="<?php esc_attr_e( 'Total', 'woocommerce-subscriptions-gifting' ); ?>">
 					<?php
 					// translators: price for number of items
-					echo wp_kses_post( sprintf( _n( '%s for %s item', '%s for %s items', $item_count, 'woocommerce-subscriptions-gifting' ), $order->get_formatted_order_total(), $item_count ) );
+					echo wp_kses_post( sprintf( _n( '%1$s for %2$s item', '%1$s for %2$s items', $item_count, 'woocommerce-subscriptions-gifting' ), $order->get_formatted_order_total(), $item_count ) );
 					?>
 				</td>
 				<td class="order-actions">

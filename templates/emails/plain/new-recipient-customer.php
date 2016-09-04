@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 echo '= ' . $email_heading . " =\n\n";
 
 echo sprintf( __( 'Hi there,', 'woocommerce-subscriptions-gifting' ) ) . "\n\n";
-echo sprintf( __( '%s just purchased a subscription for you at %s so we\'ve created an account for you to manage the subscription.', 'woocommerce-subscriptions-gifting' ), esc_html( $subscription_purchaser ), esc_html( $blogname ) ) . "\n\n";
+echo sprintf( __( '%1$s just purchased a subscription for you at %2$s so we\'ve created an account for you to manage the subscription.', 'woocommerce-subscriptions-gifting' ), esc_html( $subscription_purchaser ), esc_html( $blogname ) ) . "\n\n";
 
 echo sprintf( __( 'Your username is: %s', 'woocommerce-subscriptions-gifting' ), esc_html( $user_login ) ) . "\n";
 echo sprintf( __( 'Your password has been automatically generated: %s', 'woocommerce-subscriptions-gifting' ), esc_html( $user_password ) ) . "\n\n";

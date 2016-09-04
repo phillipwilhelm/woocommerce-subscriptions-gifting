@@ -60,10 +60,10 @@ class WCSG_Recipient_Addresses {
 
 			switch ( get_query_var( 'edit-address' ) ) {
 				case 'shipping':
-					$field = substr_replace( $field, '<small>' . sprintf( esc_html__( '%sNote:%s This will not update the shipping address of subscriptions you have purchased for others.', 'woocommerce-subscriptions-gifting' ), '<strong>', '</strong>' ) . '</small>', strpos( $field,'</p>' ), 0 );
+					$field = substr_replace( $field, '<small>' . sprintf( esc_html__( '%1$sNote:%2$s This will not update the shipping address of subscriptions you have purchased for others.', 'woocommerce-subscriptions-gifting' ), '<strong>', '</strong>' ) . '</small>', strpos( $field,'</p>' ), 0 );
 					break;
 				case 'billing':
-					$field = substr_replace( $field, '<small>' . sprintf( esc_html__( '%sNote:%s This will not update the billing address of subscriptions purchased for you by someone else.', 'woocommerce-subscriptions-gifting' ), '<strong>', '</strong>' ) . '</small>', strpos( $field,'</p>' ), 0 );
+					$field = substr_replace( $field, '<small>' . sprintf( esc_html__( '%1$sNote:%2$s This will not update the billing address of subscriptions purchased for you by someone else.', 'woocommerce-subscriptions-gifting' ), '<strong>', '</strong>' ) . '</small>', strpos( $field,'</p>' ), 0 );
 					break;
 			}
 		}
