@@ -88,7 +88,7 @@ class WCSG_Recipient_Details {
 						if ( isset( $_POST['set_billing'] ) ) {
 							update_user_meta( $user->ID, str_replace( 'shipping', 'billing', $key ), wc_clean( $_POST[ $key ] ) );
 						}
-						$address[ str_replace( 'shipping' . '_', '', $key ) ] = wc_clean( $_POST[ $key ] );
+						$address[ str_replace( 'shipping_', '', $key ) ] = wc_clean( $_POST[ $key ] );
 					}
 				}
 				$user->user_pass = wc_clean( $_POST['new_password'] );

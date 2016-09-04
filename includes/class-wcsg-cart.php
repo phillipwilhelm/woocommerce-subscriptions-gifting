@@ -90,10 +90,7 @@ class WCSG_Cart {
 	 * @param string $email The email of the gift recipient.
 	 */
 	public static function generate_static_gifting_html( $cart_item_key, $email ) {
-
-		return '<fieldset id="woocommerce_subscriptions_gifting_field">'
-		     . '<label class="woocommerce_subscriptions_gifting_recipient_email">' . esc_html__( 'Recipient: ', 'woocommerce-subscriptions-gifting' ) . '</label>' . esc_html( $email )
-		     . '</fieldset>';
+		return '<fieldset id="woocommerce_subscriptions_gifting_field"><label class="woocommerce_subscriptions_gifting_recipient_email">' . esc_html__( 'Recipient: ', 'woocommerce-subscriptions-gifting' ) . '</label>' . esc_html( $email ) . '</fieldset>';
 	}
 
 	/**
