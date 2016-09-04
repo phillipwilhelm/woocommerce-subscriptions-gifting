@@ -71,7 +71,7 @@ class WCSG_Checkout {
 					'city'       => get_user_meta( $recipient_user_id, 'shipping_city', true ),
 					'state'      => get_user_meta( $recipient_user_id, 'shipping_state', true ),
 					'postcode'   => get_user_meta( $recipient_user_id, 'shipping_postcode', true ),
-					), 'shipping' );
+				), 'shipping' );
 			}
 		}
 	}

@@ -104,7 +104,7 @@ class WCSG_Admin {
 				'desc_tip' => true,
 			),
 			array( 'type' => 'sectionend', 'id' => self::$option_prefix ),
-		 ) );
+		) );
 	}
 
 	/**
