@@ -14,8 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 <?php do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 
 <p><?php printf( esc_html__( 'Hi there,', 'woocommerce-subscriptions-gifting' ) ); ?></p>
-<p><?php printf( esc_html__( '%s just purchased ' . _n( 'a subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' for you at %s.', 'woocommerce-subscriptions-gifting' ), wp_kses( $subscription_purchaser, wp_kses_allowed_html( 'user_description' ) ), esc_html( $blogname ) ); ?>
-<?php printf( esc_html__( ' Details of the ' . _n( 'subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' are shown below.', 'woocommerce-subscriptions-gifting' ) ); ?>
+<p><?php printf( esc_html__( '%1$s just purchased %2$s for you at %3$s.', 'woocommerce-subscriptions-gifting' ), wp_kses( $subscription_purchaser, wp_kses_allowed_html( 'user_description' ) ), esc_html( _n( 'a subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) ), esc_html( $blogname ) ); ?>
+<?php printf( esc_html__( ' Details of the %s are shown below.', 'woocommerce-subscriptions-gifting' ), esc_html( _n( 'subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) ) ); ?>
 </p>
 <?php
 
@@ -27,7 +27,8 @@ if ( 'true' == $new_recipient ) : ?>
 
 <?php else : ?>
 
-<p><?php printf( esc_html__( 'You may access your account area to view your new ' . _n( 'subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) . ' here: %1$sMy Account%2$s.', 'woocommerce-subscriptions-gifting' ),
+<p><?php printf( esc_html__( 'You may access your account area to view your new %1$s here: %2$sMy Account%3$s.', 'woocommerce-subscriptions-gifting' ),
+	esc_html( _n( 'subscription', 'subscriptions', count( $subscriptions ), 'woocommerce-subscriptions-gifting' ) ),
 	'<a href="' . esc_url( wc_get_page_permalink( 'myaccount' ) ) . '">',
 	'</a>'
 ); ?></p>
