@@ -459,7 +459,7 @@ class WCSG_Recipient_Management {
 					foreach ( $subscriptions as $subscription_id ) {
 
 						$subscription = wcs_get_subscription( $subscription_id );
-						echo '<dd>' . esc_html__( 'Subscription' , 'woocommerce-subscriptions-gifting' ) . ' <a href="'. esc_url( wcs_get_edit_post_link( $subscription->id ) ) . '">#' . esc_html( $subscription->get_order_number() ) . '</a></dd>';
+						echo '<dd>' . esc_html__( 'Subscription' , 'woocommerce-subscriptions-gifting' ) . ' <a href="' . esc_url( wcs_get_edit_post_link( $subscription->id ) ) . '">#' . esc_html( $subscription->get_order_number() ) . '</a></dd>';
 
 					}
 				}
